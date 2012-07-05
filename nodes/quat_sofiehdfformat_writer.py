@@ -7,7 +7,10 @@ from sofiehdfformat.core.SofieCsvPyTableAccess import SofieCsvPyTableAccess
 
 
 def listener():
-    csvWriter = SofieCsvPyTableAccess('./test.h5','testrun',
+    filename = rospy.get_param('/sofie/filename')
+    runName = rospy.get_param('/sofie/runname')
+    rospy.loginfo('Logging to file: '+filename)
+    csvWriter = SofieCsvPyTableAccess(filename,runName,
         ['quat1','quat2','quat3','quat4','Timestamp'])
     def callback(data):
         rospy.loginfo(rospy.get_name()+"Received Quaternion ")
