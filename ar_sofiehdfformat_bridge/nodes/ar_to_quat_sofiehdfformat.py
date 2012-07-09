@@ -7,7 +7,7 @@ from geometry_msgs.msg import QuaternionStamped
 from ar_pose.msg import ARMarker
 
 def listener():
-    print 'Starting AR_TO_QUAT node:'
+    print 'Starting AR_TO_QUAT BRIDGE:'
     pub = rospy.Publisher('quat_sofiehdfformat', QuaternionStamped)
     def callback(data):
         orientation = data.pose.pose.orientation
