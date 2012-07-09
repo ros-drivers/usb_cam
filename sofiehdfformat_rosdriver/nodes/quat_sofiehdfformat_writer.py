@@ -14,16 +14,10 @@ def getFileInfo():
             filename = rospy.get_param('/sofie/filename')
             runName = rospy.get_param('/sofie/runname')
         except KeyError:
-            print 'Waiting for filename to be set.'
+            pass
     return [filename,runName]
 
 def callback(data):
-        try:
-            shouldWeLog = rospy.get_param('/sofie/shouldWeLog')
-            if shouldWeLog==0:
-                return
-        except KeyError:
-            return
         rospy.loginfo(rospy.get_name()+": Received Quaternion")
         rospy.logdebug(data)
         csvWriter.write(
@@ -35,13 +29,15 @@ def callback(data):
 
 if __name__ == '__main__':
     argv = rospy.myargv(argv=sys.argv)
+    print 'Waiting for filname and runName:'+str(len(argv))
     if len(argv) == 3:
+        print 'Getting names from commandline.'
         filename = argv[1]
         runName = argv[2]
         rospy.set_param('/sofie/filename',filename)
         rospy.set_param('/sofie/runName',runName)
-    else:
-        [filename,runName] = getFileInfo()
+
+    [filename,runName] = getFileInfo()
     rospy.loginfo('Logging to file: '+filename+' runName:'+runName)
     csvWriter = SofieCsvPyTableAccess(filename,runName,tableStructure)
     rospy.init_node('sofiehdfformatwriter', anonymous=True)

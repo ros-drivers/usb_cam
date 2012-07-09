@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('ar_sofiehdfformat')
+import roslib; roslib.load_manifest('ar_sofiehdfformat_bridge')
 import rospy
 #import ccny_vision.ar_pose.msg;
 
