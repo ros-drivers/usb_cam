@@ -28,11 +28,11 @@
         <param name="threshold" type="int" value="100"/>
         <param name="use_history" type="bool" value="true"/>
     </node>
-    <node pkg="sofiehdfformat_rosdriver" name="sofie" type="quat_sofiehdfformat_writer.py" output="screen">
+    <node pkg="sofiehdfformat_rosdriver" name="sofie" type="quat_sofiehdfformat_writer.py" output="log">
         <param name="filename" value="$(arg filename)" />
         <param name="runname" value="$(arg runname)" />
     </node>
 
-    <node pkg="ar_sofiehdfformat_bridge" name="sofie_quat_bridge" type="ar_to_quat_sofiehdfformat.py" output="screen">
+    <node pkg="ar_sofiehdfformat_bridge" name="sofie_quat_bridge" type="ar_to_quat_sofiehdfformat.py" output="log">
     </node>
 </launch>
