@@ -5,7 +5,7 @@ import rospy
 from geometry_msgs.msg import QuaternionStamped
 from sofiehdfformat.core.SofieCsvPyTableAccess import SofieCsvPyTableAccess
 
-tableStructure=['quat1','quat2','quat3','quat4','Timestamp']
+tableStructure=['quat1','quat2','quat3','quat4','timestamp']
 def getFileInfo():
     filename=None
     runName=None
@@ -21,11 +21,12 @@ def callback(data):
         rospy.loginfo(rospy.get_name()+": Received Quaternion")
         rospy.logdebug(data)
         csvWriter.write(
-            {'quat1':data.quaternion.x,
-            'quat2':data.quaternion.y,
-            'quat3':data.quaternion.z,
-            'quat4':data.quaternion.w,
-            'Timestamp':data.header.stamp.to_time()})
+            {
+            'quat1':data.quaternion.w,
+            'quat2':data.quaternion.x,
+            'quat3':data.quaternion.y,
+            'quat4':data.quaternion.z,
+            'timestamp':data.header.stamp.to_time()})
 
 if __name__ == '__main__':
     argv = rospy.myargv(argv=sys.argv)
