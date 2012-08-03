@@ -2,15 +2,15 @@
     <node pkg="rviz" type="rviz" name="rviz" 
           args="-d $(find ar_pose)/launch/live_single.vcg"/>
 			
-    <node pkg="tf" type="static_transform_publisher" name="world_to_cam" 
-              args="0 0 0.5 -1.57 0 -1.57 world usb_cam 10" />
+<!--    <node pkg="tf" type="static_transform_publisher" name="world_to_cam"
+              args="0 0 0.5 -1.57 0 -1.57 world usb_cam 10" />-->
 
     <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" respawn="false" output="log">
         <param name="video_device" type="string" value="$(arg videodevice)"/>
         <param name="camera_frame_id" type="string" value="usb_cam"/>
         <param name="io_method" type="string" value="mmap"/>
-        <param name="image_width" type="int" value="640"/>
-        <param name="image_height" type="int" value="480"/>
+        <param name="image_width" type="int" value="1920"/>
+        <param name="image_height" type="int" value="1080"/>
 
         <!--We need to learn how to callibrate the camera.-->
         <param name="pixel_format" type="string" value="yuyv"/>
@@ -26,7 +26,7 @@
         <param name="marker_center_x" type="double" value="0.0"/>
         <param name="marker_center_y" type="double" value="0.0"/>
         <param name="threshold" type="int" value="100"/>
-        <param name="use_history" type="bool" value="true"/>
+        <param name="use_history" type="bool" value="false"/>
     </node>
     <node pkg="sofiehdfformat_rosdriver" name="sofie" type="quat_sofiehdfformat_writer.py" output="log">
         <param name="filename" value="$(arg filename)" />
