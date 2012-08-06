@@ -11,13 +11,15 @@
         <param name="io_method" type="string" value="mmap"/>
         <param name="image_width" type="int" value="1920"/>
         <param name="image_height" type="int" value="1080"/>
-
-        <!--We need to learn how to callibrate the camera.-->
         <param name="pixel_format" type="string" value="yuyv"/>
-        <rosparam param="D">[0.025751483065329935, -0.10530741936574876,-0.0024821434601277623, -0.0031632353637182972, 0.0000]</rosparam>
+        <rosparam param="D">[0.0712, -0.033449, -0.013762, 0.020095, 0.0]</rosparam>
+        <rosparam param="K">[1568.160101, 0.0, 1026.238734, 0.0, 1565.321054, 494.027014, 0.0, 0.0, 1.0]</rosparam>
+        <rosparam param="R">[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]</rosparam>
+        <rosparam param="P">[1608.296875, 0.0, 1058.763757, 0.0, 0.0, 1629.245605, 481.039521, 0.0, 0.0, 0.0, 1.0, 0.0]</rosparam>
+<!--        <rosparam param="D">[0.025751483065329935, -0.10530741936574876,-0.0024821434601277623, -0.0031632353637182972, 0.0000]</rosparam>
         <rosparam param="K">[558.70655574536931, 0.0, 316.68428342491319, 0.0, 553.44501004322387, 238.23867473419315, 0.0, 0.0, 1.0]</rosparam>
         <rosparam param="R">[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]</rosparam>
-        <rosparam param="P">[558.70655574536931, 0.0, 316.68428342491319, 0.0, 0.0, 553.44501004322387, 238.23867473419315, 0.0, 0.0, 0.0, 1.0, 0.0]</rosparam>
+        <rosparam param="P">[558.70655574536931, 0.0, 316.68428342491319, 0.0, 0.0, 553.44501004322387, 238.23867473419315, 0.0, 0.0, 0.0, 1.0, 0.0]</rosparam>-->
     </node>
 	
     <node name="ar_pose" pkg="ar_pose" type="ar_single" respawn="false" output="screen">
