@@ -1,6 +1,9 @@
 <launch>
     <node pkg="usb_cam" type="usb_cam_node" name="camera">
-        <param name="video_device" value="/dev/video1"/>
+        <param name="video_device" value="/dev/video0"/>
         <param name="pixel_format" value="yuyv"/>
+        <param name="io_method" type="string" value="mmap"/>
+<!--		<param name="image_width" type="int" value="640"/>-->
+<!--		<param name="image_height" type="int" value="480"/>-->
     </node>
 </launch>
