@@ -1,7 +1,13 @@
 #!/usr/bin/env python
+#
+# Caution this file only imports the recorded values into the HDF file after the
+#experiment is performed. The importARData function must thus be called.
+# This is a hack because the PYTables does not allow concurrent writing to the file,
+#thus a csv is created and then must be imported at a later stage. Needs refractoring.
 import sys
 import roslib; roslib.load_manifest('sofiehdfformat_rosdriver')
 import rospy
+import os.path
 from ar_pose.msg import ARMarker
 
 from sofiehdfformat.core.SofieCsvPyTableAccess import SofieCsvPyTableAccess
@@ -9,10 +15,9 @@ from sofiehdfformat.core.SofieCsvParser import parse_sample_interpret as csv_sam
 from sofiehdfformat.core.SofieCsvAccess import SofieCsvAccess
 from sofiehdfformat.core.SofieCsvFile import CsvFile
 import signal
-
-TMPCSVFILE='ar-csv-tm.csv'
+from sofiehdfformat_rosdriver.import_csv_data import tableStructure
+from sofiehdfformat_rosdriver.import_csv_data import TMPCSVFILE
 csvWriter = None;
-tableStructure = ['id', 'confidence', 'x', 'y', 'z', 'quat1', 'quat2', 'quat3', 'quat4', 'timestamp']
 
 def getFileInfo():
     '''
@@ -58,21 +63,6 @@ def sofiewritercallback(data):
         data.pose.pose.orientation.y,
         data.pose.pose.orientation.z,
         data.header.stamp.to_time()))
-    
-def exitCleanly(signum, frame):
-    rospy.loginfo(rospy.get_name() + ": Exiting and closing files")
-    try:
-        theReader = CsvFile(TMPCSVFILE)
-        csvWriter = SofieCsvPyTableAccess(filename, runName, tableStructure)
-        for row in theReader:
-            logging.debug("Read New Row")
-            parsed = csv_sample_interpret(row)
-            csvWriter.write(parsed)
-        csvWriter.close();
-        theReader.close();
-    except:
-        print "Unexpected error:", sys.exc_info()[0]
-        raise
 
 if __name__ == '__main__':
     argv = rospy.myargv(argv=sys.argv)
@@ -87,8 +77,9 @@ if __name__ == '__main__':
     [filename, runName] = getFileInfo()
     runName = '/'+runName.strip('/')+'/';
     rospy.loginfo('Logging to file: ' + filename + ' runName:' + runName)
+    if os.path.isfile(TMPCSVFILE):
+        os.unlink(TMPCSVFILE)
     csvWriter = SofieCsvAccess(TMPCSVFILE, tableStructure)
     rospy.init_node('sofiehdfformatwriter', anonymous=True)
     rospy.Subscriber("ar_pose_marker", ARMarker, sofiewritercallback)
-    signal = signal.signal(signal.SIGINT, exitCleanly)
     rospy.spin()
