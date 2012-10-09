@@ -30,7 +30,7 @@
         <param name="threshold" type="int" value="100"/>
         <param name="use_history" type="bool" value="false"/>
     </node>
-    <node pkg="sofiehdfformat_rosdriver" name="sofie" type="ar_pose_sofiehdfformat_writer.py" output="log">
+    <node pkg="sofiehdfformat_rosdriver" name="sofie" type="ar_pose_csv_writer.py" output="log">
         <param name="filename" value="$(arg filename)" />
         <param name="runname" value="$(arg runname)" />
     </node>
