@@ -1,5 +1,6 @@
 from sofiehdfformat.core.SofieFileUtils import importdata
 import sys
+import os
 TMPCSVFILE='/tmp/ar-csv-tm.csv'
 tableStructure = ['id', 'confidence', 'x', 'y', 'z', 'quat1', 'quat2', 'quat3', 'quat4', 'timestamp']
 def importARData(filename, runName):
