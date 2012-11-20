@@ -18,3 +18,11 @@ def importARData(filename, runName):
         print "Unexpected error:", sys.exc_info()[0]
         raise
     return True
+
+def importBagData(filename, usbCamBagFilename,runName):
+    importdata(usbCamBagFilename,
+                filename,
+                runName,
+                'description',
+                True,
+                False)

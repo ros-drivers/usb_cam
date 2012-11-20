@@ -22,6 +22,7 @@
         <rosparam param="P">[558.70655574536931, 0.0, 316.68428342491319, 0.0, 0.0, 553.44501004322387, 238.23867473419315, 0.0, 0.0, 0.0, 1.0.0, 0.0]</rosparam>-->
     </node>
 	
+	<!--  AR POSE -->
     <node name="ar_pose" pkg="ar_pose" type="ar_single" respawn="false" output="screen">
         <param name="marker_pattern" type="string" value="$(find ar_pose)/data/patt.hiro"/>
         <param name="marker_width" type="double" value="$(arg markersize)"/>
@@ -30,8 +31,14 @@
         <param name="threshold" type="int" value="100"/>
         <param name="use_history" type="bool" value="false"/>
     </node>
+    	
+    <!--  Start the SOFIE Logger -->
     <node pkg="sofiehdfformat_rosdriver" name="sofie" type="ar_pose_csv_writer.py" output="log">
         <param name="filename" value="$(arg filename)" />
         <param name="runname" value="$(arg runname)" />
     </node>
+    
+    <!--  Start usb_cam bag -->
+      <node pkg="rosbag" type="record" name="record" 
+      	output="screen" args="-O $(arg usbcamrosbag) $(arg usbcamtopic)"/> 
 </launch>
