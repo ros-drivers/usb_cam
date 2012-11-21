@@ -1,0 +1,14 @@
+<launch>
+
+  <node pkg="rosbag" type="rosbag" name="rosbag" args="play -d 2 /media/Ubuntu/RosBagFiles/TestFolder/2011-02-08-22-11-49.bag"/>
+
+  <node name="extract" pkg="image_view" type="extract_images" respawn="false" output="screen" cwd="node">
+
+    <remap from="image" to="/down_camera/camera/image_raw"/>
+    <param name="filename_format" value="/media/Ubuntu/RosBagFiles/TestFolder/frame%06i.jpg"/>
+  </node>
+  <node name="extract2" pkg="image_view" type="extract_images" respawn="false" output="screen" cwd="node">
+
+    <remap from="image" to="/elite_camera/camera/image_raw"/>
+    <param name="filename_format" value="/media/Ubuntu/RosBagFiles/TestFolder/elite_frame%06i.jpg"/>
+  </node>
