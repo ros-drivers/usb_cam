@@ -6,7 +6,7 @@ tableStructure = ['id', 'confidence', 'x', 'y', 'z', 'quat1', 'quat2', 'quat3', 
 def importARData(filename, runName):
     print 'IMPORTING AR DATA'
     try:
-        if os.path.isfile(TMPCSVFILE):
+        if os.path.isfile(TMPCSVFILE) and os.path.getsize(TMPCSVFILE) > 0:
             importdata(TMPCSVFILE,
                 filename,
                 runName,
