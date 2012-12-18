@@ -11,6 +11,7 @@
   <depend package="std_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="ar_pose"/>
+  <depend package="usb_cam"/>
 </package>
 
 

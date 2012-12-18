@@ -1,6 +1,6 @@
 <launch>
-    <node pkg="rviz" type="rviz" name="rviz" 
-          args="-d $(find ar_pose)/launch/live_single.vcg"/>
+  <!--  <node pkg="rviz" type="rviz" name="rviz" 
+          args="-d $(find ar_pose)/launch/live_single.vcg"/>-->
 			
 <!--    <node pkg="tf" type="static_transform_publisher" name="world_to_cam"
               args="0 0 0.5 -1.57 0 -1.57 world usb_cam 10" />-->
