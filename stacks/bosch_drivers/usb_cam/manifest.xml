@@ -1,0 +1,17 @@
+<package>
+  <description brief="A generic driver for USB camera that are supported by V4L"></description>
+  <author>Benjamin Pitzer</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="image_transport"/>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="self_test"/>
+  <rosdep name="libswscale-dev"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp" lflags="-L${prefix}/lib"/>
+  </export>
+</package>
+

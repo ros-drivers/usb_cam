@@ -1,0 +1,2 @@
+rosbuild_add_executable(usb_cam_node usb_cam_node.cpp)
+target_link_libraries(usb_cam_node usb_cam avcodec swscale)
