@@ -1,9 +1,12 @@
 [submodule "stacks/ar_track_alvar"]
 	path = stacks/ar_track_alvar
 	url = https://bitbucket.org/sniekum/ar_track_alvar.git
+	ignore = dirty
 [submodule "stacks/sofie_ros"]
 	path = stacks/sofie_ros
 	url = git@github.com:agcooke/sofie_ros.git
+        ignore = dirty
 [submodule "stacks/ccny_vision"]
 	path = stacks/ccny_vision
 	url = git@github.com:agcooke/ccny_vision.git
+        ignore = dirty
