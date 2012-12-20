@@ -8,9 +8,8 @@ git submodule update
 roscd sofiehdfformat_rosdriver/
 rosmake
 #Enter VirtualEnv
-workon sofie
-#Install Python Packages.
-cd ~/ros/libs/sofiehdformat/
-sudo python setup.py develop
-cd ~/ros/libs/experimentcontrol/
-sudo python setup.py develop
+workon sofie  --system-site-packages
+sudo aptitude install vitables
+#Install Python Packages. (This should be taken care of with pip).
+pip install -e git+git://github.com/agcooke/Sofie-HDF-Format.git
+pip install -e git+git://github.com/agcooke/ExperimentControl.git
