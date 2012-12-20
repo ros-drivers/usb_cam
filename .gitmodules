@@ -10,3 +10,6 @@
 	path = stacks/ccny_vision
 	url = git@github.com:agcooke/ccny_vision.git
         ignore = dirty
+[submodule "libs/experimentcontrol"]
+	path = libs/experimentcontrol
+	url = git@github.com:agcooke/ExperimentControl.git
