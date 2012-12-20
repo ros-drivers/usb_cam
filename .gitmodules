@@ -13,3 +13,6 @@
 [submodule "libs/experimentcontrol"]
 	path = libs/experimentcontrol
 	url = git@github.com:agcooke/ExperimentControl.git
+[submodule "libs/sofiehdfformat"]
+	path = libs/sofiehdfformat
+	url = git@github.com:agcooke/Sofie-HDF-Format.git
