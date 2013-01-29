@@ -12,3 +12,4 @@
     <remap from="image" to="/elite_camera/camera/image_raw"/>
     <param name="filename_format" value="/media/Ubuntu/RosBagFiles/TestFolder/elite_frame%06i.jpg"/>
   </node>
+</launch>

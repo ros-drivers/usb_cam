@@ -31,8 +31,7 @@
         <param name="use_history" type="bool" value="false"/>
     </node>
     <node pkg="sofiehdfformat_rosdriver" name="sofie" type="ar_pose_csv_writer.py" output="log">
-        <param name="filename" value="$(arg filename)" />
-        <param name="runname" value="$(arg runname)" />
+        <param name="csvfilename" value="$(arg csvfilename)" />
     </node>
     
     <!--  Start usb_cam bag -->

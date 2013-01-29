@@ -16,22 +16,19 @@ from sofiehdfformat.core.SofieCsvAccess import SofieCsvAccess
 from sofiehdfformat.core.SofieCsvFile import CsvFile
 import signal
 from sofiehdfformat_rosdriver.import_csv_data import tableStructure
-from sofiehdfformat_rosdriver.import_csv_data import TMPCSVFILE
 csvWriter = None;
 
 def getFileInfo():
     '''
     Get the File info from the ros parameter server.
     '''
-    filename = None
-    runName = None
-    while filename == None or runName == None:
+    csvfilename = None
+    while csvfilename == None:
         try:
-            filename = rospy.get_param('/sofie/filename')
-            runName = rospy.get_param('/sofie/runname')
+            csvfilename = rospy.get_param('/sofie/csvfilename')
         except KeyError:
             pass
-    return [filename, runName]
+    return csvfilename
 
 def sofiewritercallback(data):
     '''
@@ -65,21 +62,9 @@ def sofiewritercallback(data):
         data.header.stamp.to_time()))
 
 if __name__ == '__main__':
-    argv = rospy.myargv(argv=sys.argv)
-    print 'Waiting for filename and runName:' + str(len(argv))
-    if len(argv) == 3:
-        print 'Getting names from commandline.'
-        filename = argv[1]
-        runName = argv[2]
-        rospy.set_param('/sofie/filename', filename)
-        rospy.set_param('/sofie/runName', runName)
-
-    [filename, runName] = getFileInfo()
-    runName = '/'+runName.strip('/')+'/';
-    rospy.loginfo('Logging to file: ' + filename + ' runName:' + runName)
-    if os.path.isfile(TMPCSVFILE):
-        os.unlink(TMPCSVFILE)
-    csvWriter = SofieCsvAccess(TMPCSVFILE, tableStructure)
+    csvfilename = getFileInfo()
+    rospy.loginfo('Logging to file: {0}'.format(csvfilename))
+    csvWriter = SofieCsvAccess(csvfilename, tableStructure)
     rospy.init_node('sofiehdfformatwriter', anonymous=True)
     rospy.Subscriber("ar_pose_marker", ARMarker, sofiewritercallback)
-    rospy.spin()
+    rospy.spin()    

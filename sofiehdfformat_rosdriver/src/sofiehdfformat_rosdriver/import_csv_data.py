@@ -1,14 +1,15 @@
-from sofiehdfformat.core.SofieFileUtils import importdata
+from sofiehdfformat.core.SofieFileUtils import importdata,exportFile
+from sofiehdfformat.core.config import getBagSubDirectory
 import sys
 import os
-TMPCSVFILE='/tmp/ar-csv-tm.csv'
+TMPCSVFILENAME='ar-csv.csv'
 tableStructure = ['id', 'confidence', 'x', 'y', 'z', 'quat1', 'quat2', 'quat3', 'quat4', 'timestamp']
-def importARData(filename, runName):
+def importARData(csvFileName,hdfFilename,runName):
     print 'IMPORTING AR DATA'
     try:
-        if os.path.isfile(TMPCSVFILE) and os.path.getsize(TMPCSVFILE) > 0:
-            importdata(TMPCSVFILE,
-                filename,
+        if os.path.isfile(csvFileName) and os.path.getsize(csvFileName) > 0:
+            importdata(csvFileName,
+                hdfFilename,
                 runName,
                 'description',
                 True,
@@ -19,10 +20,14 @@ def importARData(filename, runName):
         raise
     return True
 
-def importBagData(filename, usbCamBagFilename,runName):
+def importBagData(usbCamBagFilename,hdfFilename,runName):
     importdata(usbCamBagFilename,
-                filename,
+                hdfFilename,
                 runName,
                 'description',
                 True,
                 False)
+def exportBagData(filename,runName):
+    totalRun =  getDefaultBagFile(getBagSubDirectory(runName))
+    exportFile(filename,totalRun,filename+getDefaultBagFileName())
+    
