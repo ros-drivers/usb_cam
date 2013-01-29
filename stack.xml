@@ -1,7 +1,0 @@
-<stack>
-  <description brief="SOFIE Stack">A stack to work with the SOFIE bicycle instrumentation package.</description>
-  <author>Maintained by Adrian Cooke.</author>
-  <license>GPL</license>  
-  <review status="experimental" notes=""/>
-  <url>https://github.com/agcooke/sofie_ros</url>
-</stack>
