@@ -15,7 +15,7 @@ from sofiehdfformat.core.SofieCsvParser import parse_sample_interpret as csv_sam
 from sofiehdfformat.core.SofieCsvAccess import SofieCsvAccess
 from sofiehdfformat.core.SofieCsvFile import CsvFile
 import signal
-from sofiehdfformat_rosdriver.import_csv_data import tableStructure
+from sofiehdfformat_rosdriver.fileUtils import tableStructure
 csvWriter = None;
 
 def getFileInfo():
