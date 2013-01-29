@@ -4,5 +4,4 @@
   <license>GPL</license>  
   <review status="experimental" notes=""/>
   <url>https://github.com/agcooke/sofie_ros</url>
-  <depend stack="ccny_vision" />
 </stack>
