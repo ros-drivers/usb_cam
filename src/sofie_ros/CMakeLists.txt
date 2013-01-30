@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(sofie_ros)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS rospy std_msgs geometry_msgs ar_track_alvar usb_cam)
+find_package(catkin REQUIRED COMPONENTS rospy std_msgs geometry_msgs ar_track_alvar)
 
 # include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 # CATKIN_MIGRATION: removed during catkin migration
@@ -31,14 +31,14 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #uncomment if you have defined messages
 #add_message_files(
-  FILES
+ # FILES
   # TODO: List your msg files here
-)
+#)
 #uncomment if you have defined services
 #add_service_files(
-  FILES
+#  FILES
   # TODO: List your msg files here
-)
+#)
 
 #common commands for building c++ executables and libraries
 #add_library(${PROJECT_NAME} src/example.cpp)
@@ -48,7 +48,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 # rosbuild_add_boost_directories()
 #find_package(Boost REQUIRED COMPONENTS thread)
 include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 #add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 ## Generate added messages and services with any dependencies listed here
@@ -60,7 +60,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-    DEPENDS rospy std_msgs geometry_msgs ar_track_alvar usb_cam
+    DEPENDS rospy std_msgs geometry_msgs ar_track_alvar
     CATKIN-DEPENDS # TODO
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
