@@ -48,7 +48,7 @@ Clean and install the correct packages:
 	$ cd src/ar_track_alvar
 	$ git pull groovy-devel
 	$ roscd
-	$ rosmake usb_cam
+	$ source devel/setup.sh 
 	$ catkin_make
 
 ### Install the SOFIE PYTHON packages.
