@@ -1,26 +1,25 @@
 <package>
-  <name>sofiehdfformat_rosdriver</name>
+  <name>sofie_ros</name>
   <version>0.0.1</version>
   <description>sofiehdfformat driver for ros</description>
-  <maintainer email="adrian.cooke@utwente.nl">Adrian Cooke</maintainer>
+<maintainer email="adrian.cooke@utwente.nl">Adrian Cooke</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/sofiehdfformat_rosdriver</url>
-
-  <author>cooke</author>
+  <author>Adrian Cooke</author>
 
   <!-- <build_depend>rospy</build_depend> -->
   <!-- <build_depend>std_msgs</build_depend> -->
   <!-- <build_depend>geometry_msgs</build_depend> -->
-  	<build_depend>ar_track_alvar</build_depend>
-	<build_depend>usb_cam</build_depend>
-    <run_depend>rospy</run_depend>
+  <!-- <build_depend>ar_track_alvar</build_depend> -->
+  <!-- <build_depend>usb_cam</build_depend> -->
+  <!-- <run_depend>rospy</run_depend> -->
   <!-- <run_depend>std_msgs</run_depend> -->
   <!-- <run_depend>geometry_msgs</run_depend> -->
-  	<run_depend>ar_track_alvar</run_depend>
-    <run_depend>usb_cam</run_depend>
-  	<test_depend>rospy</test_depend>
+  <!-- <run_depend>ar_track_alvar</run_depend> -->
+  <!-- <run_depend>usb_cam</run_depend> -->
+  <!-- <test_depend>rospy</test_depend> -->
   <!-- <test_depend>std_msgs</test_depend> -->
   <!-- <test_depend>geometry_msgs</test_depend> -->
   <!-- <test_depend>ar_track_alvar</test_depend> -->
