@@ -21,12 +21,7 @@ ROS (install)[http://www.ros.org/wiki/fuerte/Installation/Ubuntu]
 
 Install it from repository (fuerte is stable).
 
-    $ sudo aptitude install ros-groovy-ros ros-groovy-rospy
-    	 ros-groovy-rviz ros-groovy-rosparam
-    	 ros-groovy-vision-opencv ros-groovy-bullet 
-    	 ros-groovy-visualization-common ros-groovy-self-test 
-    	 ros-groovy-image-pipeline ros-groovy-bosch-drivers
-    	 ros-groovy-ar-track-alvar
+    $ sudo aptitude install ros-groovy-desktop ros-groovy-image-view
     
     $ sudo aptitude install git openssh-server
 
@@ -43,6 +38,15 @@ Clean and install the correct packages:
 
     $ sudo rosdep init
     $ rosdep update
+    
+### Download and install SOFIE ROS.
+
+	$ cd ~/
+	$ git clone git@github.com:agcooke/sofie_ros.git
+	$ roscd
+	$ rosws update
+	$ cd src/ar_track_alvar
+	$ git pull groovy-devel
 
 ### Install the SOFIE PYTHON packages.
 
