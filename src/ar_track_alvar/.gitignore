@@ -1,0 +1,11 @@
+*.pyc
+*.o
+*.so
+*build
+*lib
+*msg_gen
+*srv_gen
+*bin
+*~
+src/ar_track_alvar
+*.user
