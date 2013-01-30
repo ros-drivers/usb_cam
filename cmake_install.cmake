@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Install script for directory: /home/cooke/aa_sofie_code/code/bicycle-instrumentation/ros/stacks/sofie_ros
+=======
+# Install script for directory: /home/cooke/aa_sofie_code/code/bicycle-instrumentation/ros/stacks/sofie_ros/sofiehdfformat_rosdriver
+>>>>>>> catkin
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -12,7 +16,11 @@ IF(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     STRING(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   ELSE(BUILD_TYPE)
+<<<<<<< HEAD
     SET(CMAKE_INSTALL_CONFIG_NAME "Debug")
+=======
+    SET(CMAKE_INSTALL_CONFIG_NAME "RelWithDebInfo")
+>>>>>>> catkin
   ENDIF(BUILD_TYPE)
   MESSAGE(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 ENDIF(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
@@ -38,7 +46,13 @@ ELSE(CMAKE_INSTALL_COMPONENT)
   SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 ENDIF(CMAKE_INSTALL_COMPONENT)
 
+<<<<<<< HEAD
 FILE(WRITE "/home/cooke/aa_sofie_code/code/bicycle-instrumentation/ros/stacks/sofie_ros/${CMAKE_INSTALL_MANIFEST}" "")
 FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
   FILE(APPEND "/home/cooke/aa_sofie_code/code/bicycle-instrumentation/ros/stacks/sofie_ros/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+=======
+FILE(WRITE "/home/cooke/aa_sofie_code/code/bicycle-instrumentation/ros/stacks/sofie_ros/sofiehdfformat_rosdriver/${CMAKE_INSTALL_MANIFEST}" "")
+FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
+  FILE(APPEND "/home/cooke/aa_sofie_code/code/bicycle-instrumentation/ros/stacks/sofie_ros/sofiehdfformat_rosdriver/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+>>>>>>> catkin
 ENDFOREACH(file)
