@@ -1,12 +1,8 @@
-#Change Git Modules to readonly.
-cat .gitmodules| sed 's|git@github.com:agcooke/|git://github.com/agcooke/|g' > tmp
-mv tmp .gitmodules
-#Install Submodules.
-git submodule init
-git submodule update
 #Build Ros
-roscd sofiehdfformat_rosdriver/
-rosmake
+roscd roshome/
+source devel/setup.sh 
+roswc update
+catkin_make
 #Enter VirtualEnv
 workon sofie  --system-site-packages
 sudo aptitude install vitables

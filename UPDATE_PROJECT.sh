@@ -1,3 +1,4 @@
 #!/bin/bash
-#Update the install.
-git submodules update
+source devel/setup.sh 
+roswc update
+catkin_make

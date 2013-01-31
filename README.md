@@ -19,7 +19,7 @@ Ubuntu 12.04.
 Follow the instructions on the ROS website to add the repository for ubuntu.
 ROS (install)[http://www.ros.org/wiki/fuerte/Installation/Ubuntu]
 
-Install it from repository (fuerte is stable).
+Install it from repository (groovy is stable).
 
     $ sudo aptitude install ros-groovy-desktop ros-groovy-image-view
     
@@ -29,7 +29,7 @@ Install it from repository (fuerte is stable).
 Edit your ~/.bashrc (this is common to all ROS installs):
 
      source /opt/ros/groovy/setup.bash
-     export ROS_WORKSPACE=/home/cooke/ros/
+     export ROS_WORKSPACE=/home/${USER}/roshome/
      export ROS_PACKAGE_PATH=$ROS_WORKSPACE:$ROS_PACKAGE_PATH
      export ROS_HOSTNAME=127.0.0.1
      export ROS_MASTER_URI=http://127.0.0.1:11311
@@ -71,11 +71,11 @@ Edit the apt file to add a debian package:
 
 Then add the following lines
 
-    def file:///home/cooke/ExtraDebPackages/ /
+    def file:///home/${USER}/ExtraDebPackages/ /
 
 Then make the directory 
 
-    $ mkdir /home/cooke/ExtraDebPackages/
+    $ mkdir /home/${USER}/ExtraDebPackages/
 
 Copy the latest promovegui debian file to this directory.
 Then clone bashsnippets:
@@ -83,14 +83,14 @@ Then clone bashsnippets:
     $ mdir ~/workspace
     $ cd ~/workspace
     $ git clone git://github.com/agcooke/bashsnippets.git
-    $ cp bashsnippets/deb/CreatePackages /home/cooke/ExtraDebPackages/
+    $ cp bashsnippets/deb/CreatePackages /home/${USER}/ExtraDebPackages/
     $ sudo sh CreatePackages
     $ sudo aptitude update
     $ sudo aptitude install promovegui
 
 The user needs write permission on the serial ports:
 
-    $sudo usermod cooke -G dialout
+    $sudo usermod ${USER} -G dialout
 
 You might have to log out and back in again to get the correct
 permissions on the /dev/ttyUSB0 or /dev/ttyUSB1,2,3,4,... that PromoveGUI uses.
