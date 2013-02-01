@@ -42,14 +42,16 @@ Clean and install the correct packages:
 ### Download and install SOFIE ROS.
 
 	$ cd ~/
-	$ git clone git@github.com:agcooke/sofie_ros.git
+	$ git clone git://github.com/agcooke/roshome.git
 	$ roscd
 	$ rosws update
 	$ cd src/ar_track_alvar
-	$ git pull groovy-devel
+	$ git pull origin groovy-devel
 	$ roscd
-	$ source devel/setup.sh 
+	$ rm -r devel/
 	$ catkin_make
+	$ source devel/setup.sh 
+	
 
 ### Install the SOFIE PYTHON packages.
 
@@ -62,6 +64,8 @@ Then use virtualenv to manage the installation. Install:
 [http://www.doughellmann.com/projects/virtualenvwrapper/]
 
     $ mkvirtualenv sofie --system-site-packages
+    $ pip install -e git+git://github.com/agcooke/Sofie-HDF-Format.git#egg=sofiehdfformat --upgrade
+	$ pip install -e git+git://github.com/agcooke/ExperimentControl.git#egg=experimentcontrol --upgrade
 
 ### Install the Promove GUI information.
 Now install IMU software to work with the Intertia Technology devices:

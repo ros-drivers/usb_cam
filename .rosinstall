@@ -5,4 +5,3 @@
 # IF YOU CHANGE IT, USE rosinstall FOR THE CHANGES TO TAKE EFFECT
 - git: {local-name: src/sofie_ros, uri: 'git@github.com:agcooke/sofie_ros.git'}
 - git: {local-name: src/ar_track_alvar, uri: 'https://bitbucket.org/sniekum/ar_track_alvar.git'}
-- svn: {local-name: stacks/bosch_drivers, uri: 'http://svn.code.sf.net/p/bosch-ros-pkg/code/trunk/stacks/bosch_drivers'}
