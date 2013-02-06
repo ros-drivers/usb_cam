@@ -5,7 +5,8 @@ cat .rosinstall | sed 's|git@github.com:agcooke/|git://github.com/agcooke/|g' > 
 mv .rosinstall.tmp .rosinstall
 rosws update
 cd src/ar_track_alvar
-git pull origin groovy-develroscd
+git pull origin groovy-devel
+roscd
 catkin_make
 #Enter VirtualEnv
 mkvirtualenv sofie --system-site-packages

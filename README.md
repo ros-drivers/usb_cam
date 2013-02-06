@@ -46,6 +46,7 @@ Clean and install the correct packages:
 	$ roscd
 	$ rosws update
 	$ cd src/ar_track_alvar
+Get the correct groovy branch for ar_track_alvar. This could change later.
 	$ git pull origin groovy-devel
 	$ roscd
 	$ rm -r devel/
