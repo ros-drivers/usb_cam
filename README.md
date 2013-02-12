@@ -21,7 +21,7 @@ ROS (install)[http://www.ros.org/wiki/fuerte/Installation/Ubuntu]
 
 Install it from repository (groovy is stable).
 
-    $ sudo aptitude install ros-groovy-desktop ros-groovy-image-view
+    $ sudo aptitude install ros-groovy-desktop ros-groovy-image-view ros-groovy-rosserial
     
     $ sudo aptitude install git openssh-server
 
