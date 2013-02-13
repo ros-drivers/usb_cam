@@ -14,16 +14,38 @@ Ubuntu 12.04.
 
 2. Boot the USB stick in the new computer and install from the menu on the new computer.
 3. Setup EDUROAM: (UT Eduroam setup)[http://www.utwente.nl/icts/en/handleidingen/netwerk/]
+4. Open a terminal
 
-### Download and install ROS
-Follow the instructions on the ROS website to add the repository for ubuntu.
-ROS (install)[http://www.ros.org/wiki/fuerte/Installation/Ubuntu]
+Make sure the new user gets permanent SUDO rights.
+
+	$ sudo su
+	$ visudo
+	
+Add the user that you chose to the suders list then hit	CTRL+D. Install essential services
+
+
+### INSTALL VIRTUALENVWRAPPER.
+Then use virtualenv to manage the installation. Install: 
+(http://www.doughellmann.com/projects/virtualenvwrapper/)
+	
+	$ sudo pip install virtualenvwrapper
+
+### Install required packages, update server and reboot.
+	
+	$ sudo apt-get install aptitude git openssh-server python-pip pythoncard
+	$ sudo aptitude update
+	$ sudo aptitude safe-upgrade
+	$ sudo reboot
+	
+### Install ros.
+	
+Then install ROS, follow the instructions on the ROS website to add the repository for ubuntu.
+ROS (install)[http://www.ros.org/wiki/groovy/Installation/Ubuntu]
 
 Install it from repository (groovy is stable).
-
-    $ sudo aptitude install ros-groovy-desktop ros-groovy-image-view ros-groovy-rosserial
-    
-    $ sudo aptitude install git openssh-server
+	
+	
+    $ sudo aptitude install ros-groovy-desktop ros-groovy-image-view ros-groovy-rosserial python-rosinstall    
 
 
 Edit your ~/.bashrc (this is common to all ROS installs):
@@ -33,9 +55,12 @@ Edit your ~/.bashrc (this is common to all ROS installs):
      export ROS_PACKAGE_PATH=$ROS_WORKSPACE:$ROS_PACKAGE_PATH
      export ROS_HOSTNAME=127.0.0.1
      export ROS_MASTER_URI=http://127.0.0.1:11311
-
+     export WORKON_HOME=~/Envs
+     source /usr/local/bin/virtualenvwrapper.sh
+     
 Clean and install the correct packages:
 
+	$ source ~/.bashrc
     $ sudo rosdep init
     $ rosdep update
     
@@ -44,31 +69,20 @@ Clean and install the correct packages:
 	$ cd ~/
 	$ git clone git://github.com/agcooke/roshome.git
 	$ roscd
-	$ rosws update
-	$ cd src/ar_track_alvar
 	
 Get the correct groovy branch for ar_track_alvar. This could change later.
 
-	$ git pull origin groovy-devel
+Install the packages until tables installed correctly.
+
+	$ sh CLONE\_SETUP.sh
+
+The above script will fail. Run the last three lines again, and again
+installing dependencies until it works.
+	
 	$ roscd
-	$ rm -r devel/
 	$ catkin_make
 	$ source devel/setup.sh 
 	
-
-### Install the SOFIE PYTHON packages.
-
-Python setup. Sofie uses pytables, so the easiest way to get all the dependencies to install is
-to add the utility program vitables.
-
-    $ sudo aptitude install vitables pythoncard
-
-Then use virtualenv to manage the installation. Install: 
-[http://www.doughellmann.com/projects/virtualenvwrapper/]
-
-    $ mkvirtualenv sofie --system-site-packages
-    $ pip install -e git+git://github.com/agcooke/Sofie-HDF-Format.git#egg=sofiehdfformat --upgrade
-	$ pip install -e git+git://github.com/agcooke/ExperimentControl.git#egg=experimentcontrol --upgrade
 
 ### Install the Promove GUI information.
 Now install IMU software to work with the Intertia Technology devices:
@@ -106,3 +120,12 @@ Now everything is installed and ready to use.
 
     $ workon sofie
     $ experiment-control.py -h
+    
+To debug the video, when an experiment is running in the terminal:
+
+	$ rosrun rviz rviz 
+	
+Open the config file for rviz which sites in the ~/roshome/src/sofie_ros/ folder.
+To debug the Arduino run
+
+	$ rostopic echo /angle
