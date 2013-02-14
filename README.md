@@ -132,7 +132,16 @@ permissions on the /dev/ttyUSB0 or /dev/ttyUSB1,2,3,4,... that PromoveGUI uses.
 ### Run the system
 Now everything is installed and ready to use.
 
+Move into our virtualenv:
+
     $ workon sofie
+    
+Make sure ros environment is correcct:
+
+    $ source ~/roshome/devel/setup.sh
+   
+Then run the GUI.
+    
     $ experiment-control-gui.py -h
     
 To debug the video, when an experiment is running in the terminal:
