@@ -128,6 +128,7 @@ The user needs write permission on the serial ports:
 You might have to log out and back in again to get the correct
 permissions on the /dev/ttyUSB0 or /dev/ttyUSB1,2,3,4,... that PromoveGUI uses.
 
+### Run the system
 Now everything is installed and ready to use.
 
     $ workon sofie
