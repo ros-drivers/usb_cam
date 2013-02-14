@@ -15,6 +15,6 @@ workon sofie
 sudo aptitude install libhdf5-serial-dev pythoncard
 #Install Python Packages. (This should be taken care of with pip).
 #They will fail but run them again until all dependencies are taken care of.
-pip install -e git+git://github.com/uvemas/ViTabless#egg=vitables
+pip install -e git+git://github.com/uvemas/ViTables#egg=vitables
 pip install -e git+git://github.com/agcooke/Sofie-HDF-Format.git#egg=sofiehdfformat --upgrade
 pip install -e git+git://github.com/agcooke/ExperimentControl.git#egg=experimentcontrol --upgrade
