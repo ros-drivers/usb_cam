@@ -119,7 +119,7 @@ permissions on the /dev/ttyUSB0 or /dev/ttyUSB1,2,3,4,... that PromoveGUI uses.
 Now everything is installed and ready to use.
 
     $ workon sofie
-    $ experiment-control.py -h
+    $ experiment-control-gui.py -h
     
 To debug the video, when an experiment is running in the terminal:
 
