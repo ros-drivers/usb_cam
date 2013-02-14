@@ -47,7 +47,8 @@ Install it from repository (groovy is stable).
     $ sudo aptitude install ros-groovy-desktop ros-groovy-image-view ros-groovy-rosserial python-rosinstall    
 
 
-Edit your ~/.bashrc (this is common to all ROS installs):
+Edit your ~/.bashrc (this is common to all ROS installs, make sure that there are no spaces
+before the commands in the .bashrc file.):
 
      source /opt/ros/groovy/setup.bash
      export ROS_WORKSPACE=/home/${USER}/roshome/
@@ -71,7 +72,7 @@ Clean and install the correct packages:
 	
 Get the correct groovy branch for ar_track_alvar. This could change later.
 
-Install the packages until tables installed correctly.
+Install the packages until tables installed correctly. Move out of the roshome directory then run:
 
 	$ sh CLONE\_SETUP.sh
 
