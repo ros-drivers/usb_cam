@@ -88,6 +88,14 @@ the sofiehdfformat package (near end of the CLONE_SETUP.sh file.)
 
 ### Install the Promove GUI information.
 Now install IMU software to work with the Intertia Technology devices:
+
+There are two ways to do this:
+for the quick:
+
+ 	$ sudo dpkg -i promovegui_1.26+svn1003-1_all.deb 
+
+of a longer but more robust way:
+
 Edit the apt file to add a debian package:
 
     $sudo vi /etc/apt/sources.list
@@ -110,6 +118,8 @@ Then clone bashsnippets:
     $ sudo sh CreatePackages
     $ sudo aptitude update
     $ sudo aptitude install promovegui
+
+### Setup USB permissions.
 
 The user needs write permission on the serial ports:
 
