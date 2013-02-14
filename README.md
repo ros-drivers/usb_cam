@@ -152,3 +152,11 @@ Open the config file for rviz which sites in the ~/roshome/src/sofie_ros/ folder
 To debug the Arduino run
 
 	$ rostopic echo /angle
+	
+To ge the ProMoveGUI working we need to set the nodes connected to the wireless network,
+each time we restart the program.
+
+	$ProMoveGUI -m 2
+	
+Then start to Capture data. Go to Options->Configuration->Wireless and set maximum number
+of notes to 13 for the Gateway and the Nodes.
