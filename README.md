@@ -23,19 +23,18 @@ Make sure the new user gets permanent SUDO rights.
 	
 Add the user that you chose to the suders list then hit	CTRL+D. Install essential services
 
-
-### INSTALL VIRTUALENVWRAPPER.
-Then use virtualenv to manage the installation. Install: 
-(http://www.doughellmann.com/projects/virtualenvwrapper/)
-	
-	$ sudo pip install virtualenvwrapper
-
 ### Install required packages, update server and reboot.
 	
 	$ sudo apt-get install aptitude git openssh-server python-pip pythoncard
 	$ sudo aptitude update
 	$ sudo aptitude safe-upgrade
 	$ sudo reboot
+	
+### INSTALL VIRTUALENVWRAPPER.
+Then use virtualenv to manage the installation. Install: 
+(http://www.doughellmann.com/projects/virtualenvwrapper/)
+	
+	$ sudo pip install virtualenvwrapper
 	
 ### Install ros.
 	
@@ -77,7 +76,10 @@ Install the packages until tables installed correctly.
 	$ sh CLONE\_SETUP.sh
 
 The above script will fail. Run the last three lines again, and again
-installing dependencies until it works.
+installing dependencies until it works. The last three lines will fail,
+what you need to do is rerun ¨sudo pip install tables", fixing the missing
+missing pip/python dependencies until tables is installed. Then install
+the sofiehdfformat package (near end of the CLONE_SETUP.sh file.)
 	
 	$ roscd
 	$ catkin_make
