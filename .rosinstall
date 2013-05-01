@@ -1,7 +1,0 @@
-# IT IS UNLIKELY YOU WANT TO EDIT THIS FILE BY HAND,
-# UNLESS FOR REMOVING ENTRIES.
-# IF YOU WANT TO CHANGE THE ROS ENVIRONMENT VARIABLES
-# USE THE rosinstall TOOL INSTEAD.
-# IF YOU CHANGE IT, USE rosinstall FOR THE CHANGES TO TAKE EFFECT
-- git: {local-name: src/sofie_ros, uri: 'git@github.com:agcooke/sofie_ros.git'}
-- git: {local-name: src/ar_track_alvar, uri: 'https://bitbucket.org/sniekum/ar_track_alvar.git'}
