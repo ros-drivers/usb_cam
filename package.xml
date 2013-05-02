@@ -2,31 +2,30 @@
   <name>usb_cam</name>
   <version>0.1.0</version>
   <description>A generic driver for USB camera that are supported by V4L</description>
-  <maintainer email="benjamin.pitzer@bosch.com">Benjamin Pitzer</maintainer>
 
   <license>BSD</license>
 
-  <url type="website"></url>
-  <!-- <url type="bugtracker"></url> -->
+  <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
+  <author email="benjamin.pitzer@bosch.com">Benjamin Pitzer</author>
+
+  <url type="website">http://www.ros.org/wiki/usb_cam</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/usb_cam/issues</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/usb_cam</url>
+
   <buildtool_depend>catkin</buildtool_depend>
 
-  <author>Benjamin Pitzer</author>
-
   <build_depend>image_transport</build_depend> 
-   <build_depend>roscpp</build_depend> 
-   <build_depend>std_msgs</build_depend> 
-   <build_depend>sensor_msgs</build_depend> 
-   <build_depend>self_test</build_depend> 
-   <run_depend>image_transport</run_depend> 
-   <run_depend>roscpp</run_depend> 
-   <run_depend>std_msgs</run_depend> 
-   <run_depend>sensor_msgs</run_depend> 
-   <run_depend>self_test</run_depend> 
-  <!-- <test_depend>image_transport</test_depend> -->
-  <!-- <test_depend>roscpp</test_depend> -->
-  <!-- <test_depend>std_msgs</test_depend> -->
-  <!-- <test_depend>sensor_msgs</test_depend> -->
-  <!-- <test_depend>self_test</test_depend> -->
+  <build_depend>roscpp</build_depend> 
+  <build_depend>std_msgs</build_depend> 
+  <build_depend>sensor_msgs</build_depend> 
+  <build_depend>self_test</build_depend> 
+  <build_depend>ffmpeg</build_depend> 
+  <run_depend>image_transport</run_depend> 
+  <run_depend>roscpp</run_depend> 
+  <run_depend>std_msgs</run_depend> 
+  <run_depend>sensor_msgs</run_depend> 
+  <run_depend>self_test</run_depend> 
+  <run_depend>ffmpeg</run_depend> 
 
   <export>
     <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include -I${prefix}/msg/cpp"/>
