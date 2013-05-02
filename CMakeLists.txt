@@ -6,8 +6,7 @@ find_package(catkin
 		roscpp 
 		std_msgs 
 		sensor_msgs 
-		self_test 
-		ffmpeg)
+		self_test)
 
 
 set(ROS_BUILD_TYPE Release)
