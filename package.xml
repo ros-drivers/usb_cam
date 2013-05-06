@@ -1,6 +1,6 @@
 <package>
   <name>usb_cam</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <description>A generic driver for USB camera that are supported by V4L</description>
 
   <license>BSD</license>
