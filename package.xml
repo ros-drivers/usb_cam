@@ -19,13 +19,16 @@
   <build_depend>std_msgs</build_depend> 
   <build_depend>sensor_msgs</build_depend> 
   <build_depend>self_test</build_depend> 
-  <build_depend>ffmpeg</build_depend> 
+  <build_depend>ffmpeg</build_depend>
+  <build_depend>camera_info_manager</build_depend>
+
   <run_depend>image_transport</run_depend> 
   <run_depend>roscpp</run_depend> 
   <run_depend>std_msgs</run_depend> 
   <run_depend>sensor_msgs</run_depend> 
   <run_depend>self_test</run_depend> 
-  <run_depend>ffmpeg</run_depend> 
+  <run_depend>ffmpeg</run_depend>
+  <run_depend>camera_info_manager</run_depend>
 
   <export>
     <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include -I${prefix}/msg/cpp"/>
