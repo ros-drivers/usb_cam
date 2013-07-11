@@ -683,7 +683,7 @@ static void init_userp(unsigned int buffer_size)
   }
 }
 
-static void init_device(int image_width, int image_height)
+static void init_device(int image_width, int image_height, int framerate)
 {
   struct v4l2_capability cap;
   struct v4l2_cropcap cropcap;
@@ -779,6 +779,18 @@ static void init_device(int image_width, int image_height)
   image_width = fmt.fmt.pix.width;
   image_height = fmt.fmt.pix.height;
 
+  struct v4l2_streamparm stream_params;
+  memset(&stream_params, 0, sizeof(stream_params));
+  stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if(xioctl(fd, VIDIOC_G_PARM, &stream_params) < 0) {
+    errno_exit("Couldn't query v4l fps!\n");
+  }
+  stream_params.parm.capture.timeperframe.numerator = 1;
+  stream_params.parm.capture.timeperframe.denominator = framerate;
+  if (xioctl(fd, VIDIOC_S_PARM, &stream_params) < 0) {
+    errno_exit("Couldn't set camera framerate\n");
+  }
+
   switch (io) {
   case IO_METHOD_READ:
     init_read(fmt.fmt.pix.sizeimage);
@@ -824,8 +836,9 @@ static void open_device(void)
   }
 }
 
-usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io_method,
-    usb_cam_pixel_format pixel_format, int image_width, int image_height)
+usb_cam_camera_image_t *usb_cam_camera_start(
+  const char* dev, usb_cam_io_method io_method,
+  usb_cam_pixel_format pixel_format, int image_width, int image_height, int framerate)
 {
   camera_dev = (char*)calloc(1,strlen(dev)+1);
   strcpy(camera_dev,dev);
@@ -846,7 +859,7 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
   }
 
   open_device();
-  init_device(image_width, image_height);
+  init_device(image_width, image_height, framerate);
   start_capturing();
 
   image = (usb_cam_camera_image_t *) calloc(1, sizeof(usb_cam_camera_image_t));
