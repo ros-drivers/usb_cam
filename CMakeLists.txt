@@ -6,7 +6,8 @@ find_package(catkin
 		roscpp 
 		std_msgs 
 		sensor_msgs 
-		self_test)
+		self_test
+        camera_info_manager)
 
 
 set(ROS_BUILD_TYPE Release)
@@ -19,8 +20,9 @@ catkin_package(
 		image_transport 
 		roscpp 
 		std_msgs 
-		sensor_msgs 
+		sensor_msgs
 		self_test
+        camera_info_manager
 )
 
 include_directories(include

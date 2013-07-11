@@ -56,6 +56,8 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
+#include <ros/ros.h>
+
 #include <usb_cam/usb_cam.h>
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
@@ -82,7 +84,7 @@ struct SwsContext *video_sws = NULL;
 
 static void errno_exit(const char * s)
 {
-  fprintf(stderr, "%s error %d, %s\n", s, errno, strerror(errno));
+  ROS_ERROR("%s error %d, %s\n", s, errno, strerror(errno));
 
   exit(EXIT_FAILURE);
 }
@@ -285,7 +287,7 @@ static int init_mjpeg_decoder(int image_width, int image_height)
   avcodec = avcodec_find_decoder(CODEC_ID_MJPEG);
   if (!avcodec)
   {
-    fprintf(stderr,"Could not find MJPEG decoder\n");
+    ROS_ERROR("Could not find MJPEG decoder\n");
     return 0;
   }
 
@@ -310,7 +312,7 @@ static int init_mjpeg_decoder(int image_width, int image_height)
   /* open it */
   if (avcodec_open(avcodec_context, avcodec) < 0)
   {
-    fprintf(stderr,"Could not open MJPEG Decoder\n");
+    ROS_ERROR("Could not open MJPEG Decoder\n");
     return 0;
   }
   return 1;
@@ -333,7 +335,7 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   decoded_len = avcodec_decode_video2(avcodec_context, avframe_camera, &got_picture, &avpkt);
 
   if (decoded_len < 0) {
-      fprintf(stderr, "Error while decoding frame.\n");
+      ROS_ERROR("Error while decoding frame.\n");
       return;
   }
 #else
@@ -341,7 +343,7 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 #endif
 
   if (!got_picture) {
-    fprintf(stderr,"Webcam: expected picture but didn't get it...\n");
+    ROS_ERROR("Webcam: expected picture but didn't get it...\n");
     return;
   }
 
@@ -349,7 +351,7 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   int ysize = avcodec_context->height;
   int pic_size = avpicture_get_size(avcodec_context->pix_fmt, xsize, ysize);
   if (pic_size != avframe_camera_size) {
-    fprintf(stderr,"outbuf size mismatch.  pic_size: %d bufsize: %d\n",pic_size,avframe_camera_size);
+    ROS_ERROR("outbuf size mismatch.  pic_size: %d bufsize: %d\n",pic_size,avframe_camera_size);
     return;
   }
 
@@ -359,7 +361,7 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
   int size = avpicture_layout((AVPicture *) avframe_rgb, PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size);
   if (size != avframe_rgb_size) {
-    fprintf(stderr,"webcam: avpicture_layout error: %d\n",size);
+    ROS_ERROR("webcam: avpicture_layout error: %d\n",size);
     return;
   }
 }
@@ -575,7 +577,7 @@ static void init_read(unsigned int buffer_size)
   buffers = (buffer*)calloc(1, sizeof(*buffers));
 
   if (!buffers) {
-    fprintf(stderr, "Out of memory\n");
+    ROS_ERROR("Out of memory\n");
     exit(EXIT_FAILURE);
   }
 
@@ -583,7 +585,7 @@ static void init_read(unsigned int buffer_size)
   buffers[0].start = malloc(buffer_size);
 
   if (!buffers[0].start) {
-    fprintf(stderr, "Out of memory\n");
+    ROS_ERROR("Out of memory\n");
     exit(EXIT_FAILURE);
   }
 }
@@ -600,7 +602,7 @@ static void init_mmap(void)
 
   if (-1==xioctl(fd, VIDIOC_REQBUFS, &req)) {
     if (EINVAL==errno) {
-      fprintf(stderr, "%s does not support memory mapping\n", camera_dev);
+      ROS_ERROR("%s does not support memory mapping\n", camera_dev);
       exit(EXIT_FAILURE);
     } else {
       errno_exit("VIDIOC_REQBUFS");
@@ -608,14 +610,14 @@ static void init_mmap(void)
   }
 
   if (req.count<2) {
-    fprintf(stderr, "Insufficient buffer memory on %s\n", camera_dev);
+    ROS_ERROR("Insufficient buffer memory on %s\n", camera_dev);
     exit(EXIT_FAILURE);
   }
 
   buffers = (buffer*)calloc(req.count, sizeof(*buffers));
 
   if (!buffers) {
-    fprintf(stderr, "Out of memory\n");
+    ROS_ERROR("Out of memory\n");
     exit(EXIT_FAILURE);
   }
 
@@ -655,7 +657,7 @@ static void init_userp(unsigned int buffer_size)
 
   if (-1==xioctl(fd, VIDIOC_REQBUFS, &req)) {
     if (EINVAL==errno) {
-      fprintf(stderr, "%s does not support "
+      ROS_ERROR("%s does not support "
         "user pointer i/o\n", camera_dev);
       exit(EXIT_FAILURE);
     } else {
@@ -666,7 +668,7 @@ static void init_userp(unsigned int buffer_size)
   buffers = (buffer*)calloc(4, sizeof(*buffers));
 
   if (!buffers) {
-    fprintf(stderr, "Out of memory\n");
+    ROS_ERROR("Out of memory\n");
     exit(EXIT_FAILURE);
   }
 
@@ -675,13 +677,13 @@ static void init_userp(unsigned int buffer_size)
     buffers[n_buffers].start = memalign(/* boundary */page_size, buffer_size);
 
     if (!buffers[n_buffers].start) {
-      fprintf(stderr, "Out of memory\n");
+      ROS_ERROR("Out of memory\n");
       exit(EXIT_FAILURE);
     }
   }
 }
 
-static void init_device(int image_width, int image_height)
+static void init_device(int image_width, int image_height, int framerate)
 {
   struct v4l2_capability cap;
   struct v4l2_cropcap cropcap;
@@ -691,7 +693,7 @@ static void init_device(int image_width, int image_height)
 
   if (-1==xioctl(fd, VIDIOC_QUERYCAP, &cap)) {
     if (EINVAL==errno) {
-      fprintf(stderr, "%s is no V4L2 device\n", camera_dev);
+      ROS_ERROR("%s is no V4L2 device\n", camera_dev);
       exit(EXIT_FAILURE);
     } else {
       errno_exit("VIDIOC_QUERYCAP");
@@ -699,14 +701,14 @@ static void init_device(int image_width, int image_height)
   }
 
   if (!(cap.capabilities&V4L2_CAP_VIDEO_CAPTURE)) {
-    fprintf(stderr, "%s is no video capture device\n", camera_dev);
+    ROS_ERROR("%s is no video capture device\n", camera_dev);
     exit(EXIT_FAILURE);
   }
 
   switch (io) {
   case IO_METHOD_READ:
     if (!(cap.capabilities&V4L2_CAP_READWRITE)) {
-      fprintf(stderr, "%s does not support read i/o\n", camera_dev);
+      ROS_ERROR("%s does not support read i/o\n", camera_dev);
       exit(EXIT_FAILURE);
     }
 
@@ -715,7 +717,7 @@ static void init_device(int image_width, int image_height)
   case IO_METHOD_MMAP:
   case IO_METHOD_USERPTR:
     if (!(cap.capabilities&V4L2_CAP_STREAMING)) {
-      fprintf(stderr, "%s does not support streaming i/o\n", camera_dev);
+      ROS_ERROR("%s does not support streaming i/o\n", camera_dev);
       exit(EXIT_FAILURE);
     }
 
@@ -777,6 +779,18 @@ static void init_device(int image_width, int image_height)
   image_width = fmt.fmt.pix.width;
   image_height = fmt.fmt.pix.height;
 
+  struct v4l2_streamparm stream_params;
+  memset(&stream_params, 0, sizeof(stream_params));
+  stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if(xioctl(fd, VIDIOC_G_PARM, &stream_params) < 0) {
+    errno_exit("Couldn't query v4l fps!\n");
+  }
+  stream_params.parm.capture.timeperframe.numerator = 1;
+  stream_params.parm.capture.timeperframe.denominator = framerate;
+  if (xioctl(fd, VIDIOC_S_PARM, &stream_params) < 0) {
+    errno_exit("Couldn't set camera framerate\n");
+  }
+
   switch (io) {
   case IO_METHOD_READ:
     init_read(fmt.fmt.pix.sizeimage);
@@ -805,25 +819,26 @@ static void open_device(void)
   struct stat st;
 
   if (-1==stat(camera_dev, &st)) {
-    fprintf(stderr, "Cannot identify '%s': %d, %s\n", camera_dev, errno, strerror(errno));
+    ROS_ERROR("Cannot identify '%s': %d, %s\n", camera_dev, errno, strerror(errno));
     exit(EXIT_FAILURE);
   }
 
   if (!S_ISCHR (st.st_mode)) {
-    fprintf(stderr, "%s is no device\n", camera_dev);
+    ROS_ERROR("%s is no device\n", camera_dev);
     exit(EXIT_FAILURE);
   }
 
   fd = open(camera_dev, O_RDWR /* required */|O_NONBLOCK, 0);
 
   if (-1==fd) {
-    fprintf(stderr, "Cannot open '%s': %d, %s\n", camera_dev, errno, strerror(errno));
+    ROS_ERROR("Cannot open '%s': %d, %s\n", camera_dev, errno, strerror(errno));
     exit(EXIT_FAILURE);
   }
 }
 
-usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io_method,
-    usb_cam_pixel_format pixel_format, int image_width, int image_height)
+usb_cam_camera_image_t *usb_cam_camera_start(
+  const char* dev, usb_cam_io_method io_method,
+  usb_cam_pixel_format pixel_format, int image_width, int image_height, int framerate)
 {
   camera_dev = (char*)calloc(1,strlen(dev)+1);
   strcpy(camera_dev,dev);
@@ -839,12 +854,12 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
     init_mjpeg_decoder(image_width, image_height);
   }
   else {
-    fprintf(stderr, "Unknown pixelformat.\n");
+    ROS_ERROR("Unknown pixelformat.\n");
     exit(EXIT_FAILURE);
   }
 
   open_device();
-  init_device(image_width, image_height);
+  init_device(image_width, image_height, framerate);
   start_capturing();
 
   image = (usb_cam_camera_image_t *) calloc(1, sizeof(usb_cam_camera_image_t));
@@ -903,7 +918,7 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
   }
 
   if (0==r) {
-    fprintf(stderr, "select timeout\n");
+    ROS_ERROR("select timeout\n");
     exit(EXIT_FAILURE);
   }
 
@@ -925,11 +940,11 @@ void usb_cam_camera_set_auto_focus(int value)
       perror("VIDIOC_QUERYCTRL");
       return;
     } else {
-      printf("V4L2_CID_FOCUS_AUTO is not supported\n");
+      ROS_INFO("V4L2_CID_FOCUS_AUTO is not supported\n");
       return;
     }
   } else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
-    printf("V4L2_CID_FOCUS_AUTO is not supported\n");
+    ROS_INFO("V4L2_CID_FOCUS_AUTO is not supported\n");
     return;
   } else {
     memset(&control, 0, sizeof(control));
