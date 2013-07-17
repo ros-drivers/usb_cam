@@ -76,6 +76,7 @@ static unsigned int n_buffers = 0;
 static AVFrame *avframe_camera = NULL;
 static AVFrame *avframe_rgb = NULL;
 static AVCodec *avcodec = NULL;
+static AVDictionary *avoptions = NULL;
 static AVCodecContext *avcodec_context = NULL;
 static int avframe_camera_size = 0;
 static int avframe_rgb_size = 0;
@@ -281,7 +282,6 @@ yuyv2rgb(char *YUV, char *RGB, int NumPixels) {
 
 static int init_mjpeg_decoder(int image_width, int image_height)
 {
-  avcodec_init();
   avcodec_register_all();
 
   avcodec = avcodec_find_decoder(CODEC_ID_MJPEG);
@@ -291,7 +291,7 @@ static int init_mjpeg_decoder(int image_width, int image_height)
     return 0;
   }
 
-  avcodec_context = avcodec_alloc_context();
+  avcodec_context = avcodec_alloc_context3(avcodec);
   avframe_camera = avcodec_alloc_frame();
   avframe_rgb = avcodec_alloc_frame();
 
@@ -310,7 +310,7 @@ static int init_mjpeg_decoder(int image_width, int image_height)
   avframe_rgb_size = avpicture_get_size(PIX_FMT_RGB24, image_width, image_height);
 
   /* open it */
-  if (avcodec_open(avcodec_context, avcodec) < 0)
+  if (avcodec_open2(avcodec_context, avcodec, &avoptions) < 0)
   {
     ROS_ERROR("Could not open MJPEG Decoder\n");
     return 0;
