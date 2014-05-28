@@ -6,7 +6,6 @@ find_package(catkin
 		roscpp 
 		std_msgs 
 		sensor_msgs 
-		self_test
         camera_info_manager)
 
 
@@ -21,7 +20,6 @@ catkin_package(
 		roscpp 
 		std_msgs 
 		sensor_msgs
-		self_test
         camera_info_manager
 )
 
