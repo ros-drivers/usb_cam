@@ -14,6 +14,10 @@ set(ROS_BUILD_TYPE Release)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(avcodec libavcodec REQUIRED)
+pkg_check_modules(swscale libswscale REQUIRED)
+
 catkin_package(
 	INCLUDE_DIRS include
 	CATKIN_DEPENDS
@@ -26,15 +30,17 @@ catkin_package(
 )
 
 include_directories(include
-                    ${catkin_INCLUDE_DIRS}
+	${catkin_INCLUDE_DIRS}
+	${avcodec_INCLUDE_DIRS}
+	${swscale_INCLUDE_DIRS}
 )
 add_library(usb_cam
 	src/usb_cam.cpp
 )
-target_link_libraries(usb_cam avcodec swscale ${catkin_LIBRARIES})
+target_link_libraries(usb_cam ${avcodec_LIBRARIES} ${swscale_LIBRARIES} ${catkin_LIBRARIES})
 
 add_executable(usb_cam_node nodes/usb_cam_node.cpp)
-target_link_libraries(usb_cam_node usb_cam avcodec swscale ${catkin_LIBRARIES})
+target_link_libraries(usb_cam_node usb_cam ${avcodec_LIBRARIES} ${swscale_LIBRARIES} ${catkin_LIBRARIES})
 
 #############
 ## Install ##
