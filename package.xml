@@ -1,14 +1,14 @@
 <package>
   <name>usb_cam</name>
   <version>0.1.4</version>
-  <description>A generic driver for USB camera that are supported by V4L</description>
-
-  <license>BSD</license>
+  <description>A ROS Driver for V4L USB Cameras</description>
 
   <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
   <author email="benjamin.pitzer@bosch.com">Benjamin Pitzer</author>
 
-  <url type="website">http://www.ros.org/wiki/usb_cam</url>
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/usb_cam</url>
   <url type="bugtracker">https://github.com/bosch-ros-pkg/usb_cam/issues</url>
   <url type="repository">https://github.com/bosch-ros-pkg/usb_cam</url>
 
@@ -27,8 +27,4 @@
   <run_depend>sensor_msgs</run_depend> 
   <run_depend>ffmpeg</run_depend>
   <run_depend>camera_info_manager</run_depend>
-
-  <export>
-    <cpp lflags="-L${prefix}/lib" cflags="-I${prefix}/include -I${prefix}/msg/cpp"/>
-  </export>
 </package>
