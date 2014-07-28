@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2009, Robert Bosch LLC.
+ *  Copyright (c) 2014, Robert Bosch LLC.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ public:
 
   std::string video_device_name_;
   std::string io_method_name_;
-  int image_width_,image_height_, framerate_;
+  int image_width_, image_height_, framerate_;
   std::string pixel_format_name_;
   bool autofocus_;
 
@@ -69,7 +69,7 @@ public:
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCamNode() :
-    node_("~")
+      node_("~")
   {
     image_transport::ImageTransport it(node_);
     image_pub_ = it.advertiseCamera("image_raw", 1);
@@ -81,7 +81,6 @@ public:
     node_.param("framerate", framerate_, 30);
     node_.param("pixel_format", pixel_format_name_, std::string("mjpeg")); // possible values: yuyv, uyvy, mjpeg
     node_.param("autofocus", autofocus_, false); // enable/disable autofocus
-
 
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
     node_.param("camera_name", camera_name_, std::string("head_camera"));
@@ -98,40 +97,40 @@ public:
     ROS_INFO("usb_cam auto_focus set to [%d]\n", autofocus_);
 
     usb_cam_io_method io_method;
-    if(io_method_name_ == "mmap")
+    if (io_method_name_ == "mmap")
       io_method = IO_METHOD_MMAP;
-    else if(io_method_name_ == "read")
+    else if (io_method_name_ == "read")
       io_method = IO_METHOD_READ;
-    else if(io_method_name_ == "userptr")
+    else if (io_method_name_ == "userptr")
       io_method = IO_METHOD_USERPTR;
-    else {
+    else
+    {
       ROS_FATAL("Unknown io method.");
       node_.shutdown();
       return;
     }
 
     usb_cam_pixel_format pixel_format;
-    if(pixel_format_name_ == "yuyv")
+    if (pixel_format_name_ == "yuyv")
       pixel_format = PIXEL_FORMAT_YUYV;
-    else if(pixel_format_name_ == "uyvy")
+    else if (pixel_format_name_ == "uyvy")
       pixel_format = PIXEL_FORMAT_UYVY;
-    else if(pixel_format_name_ == "mjpeg") {
+    else if (pixel_format_name_ == "mjpeg")
+    {
       pixel_format = PIXEL_FORMAT_MJPEG;
     }
-    else {
+    else
+    {
       ROS_FATAL("Unknown pixel format.");
       node_.shutdown();
       return;
     }
 
-    camera_image_ = usb_cam_camera_start(video_device_name_.c_str(),
-                                         io_method,
-                                         pixel_format,
-                                         image_width_,
-                                         image_height_,
-                                         framerate_);
+    camera_image_ = usb_cam_camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
+                                         image_height_, framerate_);
 
-    if(autofocus_) {
+    if (autofocus_)
+    {
       usb_cam_camera_set_auto_focus(1);
     }
 
@@ -148,7 +147,8 @@ public:
   bool take_and_send_image()
   {
     usb_cam_camera_grab_image(camera_image_);
-    fillImage(img_, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width, camera_image_->image);
+    fillImage(img_, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width,
+              camera_image_->image);
     img_.header.stamp = ros::Time::now();
 
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
@@ -159,7 +159,6 @@ public:
     return true;
   }
 
-
   bool spin()
   {
     while (node_.ok())
@@ -168,12 +167,15 @@ public:
       {
         count_++;
         ros::Time now_time = ros::Time::now();
-        if (now_time > next_time_) {
+        if (now_time > next_time_)
+        {
           ROS_DEBUG("%d frames/sec", count_);
           count_ = 0;
-          next_time_ = next_time_ + ros::Duration(1,0);
+          next_time_ = next_time_ + ros::Duration(1, 0);
         }
-      } else {
+      }
+      else
+      {
         ROS_ERROR("couldn't take image.");
         usleep(1000000);
       }

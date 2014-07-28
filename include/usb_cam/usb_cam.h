@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2009, Robert Bosch LLC.
+ *  Copyright (c) 2014, Robert Bosch LLC.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,8 @@
 #include <string>
 #include <sstream>
 
-typedef struct {
+typedef struct
+{
   int width;
   int height;
   int bytes_per_pixel;
@@ -48,20 +49,19 @@ typedef struct {
   int is_new;
 } usb_cam_camera_image_t;
 
-typedef enum {
-  IO_METHOD_READ,
-  IO_METHOD_MMAP,
-  IO_METHOD_USERPTR,
+typedef enum
+{
+  IO_METHOD_READ, IO_METHOD_MMAP, IO_METHOD_USERPTR,
 } usb_cam_io_method;
 
-typedef enum {
-  PIXEL_FORMAT_YUYV,
-  PIXEL_FORMAT_UYVY,
-  PIXEL_FORMAT_MJPEG,
+typedef enum
+{
+  PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG,
 } usb_cam_pixel_format;
 
 // start camera
-usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io, usb_cam_pixel_format pf, int image_width, int image_height, int framerate);
+usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io, usb_cam_pixel_format pf,
+                                             int image_width, int image_height, int framerate);
 // shutdown camera
 void usb_cam_camera_shutdown(void);
 // grabs a new image from the camera
