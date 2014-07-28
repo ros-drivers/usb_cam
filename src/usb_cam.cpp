@@ -54,6 +54,7 @@ extern "C" {
 #include <linux/videodev2.h>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#include <libavutil/mem.h>
 }
 
 #include <ros/ros.h>
