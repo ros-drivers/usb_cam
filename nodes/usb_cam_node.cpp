@@ -179,6 +179,7 @@ public:
         ROS_ERROR("couldn't take image.");
         usleep(1000000);
       }
+      ros::spinOnce();
 //      self_test_.checkTest();
     }
     return true;
