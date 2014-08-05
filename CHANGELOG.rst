@@ -2,7 +2,7 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.1.6 (2014-08-05)
+0.1.5-1 (2014-08-05)
 ------------------
 * Merge pull request #13 from vrabaud/develop
   add a a ros::spinOnce to get set_camera_info working
