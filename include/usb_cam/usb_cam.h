@@ -56,7 +56,7 @@ typedef enum
 
 typedef enum
 {
-  PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG,
+  PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10
 } usb_cam_pixel_format;
 
 // start camera

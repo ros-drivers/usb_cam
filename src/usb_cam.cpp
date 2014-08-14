@@ -72,6 +72,7 @@ struct buffer
 
 static char *camera_dev;
 static unsigned int pixelformat;
+static bool monochrome;
 static usb_cam_io_method io = IO_METHOD_MMAP;
 static int fd = -1;
 struct buffer * buffers = NULL;
@@ -343,6 +344,19 @@ void uyvy2rgb(char *YUV, char *RGB, int NumPixels)
   }
 }
 
+static void mono102rgb(char *RAW, char *RGB, int NumPixels)
+{
+  int i, j;
+  for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 3) 
+  {
+    //first byte is low byte, second byte is high byte; smash together and convert to 8-bit
+    unsigned char grayval = ((RAW[i + 0] >> 2) & 0x3F) | (RAW[i + 1] << 6) & 0xC0;
+    RGB[j + 0] = grayval;
+    RGB[j + 1] = grayval;
+    RGB[j + 2] = grayval; 
+  }
+}
+
 static void yuyv2rgb(char *YUV, char *RGB, int NumPixels)
 {
   int i, j;
@@ -459,8 +473,14 @@ static void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
 static void process_image(const void * src, int len, usb_cam_camera_image_t *dest)
 {
-  if (pixelformat == V4L2_PIX_FMT_YUYV)
-    yuyv2rgb((char*)src, dest->image, dest->width * dest->height);
+  if (pixelformat == V4L2_PIX_FMT_YUYV){
+    if (monochrome) { //actually format V4L2_PIX_FMT_Y16, but xioctl gets unhappy if you don't use the advertised type (yuyv)
+      mono102rgb((char*)src, dest->image, dest->width * dest->height);
+    }
+    else {
+      yuyv2rgb((char*)src, dest->image, dest->width * dest->height);
+    }
+  }
   else if (pixelformat == V4L2_PIX_FMT_UYVY)
     uyvy2rgb((char*)src, dest->image, dest->width * dest->height);
   else if (pixelformat == V4L2_PIX_FMT_MJPEG)
@@ -984,6 +1004,7 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
 
   usb_cam_camera_image_t *image;
   io = io_method;
+  monochrome = false;
   if (pixel_format == PIXEL_FORMAT_YUYV)
     pixelformat = V4L2_PIX_FMT_YUYV;
   else if (pixel_format == PIXEL_FORMAT_UYVY)
@@ -992,6 +1013,12 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
   {
     pixelformat = V4L2_PIX_FMT_MJPEG;
     init_mjpeg_decoder(image_width, image_height);
+  }
+  else if (pixel_format == PIXEL_FORMAT_YUVMONO10) 
+  {
+    //actually format V4L2_PIX_FMT_Y16 (10-bit mono expresed as 16-bit pixels), but we need to use the advertised type (yuyv)
+    pixelformat = V4L2_PIX_FMT_YUYV;
+    monochrome = true;
   }
   else
   {
