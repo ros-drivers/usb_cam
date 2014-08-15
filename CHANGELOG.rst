@@ -2,6 +2,21 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.6 (2014-08-15)
+------------------
+* Merge pull request #14 from KaijenHsiao/master
+  added support for 10-bit mono cameras advertising as YUV
+* added support for 10-bit mono cameras advertising as YUV (such as Leopard Imaging's LI-USB30-V034)
+* Update CHANGELOG.rst
+* changelog updated
+* Merge pull request #13 from vrabaud/develop
+  add a a ros::spinOnce to get set_camera_info working
+* add a a ros::spinOnce to get set_camera_info working
+  This is explained in the docs of CameraInfoManager
+  https://github.com/ros-perception/image_common/blob/hydro-devel/camera_info_manager/include/camera_info_manager/camera_info_manager.h#L71
+  Also, this fixes https://github.com/ros-perception/image_pipeline/issues/78
+* Contributors: Kaijen Hsiao, Russell Toris, Vincent Rabaud, sosentos
+
 0.1.5-1 (2014-08-05)
 ------------------
 * Merge pull request #13 from vrabaud/develop
