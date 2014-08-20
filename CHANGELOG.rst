@@ -2,6 +2,12 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.7 (2014-08-20)
+------------------
+* changelog fixed
+* minor cleanup and ability to change camera name and info
+* Contributors: Russell Toris
+
 0.1.6 (2014-08-15)
 ------------------
 * Merge pull request #14 from KaijenHsiao/master
