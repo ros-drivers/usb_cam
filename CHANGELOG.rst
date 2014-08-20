@@ -17,16 +17,6 @@ Changelog for package usb_cam
   Also, this fixes https://github.com/ros-perception/image_pipeline/issues/78
 * Contributors: Kaijen Hsiao, Russell Toris, Vincent Rabaud, sosentos
 
-0.1.5-1 (2014-08-05)
-------------------
-* Merge pull request #13 from vrabaud/develop
-  add a a ros::spinOnce to get set_camera_info working
-* add a a ros::spinOnce to get set_camera_info working
-  This is explained in the docs of CameraInfoManager
-  https://github.com/ros-perception/image_common/blob/hydro-devel/camera_info_manager/include/camera_info_manager/camera_info_manager.h#L71
-  Also, this fixes https://github.com/ros-perception/image_pipeline/issues/78
-* Contributors: Russell Toris, Vincent Rabaud
-
 0.1.5 (2014-07-28)
 ------------------
 * auto format
