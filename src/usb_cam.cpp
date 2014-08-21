@@ -90,7 +90,6 @@ struct SwsContext *video_sws = NULL;
 static void errno_exit(const char * s)
 {
   ROS_ERROR("%s error %d, %s\n", s, errno, strerror(errno));
-
   exit(EXIT_FAILURE);
 }
 
@@ -347,13 +346,13 @@ void uyvy2rgb(char *YUV, char *RGB, int NumPixels)
 static void mono102rgb(char *RAW, char *RGB, int NumPixels)
 {
   int i, j;
-  for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 3) 
+  for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 3)
   {
     //first byte is low byte, second byte is high byte; smash together and convert to 8-bit
-    unsigned char grayval = ((RAW[i + 0] >> 2) & 0x3F) | (RAW[i + 1] << 6) & 0xC0;
+    unsigned char grayval = ((RAW[i + 0] >> 2) & 0x3F) | ((RAW[i + 1] << 6) & 0xC0);
     RGB[j + 0] = grayval;
     RGB[j + 1] = grayval;
-    RGB[j + 2] = grayval; 
+    RGB[j + 2] = grayval;
   }
 }
 
@@ -462,7 +461,8 @@ static void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   }
 
   video_sws = sws_getContext(xsize, ysize, avcodec_context->pix_fmt, xsize, ysize, PIX_FMT_RGB24, SWS_BILINEAR, NULL,
-                             NULL, NULL);
+  NULL,
+                             NULL);
   sws_scale(video_sws, avframe_camera->data, avframe_camera->linesize, 0, ysize, avframe_rgb->data,
             avframe_rgb->linesize);
   sws_freeContext(video_sws);
@@ -477,11 +477,14 @@ static void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
 static void process_image(const void * src, int len, usb_cam_camera_image_t *dest)
 {
-  if (pixelformat == V4L2_PIX_FMT_YUYV){
-    if (monochrome) { //actually format V4L2_PIX_FMT_Y16, but xioctl gets unhappy if you don't use the advertised type (yuyv)
+  if (pixelformat == V4L2_PIX_FMT_YUYV)
+  {
+    if (monochrome)
+    { //actually format V4L2_PIX_FMT_Y16, but xioctl gets unhappy if you don't use the advertised type (yuyv)
       mono102rgb((char*)src, dest->image, dest->width * dest->height);
     }
-    else {
+    else
+    {
       yuyv2rgb((char*)src, dest->image, dest->width * dest->height);
     }
   }
@@ -773,7 +776,8 @@ static void init_mmap(void)
 
     buffers[n_buffers].length = buf.length;
     buffers[n_buffers].start = mmap(NULL /* start anywhere */, buf.length, PROT_READ | PROT_WRITE /* required */,
-                                    MAP_SHARED /* recommended */, fd, buf.m.offset);
+    MAP_SHARED /* recommended */,
+                                    fd, buf.m.offset);
 
     if (MAP_FAILED == buffers[n_buffers].start)
       errno_exit("mmap");
@@ -1020,7 +1024,7 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
     pixelformat = V4L2_PIX_FMT_MJPEG;
     init_mjpeg_decoder(image_width, image_height);
   }
-  else if (pixel_format == PIXEL_FORMAT_YUVMONO10) 
+  else if (pixel_format == PIXEL_FORMAT_YUVMONO10)
   {
     //actually format V4L2_PIX_FMT_Y16 (10-bit mono expresed as 16-bit pixels), but we need to use the advertised type (yuyv)
     pixelformat = V4L2_PIX_FMT_YUYV;
@@ -1028,11 +1032,11 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
   }
   else if (pixel_format == PIXEL_FORMAT_RGB24)
   {
-	  pixelformat = V4L2_PIX_FMT_RGB24;
+    pixelformat = V4L2_PIX_FMT_RGB24;
   }
   else
   {
-    ROS_ERROR("Unknown pixelformat.\n");
+    ROS_ERROR("Unknown pixel format.");
     exit(EXIT_FAILURE);
   }
 

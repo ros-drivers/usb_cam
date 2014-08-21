@@ -86,15 +86,8 @@ public:
     node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
 
-    ROS_INFO("Camera name: %s", camera_name_.c_str());
-    ROS_INFO("Camera frame: %s", img_.header.frame_id.c_str());
-    ROS_INFO("Camera info url: %s", camera_info_url_.c_str());
-    ROS_INFO("usb_cam video_device set to [%s]\n", video_device_name_.c_str());
-    ROS_INFO("usb_cam io_method set to [%s]\n", io_method_name_.c_str());
-    ROS_INFO("usb_cam image_width set to [%d]\n", image_width_);
-    ROS_INFO("usb_cam image_height set to [%d]\n", image_height_);
-    ROS_INFO("usb_cam pixel_format set to [%s]\n", pixel_format_name_.c_str());
-    ROS_INFO("usb_cam autofocus set to [%d]\n", autofocus_);
+    ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s)", camera_name_.c_str(), video_device_name_.c_str(), image_width_,
+             image_height_, io_method_name_.c_str(), pixel_format_name_.c_str());
 
     // set the IO method
     usb_cam_io_method io_method;

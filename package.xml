@@ -27,4 +27,5 @@
   <run_depend>sensor_msgs</run_depend> 
   <run_depend>ffmpeg</run_depend>
   <run_depend>camera_info_manager</run_depend>
+  <run_depend>v4l-utils</run_depend>
 </package>
