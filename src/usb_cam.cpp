@@ -380,6 +380,10 @@ static void yuyv2rgb(char *YUV, char *RGB, int NumPixels)
   }
 }
 
+void rgb242rgb(char *YUV, char *RGB, int NumPixels)
+{
+  memcpy(RGB, YUV, NumPixels * 3);
+}
 static int init_mjpeg_decoder(int image_width, int image_height)
 {
   avcodec_register_all();
@@ -485,6 +489,8 @@ static void process_image(const void * src, int len, usb_cam_camera_image_t *des
     uyvy2rgb((char*)src, dest->image, dest->width * dest->height);
   else if (pixelformat == V4L2_PIX_FMT_MJPEG)
     mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
+  else if (pixelformat == V4L2_PIX_FMT_RGB24)
+    rgb242rgb((char*)src, dest->image, dest->width * dest->height);
 }
 
 static int read_frame(usb_cam_camera_image_t *image)
@@ -1019,6 +1025,10 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
     //actually format V4L2_PIX_FMT_Y16 (10-bit mono expresed as 16-bit pixels), but we need to use the advertised type (yuyv)
     pixelformat = V4L2_PIX_FMT_YUYV;
     monochrome = true;
+  }
+  else if (pixel_format == PIXEL_FORMAT_RGB24)
+  {
+	  pixelformat = V4L2_PIX_FMT_RGB24;
   }
   else
   {
