@@ -53,13 +53,9 @@ public:
   image_transport::CameraPublisher image_pub_;
 
   // parameters
-  std::string video_device_name_;
-  std::string io_method_name_;
-  int image_width_, image_height_, framerate_;
-  std::string pixel_format_name_;
-  bool autofocus_;
-  std::string camera_name_;
-  std::string camera_info_url_;
+  std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
+  int image_width_, image_height_, framerate_, exposure_;
+  bool autofocus_, autoexposure_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCamNode() :
@@ -80,6 +76,9 @@ public:
     node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
     // enable/disable autofocus
     node_.param("autofocus", autofocus_, false);
+    // enable/disable autoexposure
+    node_.param("autoexposure", autoexposure_, true);
+    node_.param("exposure", exposure_, 100);
 
     // load the camera info
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
@@ -133,6 +132,17 @@ public:
     {
       usb_cam_camera_set_auto_focus(1);
       this->set_v4l_parameters(video_device_name_, "focus_auto=1");
+    }
+
+    // check auto exposure
+    if (!autoexposure_)
+    {
+      // turn down exposure control (from max of 3)
+      this->set_v4l_parameters(video_device_name_, "exposure_auto=1");
+      // change the exposure level
+      std::stringstream ss;
+      ss << "exposure_absolute=" << exposure_;
+      this->set_v4l_parameters(video_device_name_, ss.str());
     }
   }
 
