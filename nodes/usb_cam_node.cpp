@@ -75,7 +75,7 @@ public:
     node_.param("image_width", image_width_, 640);
     node_.param("image_height", image_height_, 480);
     node_.param("framerate", framerate_, 30);
-    // possible values: yuyv, uyvy, mjpeg, yuvmono10
+    // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
     node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
     // enable/disable autofocus
     node_.param("autofocus", autofocus_, false);
@@ -121,6 +121,8 @@ public:
       pixel_format = PIXEL_FORMAT_MJPEG;
     else if (pixel_format_name_ == "yuvmono10")
       pixel_format = PIXEL_FORMAT_YUVMONO10;
+    else if (pixel_format_name_ == "rgb24")
+      pixel_format = PIXEL_FORMAT_RGB24;
     else
     {
       ROS_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
