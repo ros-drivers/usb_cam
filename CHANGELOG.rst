@@ -2,6 +2,16 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.8 (2014-08-21)
+------------------
+* autoexposure and exposure settings now exposed via ROS parameters
+* added ability to call v4l-utils as well as correctly set autofocus
+* cleanup of output
+* Merge pull request #15 from mistoll/develop
+  added support for RGB24 pixel format
+* Added RGB24 as pixel format
+* Contributors: Michael Stoll, Russell Toris
+
 0.1.7 (2014-08-20)
 ------------------
 * changelog fixed
