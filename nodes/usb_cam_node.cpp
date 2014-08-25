@@ -58,6 +58,8 @@ public:
   bool autofocus_, autoexposure_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
+  ros::Time prevUpdateTime_;
+
   UsbCamNode() :
       node_("~")
   {
@@ -86,8 +88,8 @@ public:
     node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
 
-    ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s)", camera_name_.c_str(), video_device_name_.c_str(), image_width_,
-             image_height_, io_method_name_.c_str(), pixel_format_name_.c_str());
+    ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s), framerate %i", camera_name_.c_str(), video_device_name_.c_str(), image_width_,
+             image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
     // set the IO method
     usb_cam_io_method io_method;
@@ -144,6 +146,8 @@ public:
       ss << "exposure_absolute=" << exposure_;
       this->set_v4l_parameters(video_device_name_, ss.str());
     }
+
+    prevUpdateTime_ = ros::Time::now();
   }
 
   virtual ~UsbCamNode()
@@ -153,21 +157,27 @@ public:
 
   bool take_and_send_image()
   {
-    // grab the image
-    usb_cam_camera_grab_image(camera_image_);
-    // fill the info
-    fillImage(img_, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width,
-              camera_image_->image);
-    // stamp the image
-    img_.header.stamp = ros::Time::now();
+    ros::Time currUpdateTime = ros::Time::now();
+    if ((currUpdateTime - prevUpdateTime_).toSec() >= 1.0 / framerate_)
+    {
+      prevUpdateTime_ = currUpdateTime;
 
-    // grab the camera info
-    sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
-    ci->header.frame_id = img_.header.frame_id;
-    ci->header.stamp = img_.header.stamp;
+      // grab the image
+      usb_cam_camera_grab_image(camera_image_);
+      // fill the info
+      fillImage(img_, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width,
+                camera_image_->image);
+      // stamp the image
+      img_.header.stamp = ros::Time::now();
 
-    // publish the image
-    image_pub_.publish(img_, *ci);
+      // grab the camera info
+      sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
+      ci->header.frame_id = img_.header.frame_id;
+      ci->header.stamp = img_.header.stamp;
+
+      // publish the image
+      image_pub_.publish(img_, *ci);
+    }
     return true;
   }
 
