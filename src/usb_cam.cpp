@@ -946,22 +946,16 @@ static void init_device(int image_width, int image_height, int framerate)
   memset(&stream_params, 0, sizeof(stream_params));
   stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (xioctl(fd, VIDIOC_G_PARM, &stream_params) < 0)
-  {
     errno_exit("Couldn't query v4l fps!\n");
-  }
 
-  ROS_INFO("Capability flag: 0x%x", stream_params.parm.capture.capability);
+  ROS_DEBUG("Capability flag: 0x%x", stream_params.parm.capture.capability);
 
   stream_params.parm.capture.timeperframe.numerator = 1;
   stream_params.parm.capture.timeperframe.denominator = framerate;
   if (xioctl(fd, VIDIOC_S_PARM, &stream_params) < 0)
-  {
     errno_exit("Couldn't set camera framerate\n");
-  }
   else
-  {
-    ROS_INFO("Set framerate to be %i", framerate);
-  }
+    ROS_DEBUG("Set framerate to be %i", framerate);
 
   switch (io)
   {
