@@ -2,6 +2,14 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.10 (2014-10-24)
+-------------------
+* Merge pull request #19 from bosch-ros-pkg/av_codec_id
+  Removed deprecated CODEC_ID
+* added legacy macro constants for libav 10
+* Renamed deprecated CODEC_ID constants to AV_CODEC_ID to fix compilation for libav 10
+* Contributors: Andrzej Pronobis, Russell Toris
+
 0.1.9 (2014-08-26)
 ------------------
 * Uses ros::Rate to enforce software framerate instead of custom time check
