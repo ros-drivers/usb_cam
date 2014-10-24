@@ -36,6 +36,11 @@
 #ifndef USB_CAM_USB_CAM_H
 #define USB_CAM_USB_CAM_H
 
+// legacy reasons
+#ifndef AV_CODEC_ID_MJPEG
+#define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
+#endif
+
 #include <string>
 #include <sstream>
 
