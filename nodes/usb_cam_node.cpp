@@ -146,6 +146,17 @@ public:
     paramstream << "sharpness=" << sharpness_;
     this->set_v4l_parameters(video_device_name_, paramstream.str());
 
+    // check auto exposure
+    if (!autoexposure_)
+    {
+      // turn down exposure control (from max of 3)
+      this->set_v4l_parameters(video_device_name_, "exposure_auto=1");
+      // change the exposure level
+      std::stringstream ss;
+      ss << "exposure_absolute=" << exposure_;
+      this->set_v4l_parameters(video_device_name_, ss.str());
+    }
+
     // check auto focus
     if (autofocus_)
     {
@@ -157,17 +168,6 @@ public:
       this->set_v4l_parameters(video_device_name_, "focus_auto=0");
       std::stringstream ss;
       ss << "focus_absolute=" << focus_;
-      this->set_v4l_parameters(video_device_name_, ss.str());
-    }
-
-    // check auto exposure
-    if (!autoexposure_)
-    {
-      // turn down exposure control (from max of 3)
-      this->set_v4l_parameters(video_device_name_, "exposure_auto=1");
-      // change the exposure level
-      std::stringstream ss;
-      ss << "exposure_absolute=" << exposure_;
       this->set_v4l_parameters(video_device_name_, ss.str());
     }
   }
