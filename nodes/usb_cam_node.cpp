@@ -54,7 +54,7 @@ public:
 
   // parameters
   std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
-  int image_width_, image_height_, framerate_, exposure_;
+  int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_;
   bool autofocus_, autoexposure_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
@@ -67,6 +67,10 @@ public:
 
     // grab the parameters
     node_.param("video_device", video_device_name_, std::string("/dev/video0"));
+    node_.param("brightness", brightness_, 128); //0-255
+    node_.param("contrast", contrast_, 32); //0-255
+    node_.param("saturation", saturation_, 32); //0-255
+    node_.param("sharpness", sharpness_, 22); //0-255
     // possible values: mmap, read, userptr
     node_.param("io_method", io_method_name_, std::string("mmap"));
     node_.param("image_width", image_width_, 640);
@@ -76,6 +80,7 @@ public:
     node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
     // enable/disable autofocus
     node_.param("autofocus", autofocus_, false);
+    node_.param("focus", focus_, 51);
     // enable/disable autoexposure
     node_.param("autoexposure", autoexposure_, true);
     node_.param("exposure", exposure_, 100);
@@ -127,12 +132,19 @@ public:
     camera_image_ = usb_cam_camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
                                          image_height_, framerate_);
 
-    // check auto focus
-    if (autofocus_)
-    {
-      usb_cam_camera_set_auto_focus(1);
-      this->set_v4l_parameters(video_device_name_, "focus_auto=1");
-    }
+    // set camera parameters
+    std::stringstream paramstream;
+    paramstream << "brightness=" << brightness_;
+    this->set_v4l_parameters(video_device_name_, paramstream.str());
+    paramstream.str("");
+    paramstream << "contrast=" << contrast_;
+    this->set_v4l_parameters(video_device_name_, paramstream.str());
+    paramstream.str("");
+    paramstream << "saturation=" << saturation_;
+    this->set_v4l_parameters(video_device_name_, paramstream.str());
+    paramstream.str("");
+    paramstream << "sharpness=" << sharpness_;
+    this->set_v4l_parameters(video_device_name_, paramstream.str());
 
     // check auto exposure
     if (!autoexposure_)
@@ -142,6 +154,20 @@ public:
       // change the exposure level
       std::stringstream ss;
       ss << "exposure_absolute=" << exposure_;
+      this->set_v4l_parameters(video_device_name_, ss.str());
+    }
+
+    // check auto focus
+    if (autofocus_)
+    {
+      usb_cam_camera_set_auto_focus(1);
+      this->set_v4l_parameters(video_device_name_, "focus_auto=1");
+    }
+    else
+    {
+      this->set_v4l_parameters(video_device_name_, "focus_auto=0");
+      std::stringstream ss;
+      ss << "focus_absolute=" << focus_;
       this->set_v4l_parameters(video_device_name_, ss.str());
     }
   }
