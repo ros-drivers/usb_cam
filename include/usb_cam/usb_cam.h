@@ -38,7 +38,7 @@
 
 // legacy reasons
 #ifndef AV_CODEC_ID_MJPEG
-#define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
+#define CODEC_ID_MJPEG AV_CODEC_ID_MJPEG
 #endif
 
 #include <string>
