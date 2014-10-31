@@ -38,7 +38,7 @@
 
 // legacy reasons
 #include <libavcodec/version.h>
-#if FF_API_CODEC_ID
+#if LIBAVCODEC_VERSION_MAJOR < 55
 #define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
 #endif
 
