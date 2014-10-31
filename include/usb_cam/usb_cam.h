@@ -37,7 +37,8 @@
 #define USB_CAM_USB_CAM_H
 
 // legacy reasons
-#ifndef AV_CODEC_ID_MJPEG
+#include <libavcodec/version.h>
+#if FF_API_CODEC_ID
 #define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
 #endif
 
