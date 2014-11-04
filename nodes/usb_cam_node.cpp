@@ -151,7 +151,11 @@ public:
     this->set_v4l_parameters(video_device_name_, paramstream.str());
 
     // check auto white balance
-    if (!auto_white_balance_)
+    if (auto_white_balance_)
+    {
+      this->set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=1");
+    }
+    else
     {
       this->set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=0");
       std::stringstream ss;
