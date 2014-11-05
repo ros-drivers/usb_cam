@@ -54,8 +54,9 @@ public:
 
   // parameters
   std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
-  int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_;
-  bool autofocus_, autoexposure_;
+  int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
+      white_balance_;
+  bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCamNode() :
@@ -84,6 +85,9 @@ public:
     // enable/disable autoexposure
     node_.param("autoexposure", autoexposure_, true);
     node_.param("exposure", exposure_, 100);
+    // enable/disable auto white balance temperature
+    node_.param("auto_white_balance", auto_white_balance_, true);
+    node_.param("white_balance", white_balance_, 4000);
 
     // load the camera info
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
@@ -145,6 +149,19 @@ public:
     paramstream.str("");
     paramstream << "sharpness=" << sharpness_;
     this->set_v4l_parameters(video_device_name_, paramstream.str());
+
+    // check auto white balance
+    if (auto_white_balance_)
+    {
+      this->set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=1");
+    }
+    else
+    {
+      this->set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=0");
+      std::stringstream ss;
+      ss << "white_balance_temperature=" << white_balance_;
+      this->set_v4l_parameters(video_device_name_, ss.str());
+    }
 
     // check auto exposure
     if (!autoexposure_)
