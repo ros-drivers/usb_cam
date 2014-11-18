@@ -68,10 +68,10 @@ public:
 
     // grab the parameters
     node_.param("video_device", video_device_name_, std::string("/dev/video0"));
-    node_.param("brightness", brightness_, 128); //0-255
-    node_.param("contrast", contrast_, 32); //0-255
-    node_.param("saturation", saturation_, 32); //0-255
-    node_.param("sharpness", sharpness_, 22); //0-255
+    node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
+    node_.param("contrast", contrast_, -1); //0-255, -1 "leave alone"
+    node_.param("saturation", saturation_, -1); //0-255, -1 "leave alone"
+    node_.param("sharpness", sharpness_, -1); //0-255, -1 "leave alone"
     // possible values: mmap, read, userptr
     node_.param("io_method", io_method_name_, std::string("mmap"));
     node_.param("image_width", image_width_, 640);
@@ -81,7 +81,7 @@ public:
     node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
     // enable/disable autofocus
     node_.param("autofocus", autofocus_, false);
-    node_.param("focus", focus_, 51);
+    node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
     // enable/disable autoexposure
     node_.param("autoexposure", autoexposure_, true);
     node_.param("exposure", exposure_, 100);
@@ -138,17 +138,32 @@ public:
 
     // set camera parameters
     std::stringstream paramstream;
-    paramstream << "brightness=" << brightness_;
-    this->set_v4l_parameters(video_device_name_, paramstream.str());
-    paramstream.str("");
-    paramstream << "contrast=" << contrast_;
-    this->set_v4l_parameters(video_device_name_, paramstream.str());
-    paramstream.str("");
-    paramstream << "saturation=" << saturation_;
-    this->set_v4l_parameters(video_device_name_, paramstream.str());
-    paramstream.str("");
-    paramstream << "sharpness=" << sharpness_;
-    this->set_v4l_parameters(video_device_name_, paramstream.str());
+    if (brightness_ >= 0)
+    {
+      paramstream << "brightness=" << brightness_;
+      this->set_v4l_parameters(video_device_name_, paramstream.str());
+      paramstream.str("");
+    }
+
+    if (contrast_ >= 0)
+    {
+      paramstream << "contrast=" << contrast_;
+      this->set_v4l_parameters(video_device_name_, paramstream.str());
+      paramstream.str("");
+    }
+
+    if (saturation_ >= 0)
+    {
+      paramstream << "saturation=" << saturation_;
+      this->set_v4l_parameters(video_device_name_, paramstream.str());
+      paramstream.str("");
+    }
+
+    if (sharpness_ >= 0)
+    {
+      paramstream << "sharpness=" << sharpness_;
+      this->set_v4l_parameters(video_device_name_, paramstream.str());
+    }
 
     // check auto white balance
     if (auto_white_balance_)
@@ -183,9 +198,11 @@ public:
     else
     {
       this->set_v4l_parameters(video_device_name_, "focus_auto=0");
-      std::stringstream ss;
-      ss << "focus_absolute=" << focus_;
-      this->set_v4l_parameters(video_device_name_, ss.str());
+      if (focus_ >= 0) {
+        std::stringstream ss;
+        ss << "focus_absolute=" << focus_;
+        this->set_v4l_parameters(video_device_name_, ss.str());
+      }
     }
   }
 
