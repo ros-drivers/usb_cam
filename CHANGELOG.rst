@@ -2,6 +2,25 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.13 (2014-12-02)
+-------------------
+* Merge pull request #25 from blutack/patch-1
+  Warn rather than error if framerate can't be set
+* Warn rather than error if framerate can't be set
+  The driver doesn't currently work with em28xx based devices as they don't allow the framerate to be set directly and the node exits with an error. Changing to a warning allows these devices to be used.
+* Update README.md
+* Merge pull request #24 from rjw57/do-not-touch-parameters-unless-asked
+  do not modify parameters unless explicitly set
+* do not modify parameters unless explicitly set
+  The contrast, saturation, brightness, sharpness and focus parameters
+  were recently added to usb_cam. This caused a regression
+  (sigproc/robotic_surgery#17) whereby the default settings for a webcam
+  are overridden in all cases by the hard-coded defaults in usb_cam.
+  In the absence of a know good set of "default" values, leave the
+  parameters unset unless the user has explicitly set them in the launch
+  file.
+* Contributors: Rich Wareham, Russell Toris, blutack
+
 0.1.12 (2014-11-05)
 -------------------
 * Merge pull request #22 from dekent/develop
