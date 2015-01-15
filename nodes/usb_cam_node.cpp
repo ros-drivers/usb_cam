@@ -1,38 +1,38 @@
 /*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2014, Robert Bosch LLC.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of the Robert Bosch nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- *********************************************************************/
+*
+* Software License Agreement (BSD License)
+*
+*  Copyright (c) 2014, Robert Bosch LLC.
+*  All rights reserved.
+*
+*  Redistribution and use in source and binary forms, with or without
+*  modification, are permitted provided that the following conditions
+*  are met:
+*
+*   * Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*   * Redistributions in binary form must reproduce the above
+*     copyright notice, this list of conditions and the following
+*     disclaimer in the documentation and/or other materials provided
+*     with the distribution.
+*   * Neither the name of the Robert Bosch nor the names of its
+*     contributors may be used to endorse or promote products derived
+*     from this software without specific prior written permission.
+*
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+*  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+*  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+*  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+*  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+*  POSSIBILITY OF SUCH DAMAGE.
+*
+*********************************************************************/
 
 #include <ros/ros.h>
 #include <sensor_msgs/fill_image.h>
@@ -94,9 +94,20 @@ public:
     node_.param("camera_name", camera_name_, std::string("head_camera"));
     node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
+    // check for default camera info
+    if (camera_info_url_.size() > 0)
+    {
+      cinfo_->setCameraName(video_device_name_);
+      sensor_msgs::CameraInfo camera_info;
+      camera_info.header.frame_id = img_.header.frame_id;
+      camera_info.width = image_width_;
+      camera_info.height = image_height_;
+      cinfo_->setCameraInfo(camera_info);
+    }
+
 
     ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS", camera_name_.c_str(), video_device_name_.c_str(),
-             image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
+        image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
     // set the IO method
     usb_cam_io_method io_method;
@@ -134,7 +145,7 @@ public:
 
     // start the camera
     camera_image_ = usb_cam_camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
-                                         image_height_, framerate_);
+        image_height_, framerate_);
 
     // set camera parameters
     std::stringstream paramstream;
@@ -198,7 +209,8 @@ public:
     else
     {
       this->set_v4l_parameters(video_device_name_, "focus_auto=0");
-      if (focus_ >= 0) {
+      if (focus_ >= 0)
+      {
         std::stringstream ss;
         ss << "focus_absolute=" << focus_;
         this->set_v4l_parameters(video_device_name_, ss.str());
@@ -217,7 +229,7 @@ public:
     usb_cam_camera_grab_image(camera_image_);
     // fill the info
     fillImage(img_, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width,
-              camera_image_->image);
+        camera_image_->image);
     // stamp the image
     img_.header.stamp = ros::Time::now();
 
@@ -248,11 +260,11 @@ public:
 private:
 
   /**
-   * Set video device parameters via calls to v4l-utils.
-   *
-   * @param dev The device (e.g., "/dev/video0")
-   * @param param The full parameter to set (e.g., "focus_auto=1")
-   */
+  * Set video device parameters via calls to v4l-utils.
+  *
+  * @param dev The device (e.g., "/dev/video0")
+  * @param param The full parameter to set (e.g., "focus_auto=1")
+  */
   void set_v4l_parameters(std::string dev, std::string param)
   {
     // build the command
