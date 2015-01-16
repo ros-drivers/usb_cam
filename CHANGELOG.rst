@@ -2,6 +2,15 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.0 (2015-01-16)
+------------------
+* Bug fix in camera info settings.
+* Update .travis.yml
+* Merge pull request #27 from bosch-ros-pkg/default_camera_info
+  sets default camera info
+* sets default camera info
+* Contributors: Russell Toris
+
 0.1.13 (2014-12-02)
 -------------------
 * Merge pull request #25 from blutack/patch-1
