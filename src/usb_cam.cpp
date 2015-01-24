@@ -1128,3 +1128,34 @@ void UsbCam::camera_set_auto_focus(int value)
   }
 }
 
+/**
+* Set video device parameters via calls to v4l-utils.
+*
+* @param dev The device (e.g., "/dev/video0")
+* @param param The full parameter to set (e.g., "focus_auto=1")
+*/
+void UsbCam::set_v4l_parameters(std::string dev, std::string param)
+{
+  // build the command
+  std::stringstream ss;
+  ss << "v4l2-ctl --device=" << dev << " -c " << param << " 2>&1";
+  std::string cmd = ss.str();
+
+  // capture the output
+  std::string output;
+  int buffer_size = 256;
+  char buffer[buffer_size];
+  FILE *stream = popen(cmd.c_str(), "r");
+  if (stream)
+  {
+    while (!feof(stream))
+      if (fgets(buffer, buffer_size, stream) != NULL)
+        output.append(buffer);
+    pclose(stream);
+    // any output should be an error
+    if (output.length() > 0)
+      ROS_WARN("%s", output.c_str());
+  }
+  else
+    ROS_WARN("usb_cam_node could not run '%s'", cmd.c_str());
+}

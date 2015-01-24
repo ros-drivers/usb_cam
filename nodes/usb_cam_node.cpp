@@ -154,68 +154,68 @@ public:
     if (brightness_ >= 0)
     {
       paramstream << "brightness=" << brightness_;
-      this->set_v4l_parameters(video_device_name_, paramstream.str());
+      UsbCam::set_v4l_parameters(video_device_name_, paramstream.str());
       paramstream.str("");
     }
 
     if (contrast_ >= 0)
     {
       paramstream << "contrast=" << contrast_;
-      this->set_v4l_parameters(video_device_name_, paramstream.str());
+      UsbCam::set_v4l_parameters(video_device_name_, paramstream.str());
       paramstream.str("");
     }
 
     if (saturation_ >= 0)
     {
       paramstream << "saturation=" << saturation_;
-      this->set_v4l_parameters(video_device_name_, paramstream.str());
+      UsbCam::set_v4l_parameters(video_device_name_, paramstream.str());
       paramstream.str("");
     }
 
     if (sharpness_ >= 0)
     {
       paramstream << "sharpness=" << sharpness_;
-      this->set_v4l_parameters(video_device_name_, paramstream.str());
+      UsbCam::set_v4l_parameters(video_device_name_, paramstream.str());
     }
 
     // check auto white balance
     if (auto_white_balance_)
     {
-      this->set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=1");
+      UsbCam::set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=1");
     }
     else
     {
-      this->set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=0");
+      UsbCam::set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=0");
       std::stringstream ss;
       ss << "white_balance_temperature=" << white_balance_;
-      this->set_v4l_parameters(video_device_name_, ss.str());
+      UsbCam::set_v4l_parameters(video_device_name_, ss.str());
     }
 
     // check auto exposure
     if (!autoexposure_)
     {
       // turn down exposure control (from max of 3)
-      this->set_v4l_parameters(video_device_name_, "exposure_auto=1");
+      UsbCam::set_v4l_parameters(video_device_name_, "exposure_auto=1");
       // change the exposure level
       std::stringstream ss;
       ss << "exposure_absolute=" << exposure_;
-      this->set_v4l_parameters(video_device_name_, ss.str());
+      UsbCam::set_v4l_parameters(video_device_name_, ss.str());
     }
 
     // check auto focus
     if (autofocus_)
     {
       cam.camera_set_auto_focus(1);
-      this->set_v4l_parameters(video_device_name_, "focus_auto=1");
+      UsbCam::set_v4l_parameters(video_device_name_, "focus_auto=1");
     }
     else
     {
-      this->set_v4l_parameters(video_device_name_, "focus_auto=0");
+      UsbCam::set_v4l_parameters(video_device_name_, "focus_auto=0");
       if (focus_ >= 0)
       {
         std::stringstream ss;
         ss << "focus_absolute=" << focus_;
-        this->set_v4l_parameters(video_device_name_, ss.str());
+        UsbCam::set_v4l_parameters(video_device_name_, ss.str());
       }
     }
   }
@@ -261,37 +261,6 @@ public:
 
 private:
 
-  /**
-  * Set video device parameters via calls to v4l-utils.
-  *
-  * @param dev The device (e.g., "/dev/video0")
-  * @param param The full parameter to set (e.g., "focus_auto=1")
-  */
-  void set_v4l_parameters(std::string dev, std::string param)
-  {
-    // build the command
-    std::stringstream ss;
-    ss << "v4l2-ctl --device=" << dev << " -c " << param << " 2>&1";
-    std::string cmd = ss.str();
-
-    // capture the output
-    std::string output;
-    int buffer_size = 256;
-    char buffer[buffer_size];
-    FILE *stream = popen(cmd.c_str(), "r");
-    if (stream)
-    {
-      while (!feof(stream))
-        if (fgets(buffer, buffer_size, stream) != NULL)
-          output.append(buffer);
-      pclose(stream);
-      // any output should be an error
-      if (output.length() > 0)
-        ROS_WARN("%s", output.c_str());
-    }
-    else
-      ROS_WARN("usb_cam_node could not run '%s'", cmd.c_str());
-  }
 };
 
 int main(int argc, char **argv)

@@ -89,6 +89,9 @@ class UsbCam {
   // enables/disable auto focus
   void camera_set_auto_focus(int value);
 
+  // Set video device parameters
+  static void set_v4l_parameters(std::string dev, std::string param);
+
  private:
   int init_mjpeg_decoder(int image_width, int image_height);
   void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
