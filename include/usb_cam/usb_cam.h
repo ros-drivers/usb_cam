@@ -36,6 +36,16 @@
 #ifndef USB_CAM_USB_CAM_H
 #define USB_CAM_USB_CAM_H
 
+#include <asm/types.h>          /* for videodev2.h */
+
+extern "C"
+{
+#include <linux/videodev2.h>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
+#include <libavutil/mem.h>
+}
+
 // legacy reasons
 #include <libavcodec/version.h>
 #if LIBAVCODEC_VERSION_MAJOR < 55
@@ -45,35 +55,79 @@
 #include <string>
 #include <sstream>
 
-typedef struct
-{
-  int width;
-  int height;
-  int bytes_per_pixel;
-  int image_size;
-  char *image;
-  int is_new;
-} usb_cam_camera_image_t;
+class UsbCam {
+ public:
+  typedef struct
+  {
+    int width;
+    int height;
+    int bytes_per_pixel;
+    int image_size;
+    char *image;
+    int is_new;
+  } camera_image_t;
 
-typedef enum
-{
-  IO_METHOD_READ, IO_METHOD_MMAP, IO_METHOD_USERPTR,
-} usb_cam_io_method;
+  typedef enum
+  {
+    IO_METHOD_READ, IO_METHOD_MMAP, IO_METHOD_USERPTR,
+  } io_method;
 
-typedef enum
-{
-  PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24
-} usb_cam_pixel_format;
+  typedef enum
+  {
+    PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24
+  } pixel_format;
 
-// start camera
-usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io, usb_cam_pixel_format pf,
-                                             int image_width, int image_height, int framerate);
-// shutdown camera
-void usb_cam_camera_shutdown(void);
-// grabs a new image from the camera
-void usb_cam_camera_grab_image(usb_cam_camera_image_t *image);
-// enables/disable auto focus
-void usb_cam_camera_set_auto_focus(int value);
+  UsbCam();
+
+  // start camera
+  camera_image_t *camera_start(const char* dev, io_method io, pixel_format pf,
+			       int image_width, int image_height, int framerate);
+  // shutdown camera
+  void camera_shutdown(void);
+  // grabs a new image from the camera
+  void camera_grab_image(camera_image_t *image);
+  // enables/disable auto focus
+  void camera_set_auto_focus(int value);
+
+ private:
+  int init_mjpeg_decoder(int image_width, int image_height);
+  void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
+  void process_image(const void * src, int len, camera_image_t *dest);
+  int read_frame(camera_image_t *image);
+  void stop_capturing(void);
+  void start_capturing(void);
+  void uninit_device(void);
+  void init_read(unsigned int buffer_size);
+  void init_mmap(void);
+  void init_userp(unsigned int buffer_size);
+  void init_device(int image_width, int image_height, int framerate);
+  void close_device(void);
+  void open_device(void);
+
+
+  struct buffer
+  {
+    void * start;
+    size_t length;
+  };
+
+  char *camera_dev;
+  unsigned int pixelformat;
+  bool monochrome;
+  io_method io;
+  int fd;
+  buffer * buffers;
+  unsigned int n_buffers;
+  AVFrame *avframe_camera;
+  AVFrame *avframe_rgb;
+  AVCodec *avcodec;
+  AVDictionary *avoptions;
+  AVCodecContext *avcodec_context;
+  int avframe_camera_size;
+  int avframe_rgb_size;
+  struct SwsContext *video_sws;
+
+};
 
 #endif
 

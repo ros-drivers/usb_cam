@@ -48,44 +48,11 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
-#include <asm/types.h>          /* for videodev2.h */
-
-extern "C"
-{
-#include <linux/videodev2.h>
-#include <libavcodec/avcodec.h>
-#include <libswscale/swscale.h>
-#include <libavutil/mem.h>
-}
-
 #include <ros/ros.h>
 
 #include <usb_cam/usb_cam.h>
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
-
-struct buffer
-{
-  void * start;
-  size_t length;
-};
-
-static char *camera_dev;
-static unsigned int pixelformat;
-static bool monochrome;
-static usb_cam_io_method io = IO_METHOD_MMAP;
-static int fd = -1;
-struct buffer * buffers = NULL;
-static unsigned int n_buffers = 0;
-static AVFrame *avframe_camera = NULL;
-static AVFrame *avframe_rgb = NULL;
-static AVCodec *avcodec = NULL;
-static AVDictionary *avoptions = NULL;
-static AVCodecContext *avcodec_context = NULL;
-static int avframe_camera_size = 0;
-static int avframe_rgb_size = 0;
-
-struct SwsContext *video_sws = NULL;
 
 static void errno_exit(const char * s)
 {
@@ -383,7 +350,15 @@ void rgb242rgb(char *YUV, char *RGB, int NumPixels)
 {
   memcpy(RGB, YUV, NumPixels * 3);
 }
-static int init_mjpeg_decoder(int image_width, int image_height)
+
+
+UsbCam::UsbCam()
+  : io(IO_METHOD_MMAP), fd(-1), buffers(NULL), n_buffers(0), avframe_camera(NULL),
+    avframe_rgb(NULL), avcodec(NULL), avoptions(NULL), avcodec_context(NULL),
+    avframe_camera_size(0), avframe_rgb_size(0), video_sws(NULL) {
+}
+
+int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
 {
   avcodec_register_all();
 
@@ -421,7 +396,7 @@ static int init_mjpeg_decoder(int image_width, int image_height)
   return 1;
 }
 
-static void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
+void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 {
   int got_picture;
 
@@ -475,7 +450,7 @@ static void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   }
 }
 
-static void process_image(const void * src, int len, usb_cam_camera_image_t *dest)
+void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
 {
   if (pixelformat == V4L2_PIX_FMT_YUYV)
   {
@@ -496,7 +471,7 @@ static void process_image(const void * src, int len, usb_cam_camera_image_t *des
     rgb242rgb((char*)src, dest->image, dest->width * dest->height);
 }
 
-static int read_frame(usb_cam_camera_image_t *image)
+int UsbCam::read_frame(camera_image_t *image)
 {
   struct v4l2_buffer buf;
   unsigned int i;
@@ -599,7 +574,7 @@ static int read_frame(usb_cam_camera_image_t *image)
   return 1;
 }
 
-static void stop_capturing(void)
+void UsbCam::stop_capturing(void)
 {
   enum v4l2_buf_type type;
 
@@ -620,7 +595,7 @@ static void stop_capturing(void)
   }
 }
 
-static void start_capturing(void)
+void UsbCam::start_capturing(void)
 {
   unsigned int i;
   enum v4l2_buf_type type;
@@ -679,7 +654,7 @@ static void start_capturing(void)
   }
 }
 
-static void uninit_device(void)
+void UsbCam::uninit_device(void)
 {
   unsigned int i;
 
@@ -704,7 +679,7 @@ static void uninit_device(void)
   free(buffers);
 }
 
-static void init_read(unsigned int buffer_size)
+void UsbCam::init_read(unsigned int buffer_size)
 {
   buffers = (buffer*)calloc(1, sizeof(*buffers));
 
@@ -724,7 +699,7 @@ static void init_read(unsigned int buffer_size)
   }
 }
 
-static void init_mmap(void)
+void UsbCam::init_mmap(void)
 {
   struct v4l2_requestbuffers req;
 
@@ -784,7 +759,7 @@ static void init_mmap(void)
   }
 }
 
-static void init_userp(unsigned int buffer_size)
+void UsbCam::init_userp(unsigned int buffer_size)
 {
   struct v4l2_requestbuffers req;
   unsigned int page_size;
@@ -834,7 +809,7 @@ static void init_userp(unsigned int buffer_size)
   }
 }
 
-static void init_device(int image_width, int image_height, int framerate)
+void UsbCam::init_device(int image_width, int image_height, int framerate)
 {
   struct v4l2_capability cap;
   struct v4l2_cropcap cropcap;
@@ -973,7 +948,7 @@ static void init_device(int image_width, int image_height, int framerate)
   }
 }
 
-static void close_device(void)
+void UsbCam::close_device(void)
 {
   if (-1 == close(fd))
     errno_exit("close");
@@ -981,7 +956,7 @@ static void close_device(void)
   fd = -1;
 }
 
-static void open_device(void)
+void UsbCam::open_device(void)
 {
   struct stat st;
 
@@ -1006,14 +981,14 @@ static void open_device(void)
   }
 }
 
-usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method io_method,
-                                             usb_cam_pixel_format pixel_format, int image_width, int image_height,
-                                             int framerate)
+UsbCam::camera_image_t *UsbCam::camera_start(const char* dev, io_method io_method,
+					     pixel_format pixel_format, int image_width, int image_height,
+					     int framerate)
 {
   camera_dev = (char*)calloc(1, strlen(dev) + 1);
   strcpy(camera_dev, dev);
 
-  usb_cam_camera_image_t *image;
+  camera_image_t *image;
   io = io_method;
   monochrome = false;
   if (pixel_format == PIXEL_FORMAT_YUYV)
@@ -1045,7 +1020,7 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
   init_device(image_width, image_height, framerate);
   start_capturing();
 
-  image = (usb_cam_camera_image_t *)calloc(1, sizeof(usb_cam_camera_image_t));
+  image = (camera_image_t *)calloc(1, sizeof(camera_image_t));
 
   image->width = image_width;
   image->height = image_height;
@@ -1059,7 +1034,7 @@ usb_cam_camera_image_t *usb_cam_camera_start(const char* dev, usb_cam_io_method 
   return image;
 }
 
-void usb_cam_camera_shutdown(void)
+void UsbCam::camera_shutdown(void)
 {
   stop_capturing();
   uninit_device();
@@ -1079,7 +1054,7 @@ void usb_cam_camera_shutdown(void)
   avframe_rgb = NULL;
 }
 
-void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
+void UsbCam::camera_grab_image(camera_image_t *image)
 {
   fd_set fds;
   struct timeval tv;
@@ -1113,7 +1088,7 @@ void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)
 }
 
 // enables/disables auto focus
-void usb_cam_camera_set_auto_focus(int value)
+void UsbCam::camera_set_auto_focus(int value)
 {
   struct v4l2_queryctrl queryctrl;
   struct v4l2_ext_control control;

@@ -49,7 +49,7 @@ public:
 
   // shared image message
   sensor_msgs::Image img_;
-  usb_cam_camera_image_t *camera_image_;
+  UsbCam::camera_image_t *camera_image_;
   image_transport::CameraPublisher image_pub_;
 
   // parameters
@@ -58,6 +58,8 @@ public:
       white_balance_;
   bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
+
+  UsbCam cam;
 
   UsbCamNode() :
       node_("~")
@@ -110,13 +112,13 @@ public:
         image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
     // set the IO method
-    usb_cam_io_method io_method;
+    UsbCam::io_method io_method;
     if (io_method_name_ == "mmap")
-      io_method = IO_METHOD_MMAP;
+      io_method = UsbCam::IO_METHOD_MMAP;
     else if (io_method_name_ == "read")
-      io_method = IO_METHOD_READ;
+      io_method = UsbCam::IO_METHOD_READ;
     else if (io_method_name_ == "userptr")
-      io_method = IO_METHOD_USERPTR;
+      io_method = UsbCam::IO_METHOD_USERPTR;
     else
     {
       ROS_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
@@ -125,17 +127,17 @@ public:
     }
 
     // set the pixel format
-    usb_cam_pixel_format pixel_format;
+    UsbCam::pixel_format pixel_format;
     if (pixel_format_name_ == "yuyv")
-      pixel_format = PIXEL_FORMAT_YUYV;
+      pixel_format = UsbCam::PIXEL_FORMAT_YUYV;
     else if (pixel_format_name_ == "uyvy")
-      pixel_format = PIXEL_FORMAT_UYVY;
+      pixel_format = UsbCam::PIXEL_FORMAT_UYVY;
     else if (pixel_format_name_ == "mjpeg")
-      pixel_format = PIXEL_FORMAT_MJPEG;
+      pixel_format = UsbCam::PIXEL_FORMAT_MJPEG;
     else if (pixel_format_name_ == "yuvmono10")
-      pixel_format = PIXEL_FORMAT_YUVMONO10;
+      pixel_format = UsbCam::PIXEL_FORMAT_YUVMONO10;
     else if (pixel_format_name_ == "rgb24")
-      pixel_format = PIXEL_FORMAT_RGB24;
+      pixel_format = UsbCam::PIXEL_FORMAT_RGB24;
     else
     {
       ROS_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
@@ -144,7 +146,7 @@ public:
     }
 
     // start the camera
-    camera_image_ = usb_cam_camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
+    camera_image_ = cam.camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
         image_height_, framerate_);
 
     // set camera parameters
@@ -203,7 +205,7 @@ public:
     // check auto focus
     if (autofocus_)
     {
-      usb_cam_camera_set_auto_focus(1);
+      cam.camera_set_auto_focus(1);
       this->set_v4l_parameters(video_device_name_, "focus_auto=1");
     }
     else
@@ -220,13 +222,13 @@ public:
 
   virtual ~UsbCamNode()
   {
-    usb_cam_camera_shutdown();
+    cam.camera_shutdown();
   }
 
   bool take_and_send_image()
   {
     // grab the image
-    usb_cam_camera_grab_image(camera_image_);
+    cam.camera_grab_image(camera_image_);
     // fill the info
     fillImage(img_, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width,
         camera_image_->image);
