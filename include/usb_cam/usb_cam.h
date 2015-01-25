@@ -125,22 +125,22 @@ class UsbCam {
   void grab_image();
 
 
-  char *camera_dev;
-  unsigned int pixelformat;
-  bool monochrome;
-  io_method io;
-  int fd;
-  buffer * buffers;
-  unsigned int n_buffers;
-  AVFrame *avframe_camera;
-  AVFrame *avframe_rgb;
-  AVCodec *avcodec;
-  AVDictionary *avoptions;
-  AVCodecContext *avcodec_context;
-  int avframe_camera_size;
-  int avframe_rgb_size;
-  struct SwsContext *video_sws;
-  camera_image_t *image;
+  char *camera_dev_;
+  unsigned int pixelformat_;
+  bool monochrome_;
+  io_method io_;
+  int fd_;
+  buffer * buffers_;
+  unsigned int n_buffers_;
+  AVFrame *avframe_camera_;
+  AVFrame *avframe_rgb_;
+  AVCodec *avcodec_;
+  AVDictionary *avoptions_;
+  AVCodecContext *avcodec_context_;
+  int avframe_camera_size_;
+  int avframe_rgb_size_;
+  struct SwsContext *video_sws_;
+  camera_image_t *image_;
 
 };
 

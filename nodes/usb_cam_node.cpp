@@ -57,7 +57,7 @@ public:
   bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
-  UsbCam cam;
+  UsbCam cam_;
 
   UsbCamNode() :
       node_("~")
@@ -128,75 +128,75 @@ public:
     }
 
     // start the camera
-    cam.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
+    cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
 		     image_height_, framerate_);
 
     // set camera parameters
     if (brightness_ >= 0)
     {
-      cam.set_v4l_parameter("brightness", brightness_);
+      cam_.set_v4l_parameter("brightness", brightness_);
     }
 
     if (contrast_ >= 0)
     {
-      cam.set_v4l_parameter("contrast", contrast_);
+      cam_.set_v4l_parameter("contrast", contrast_);
     }
 
     if (saturation_ >= 0)
     {
-      cam.set_v4l_parameter("saturation", saturation_);
+      cam_.set_v4l_parameter("saturation", saturation_);
     }
 
     if (sharpness_ >= 0)
     {
-      cam.set_v4l_parameter("sharpness", sharpness_);
+      cam_.set_v4l_parameter("sharpness", sharpness_);
     }
 
     // check auto white balance
     if (auto_white_balance_)
     {
-      cam.set_v4l_parameter("white_balance_temperature_auto", 1);
+      cam_.set_v4l_parameter("white_balance_temperature_auto", 1);
     }
     else
     {
-      cam.set_v4l_parameter("white_balance_temperature_auto", 0);
-      cam.set_v4l_parameter("white_balance_temperature", white_balance_);
+      cam_.set_v4l_parameter("white_balance_temperature_auto", 0);
+      cam_.set_v4l_parameter("white_balance_temperature", white_balance_);
     }
 
     // check auto exposure
     if (!autoexposure_)
     {
       // turn down exposure control (from max of 3)
-      cam.set_v4l_parameter("exposure_auto", 1);
+      cam_.set_v4l_parameter("exposure_auto", 1);
       // change the exposure level
-      cam.set_v4l_parameter("exposure_absolute", exposure_);
+      cam_.set_v4l_parameter("exposure_absolute", exposure_);
     }
 
     // check auto focus
     if (autofocus_)
     {
-      cam.set_auto_focus(1);
-      cam.set_v4l_parameter("focus_auto", 1);
+      cam_.set_auto_focus(1);
+      cam_.set_v4l_parameter("focus_auto", 1);
     }
     else
     {
-      cam.set_v4l_parameter("focus_auto", 0);
+      cam_.set_v4l_parameter("focus_auto", 0);
       if (focus_ >= 0)
       {
-        cam.set_v4l_parameter("focus_absolute", focus_);
+        cam_.set_v4l_parameter("focus_absolute", focus_);
       }
     }
   }
 
   virtual ~UsbCamNode()
   {
-    cam.shutdown();
+    cam_.shutdown();
   }
 
   bool take_and_send_image()
   {
     // grab the image
-    cam.grab_image(&img_);
+    cam_.grab_image(&img_);
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
