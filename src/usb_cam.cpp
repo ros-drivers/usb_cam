@@ -359,6 +359,10 @@ UsbCam::UsbCam()
     avframe_rgb(NULL), avcodec(NULL), avoptions(NULL), avcodec_context(NULL),
     avframe_camera_size(0), avframe_rgb_size(0), video_sws(NULL), image(NULL) {
 }
+UsbCam::~UsbCam()
+{
+  camera_shutdown();
+}
 
 int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
 {
@@ -1181,4 +1185,32 @@ void UsbCam::set_v4l_parameter(const std::string& param, const std::string& valu
   }
   else
     ROS_WARN("usb_cam_node could not run '%s'", cmd.c_str());
+}
+
+UsbCam::io_method UsbCam::io_method_from_string(const std::string& str)
+{
+  if (str == "mmap")
+    return IO_METHOD_MMAP;
+  else if (str == "read")
+    return IO_METHOD_READ;
+  else if (str == "userptr")
+    return IO_METHOD_USERPTR;
+  else
+    return IO_METHOD_UNKNOWN;
+}
+
+UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
+{
+    if (str == "yuyv")
+      return PIXEL_FORMAT_YUYV;
+    else if (str == "uyvy")
+      return PIXEL_FORMAT_UYVY;
+    else if (str == "mjpeg")
+      return PIXEL_FORMAT_MJPEG;
+    else if (str == "yuvmono10")
+      return PIXEL_FORMAT_YUVMONO10;
+    else if (str == "rgb24")
+      return PIXEL_FORMAT_RGB24;
+    else
+      return PIXEL_FORMAT_UNKNOWN;
 }

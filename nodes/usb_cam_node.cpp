@@ -110,14 +110,8 @@ public:
         image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
     // set the IO method
-    UsbCam::io_method io_method;
-    if (io_method_name_ == "mmap")
-      io_method = UsbCam::IO_METHOD_MMAP;
-    else if (io_method_name_ == "read")
-      io_method = UsbCam::IO_METHOD_READ;
-    else if (io_method_name_ == "userptr")
-      io_method = UsbCam::IO_METHOD_USERPTR;
-    else
+    UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
+    if(io_method == UsbCam::IO_METHOD_UNKNOWN)
     {
       ROS_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
       node_.shutdown();
@@ -125,18 +119,8 @@ public:
     }
 
     // set the pixel format
-    UsbCam::pixel_format pixel_format;
-    if (pixel_format_name_ == "yuyv")
-      pixel_format = UsbCam::PIXEL_FORMAT_YUYV;
-    else if (pixel_format_name_ == "uyvy")
-      pixel_format = UsbCam::PIXEL_FORMAT_UYVY;
-    else if (pixel_format_name_ == "mjpeg")
-      pixel_format = UsbCam::PIXEL_FORMAT_MJPEG;
-    else if (pixel_format_name_ == "yuvmono10")
-      pixel_format = UsbCam::PIXEL_FORMAT_YUVMONO10;
-    else if (pixel_format_name_ == "rgb24")
-      pixel_format = UsbCam::PIXEL_FORMAT_RGB24;
-    else
+    UsbCam::pixel_format pixel_format = UsbCam::pixel_format_from_string(pixel_format_name_);
+    if (pixel_format == UsbCam::PIXEL_FORMAT_UNKNOWN)
     {
       ROS_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
       node_.shutdown();
