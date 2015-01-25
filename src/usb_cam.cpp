@@ -50,6 +50,7 @@
 
 #include <ros/ros.h>
 #include <boost/lexical_cast.hpp>
+#include <sensor_msgs/fill_image.h>
 
 #include <usb_cam/usb_cam.h>
 
@@ -356,7 +357,7 @@ void rgb242rgb(char *YUV, char *RGB, int NumPixels)
 UsbCam::UsbCam()
   : io(IO_METHOD_MMAP), fd(-1), buffers(NULL), n_buffers(0), avframe_camera(NULL),
     avframe_rgb(NULL), avcodec(NULL), avoptions(NULL), avcodec_context(NULL),
-    avframe_camera_size(0), avframe_rgb_size(0), video_sws(NULL) {
+    avframe_camera_size(0), avframe_rgb_size(0), video_sws(NULL), image(NULL) {
 }
 
 int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
@@ -472,7 +473,7 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
     rgb242rgb((char*)src, dest->image, dest->width * dest->height);
 }
 
-int UsbCam::read_frame(camera_image_t *image)
+int UsbCam::read_frame()
 {
   struct v4l2_buffer buf;
   unsigned int i;
@@ -982,14 +983,13 @@ void UsbCam::open_device(void)
   }
 }
 
-UsbCam::camera_image_t *UsbCam::camera_start(const char* dev, io_method io_method,
-					     pixel_format pixel_format, int image_width, int image_height,
-					     int framerate)
+void UsbCam::camera_start(const char* dev, io_method io_method,
+			  pixel_format pixel_format, int image_width, int image_height,
+			  int framerate)
 {
   camera_dev = (char*)calloc(1, strlen(dev) + 1);
   strcpy(camera_dev, dev);
 
-  camera_image_t *image;
   io = io_method;
   monochrome = false;
   if (pixel_format == PIXEL_FORMAT_YUYV)
@@ -1031,8 +1031,6 @@ UsbCam::camera_image_t *UsbCam::camera_start(const char* dev, io_method io_metho
   image->is_new = 0;
   image->image = (char *)calloc(image->image_size, sizeof(char));
   memset(image->image, 0, image->image_size * sizeof(char));
-
-  return image;
 }
 
 void UsbCam::camera_shutdown(void)
@@ -1053,9 +1051,23 @@ void UsbCam::camera_shutdown(void)
   if (avframe_rgb)
     av_free(avframe_rgb);
   avframe_rgb = NULL;
+  if(image)
+    free(image);
+  image = NULL;
 }
 
-void UsbCam::camera_grab_image(camera_image_t *image)
+void UsbCam::camera_grab_image(sensor_msgs::Image* msg)
+{
+  // grab the image
+  camera_grab_image();
+  // fill the info
+  fillImage(*msg, "rgb8", image->height, image->width, 3 * image->width,
+	    image->image);
+  // stamp the image
+  msg->header.stamp = ros::Time::now();
+}
+
+void UsbCam::camera_grab_image()
 {
   fd_set fds;
   struct timeval tv;
@@ -1084,7 +1096,7 @@ void UsbCam::camera_grab_image(camera_image_t *image)
     exit(EXIT_FAILURE);
   }
 
-  read_frame(image);
+  read_frame();
   image->is_new = 1;
 }
 

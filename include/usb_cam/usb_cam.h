@@ -55,18 +55,10 @@ extern "C"
 #include <string>
 #include <sstream>
 
+#include <sensor_msgs/Image.h>
+
 class UsbCam {
  public:
-  typedef struct
-  {
-    int width;
-    int height;
-    int bytes_per_pixel;
-    int image_size;
-    char *image;
-    int is_new;
-  } camera_image_t;
-
   typedef enum
   {
     IO_METHOD_READ, IO_METHOD_MMAP, IO_METHOD_USERPTR,
@@ -80,12 +72,13 @@ class UsbCam {
   UsbCam();
 
   // start camera
-  camera_image_t *camera_start(const char* dev, io_method io, pixel_format pf,
-			       int image_width, int image_height, int framerate);
+  void camera_start(const char* dev, io_method io, pixel_format pf,
+		    int image_width, int image_height, int framerate);
   // shutdown camera
   void camera_shutdown(void);
   // grabs a new image from the camera
-  void camera_grab_image(camera_image_t *image);
+  void camera_grab_image(sensor_msgs::Image* image);
+
   // enables/disable auto focus
   void camera_set_auto_focus(int value);
 
@@ -94,10 +87,27 @@ class UsbCam {
   void set_v4l_parameter(const std::string& param, const std::string& value);
 
  private:
+  typedef struct
+  {
+    int width;
+    int height;
+    int bytes_per_pixel;
+    int image_size;
+    char *image;
+    int is_new;
+  } camera_image_t;
+
+  struct buffer
+  {
+    void * start;
+    size_t length;
+  };
+
+
   int init_mjpeg_decoder(int image_width, int image_height);
   void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
   void process_image(const void * src, int len, camera_image_t *dest);
-  int read_frame(camera_image_t *image);
+  int read_frame();
   void stop_capturing(void);
   void start_capturing(void);
   void uninit_device(void);
@@ -107,13 +117,8 @@ class UsbCam {
   void init_device(int image_width, int image_height, int framerate);
   void close_device(void);
   void open_device(void);
+  void camera_grab_image();
 
-
-  struct buffer
-  {
-    void * start;
-    size_t length;
-  };
 
   char *camera_dev;
   unsigned int pixelformat;
@@ -130,6 +135,7 @@ class UsbCam {
   int avframe_camera_size;
   int avframe_rgb_size;
   struct SwsContext *video_sws;
+  camera_image_t *image;
 
 };
 

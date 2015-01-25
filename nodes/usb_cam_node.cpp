@@ -35,7 +35,6 @@
 *********************************************************************/
 
 #include <ros/ros.h>
-#include <sensor_msgs/fill_image.h>
 #include <usb_cam/usb_cam.h>
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
@@ -49,7 +48,6 @@ public:
 
   // shared image message
   sensor_msgs::Image img_;
-  UsbCam::camera_image_t *camera_image_;
   image_transport::CameraPublisher image_pub_;
 
   // parameters
@@ -146,8 +144,8 @@ public:
     }
 
     // start the camera
-    camera_image_ = cam.camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
-        image_height_, framerate_);
+    cam.camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
+		     image_height_, framerate_);
 
     // set camera parameters
     if (brightness_ >= 0)
@@ -214,12 +212,7 @@ public:
   bool take_and_send_image()
   {
     // grab the image
-    cam.camera_grab_image(camera_image_);
-    // fill the info
-    fillImage(img_, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width,
-        camera_image_->image);
-    // stamp the image
-    img_.header.stamp = ros::Time::now();
+    cam.camera_grab_image(&img_);
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
@@ -244,9 +237,6 @@ public:
     }
     return true;
   }
-
-private:
-
 };
 
 int main(int argc, char **argv)
