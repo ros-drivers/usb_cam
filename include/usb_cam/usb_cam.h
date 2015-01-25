@@ -57,6 +57,8 @@ extern "C"
 
 #include <sensor_msgs/Image.h>
 
+namespace usb_cam {
+
 class UsbCam {
  public:
   typedef enum
@@ -143,6 +145,8 @@ class UsbCam {
   camera_image_t *image_;
 
 };
+
+}
 
 #endif
 

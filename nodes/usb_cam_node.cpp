@@ -40,6 +40,8 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
 
+namespace usb_cam {
+
 class UsbCamNode
 {
 public:
@@ -223,10 +225,12 @@ public:
   }
 };
 
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "usb_cam");
-  UsbCamNode a;
+  usb_cam::UsbCamNode a;
   a.spin();
   return EXIT_SUCCESS;
 }

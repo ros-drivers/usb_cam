@@ -56,6 +56,8 @@
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
+namespace usb_cam {
+
 static void errno_exit(const char * s)
 {
   ROS_ERROR("%s error %d, %s\n", s, errno, strerror(errno));
@@ -1212,4 +1214,6 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_RGB24;
     else
       return PIXEL_FORMAT_UNKNOWN;
+}
+
 }
