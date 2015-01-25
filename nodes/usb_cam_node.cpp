@@ -128,7 +128,7 @@ public:
     }
 
     // start the camera
-    cam.camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
+    cam.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
 		     image_height_, framerate_);
 
     // set camera parameters
@@ -175,7 +175,7 @@ public:
     // check auto focus
     if (autofocus_)
     {
-      cam.camera_set_auto_focus(1);
+      cam.set_auto_focus(1);
       cam.set_v4l_parameter("focus_auto", 1);
     }
     else
@@ -190,13 +190,13 @@ public:
 
   virtual ~UsbCamNode()
   {
-    cam.camera_shutdown();
+    cam.shutdown();
   }
 
   bool take_and_send_image()
   {
     // grab the image
-    cam.camera_grab_image(&img_);
+    cam.grab_image(&img_);
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));

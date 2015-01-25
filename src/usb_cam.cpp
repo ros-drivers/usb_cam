@@ -361,7 +361,7 @@ UsbCam::UsbCam()
 }
 UsbCam::~UsbCam()
 {
-  camera_shutdown();
+  shutdown();
 }
 
 int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
@@ -987,7 +987,7 @@ void UsbCam::open_device(void)
   }
 }
 
-void UsbCam::camera_start(const char* dev, io_method io_method,
+void UsbCam::start(const char* dev, io_method io_method,
 			  pixel_format pixel_format, int image_width, int image_height,
 			  int framerate)
 {
@@ -1037,7 +1037,7 @@ void UsbCam::camera_start(const char* dev, io_method io_method,
   memset(image->image, 0, image->image_size * sizeof(char));
 }
 
-void UsbCam::camera_shutdown(void)
+void UsbCam::shutdown(void)
 {
   stop_capturing();
   uninit_device();
@@ -1060,10 +1060,10 @@ void UsbCam::camera_shutdown(void)
   image = NULL;
 }
 
-void UsbCam::camera_grab_image(sensor_msgs::Image* msg)
+void UsbCam::grab_image(sensor_msgs::Image* msg)
 {
   // grab the image
-  camera_grab_image();
+  grab_image();
   // fill the info
   fillImage(*msg, "rgb8", image->height, image->width, 3 * image->width,
 	    image->image);
@@ -1071,7 +1071,7 @@ void UsbCam::camera_grab_image(sensor_msgs::Image* msg)
   msg->header.stamp = ros::Time::now();
 }
 
-void UsbCam::camera_grab_image()
+void UsbCam::grab_image()
 {
   fd_set fds;
   struct timeval tv;
@@ -1105,7 +1105,7 @@ void UsbCam::camera_grab_image()
 }
 
 // enables/disables auto focus
-void UsbCam::camera_set_auto_focus(int value)
+void UsbCam::set_auto_focus(int value)
 {
   struct v4l2_queryctrl queryctrl;
   struct v4l2_ext_control control;

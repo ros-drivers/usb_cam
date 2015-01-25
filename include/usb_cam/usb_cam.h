@@ -73,15 +73,16 @@ class UsbCam {
   ~UsbCam();
 
   // start camera
-  void camera_start(const char* dev, io_method io, pixel_format pf,
+  void start(const char* dev, io_method io, pixel_format pf,
 		    int image_width, int image_height, int framerate);
   // shutdown camera
-  void camera_shutdown(void);
+  void shutdown(void);
+
   // grabs a new image from the camera
-  void camera_grab_image(sensor_msgs::Image* image);
+  void grab_image(sensor_msgs::Image* image);
 
   // enables/disable auto focus
-  void camera_set_auto_focus(int value);
+  void set_auto_focus(int value);
 
   // Set video device parameters
   void set_v4l_parameter(const std::string& param, int value);
@@ -121,7 +122,7 @@ class UsbCam {
   void init_device(int image_width, int image_height, int framerate);
   void close_device(void);
   void open_device(void);
-  void camera_grab_image();
+  void grab_image();
 
 
   char *camera_dev;
