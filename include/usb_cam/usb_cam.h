@@ -90,7 +90,8 @@ class UsbCam {
   void camera_set_auto_focus(int value);
 
   // Set video device parameters
-  void set_v4l_parameters(std::string param);
+  void set_v4l_parameter(const std::string& param, int value);
+  void set_v4l_parameter(const std::string& param, const std::string& value);
 
  private:
   int init_mjpeg_decoder(int image_width, int image_height);

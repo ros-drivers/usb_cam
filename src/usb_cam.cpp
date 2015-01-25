@@ -49,6 +49,7 @@
 #include <sys/ioctl.h>
 
 #include <ros/ros.h>
+#include <boost/lexical_cast.hpp>
 
 #include <usb_cam/usb_cam.h>
 
@@ -1129,15 +1130,26 @@ void UsbCam::camera_set_auto_focus(int value)
 }
 
 /**
-* Set video device parameters via calls to v4l-utils.
+* Set video device parameter via call to v4l-utils.
 *
-* @param param The full parameter to set (e.g., "focus_auto=1")
+* @param param The name of the parameter to set
+* @param param The value to assign
 */
-void UsbCam::set_v4l_parameters(std::string param)
+void UsbCam::set_v4l_parameter(const std::string& param, int value)
+{
+  set_v4l_parameter(param, boost::lexical_cast<std::string>(value));
+}
+/**
+* Set video device parameter via call to v4l-utils.
+*
+* @param param The name of the parameter to set
+* @param param The value to assign
+*/
+void UsbCam::set_v4l_parameter(const std::string& param, const std::string& value)
 {
   // build the command
   std::stringstream ss;
-  ss << "v4l2-ctl --device=" << camera_dev << " -c " << param << " 2>&1";
+  ss << "v4l2-ctl --device=" << camera_dev << " -c " << param << "=" << value << " 2>&1";
   std::string cmd = ss.str();
 
   // capture the output

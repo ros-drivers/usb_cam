@@ -150,72 +150,58 @@ public:
         image_height_, framerate_);
 
     // set camera parameters
-    std::stringstream paramstream;
     if (brightness_ >= 0)
     {
-      paramstream << "brightness=" << brightness_;
-      cam.set_v4l_parameters(paramstream.str());
-      paramstream.str("");
+      cam.set_v4l_parameter("brightness", brightness_);
     }
 
     if (contrast_ >= 0)
     {
-      paramstream << "contrast=" << contrast_;
-      cam.set_v4l_parameters(paramstream.str());
-      paramstream.str("");
+      cam.set_v4l_parameter("contrast", contrast_);
     }
 
     if (saturation_ >= 0)
     {
-      paramstream << "saturation=" << saturation_;
-      cam.set_v4l_parameters(paramstream.str());
-      paramstream.str("");
+      cam.set_v4l_parameter("saturation", saturation_);
     }
 
     if (sharpness_ >= 0)
     {
-      paramstream << "sharpness=" << sharpness_;
-      cam.set_v4l_parameters(paramstream.str());
+      cam.set_v4l_parameter("sharpness", sharpness_);
     }
 
     // check auto white balance
     if (auto_white_balance_)
     {
-      cam.set_v4l_parameters("white_balance_temperature_auto=1");
+      cam.set_v4l_parameter("white_balance_temperature_auto", 1);
     }
     else
     {
-      cam.set_v4l_parameters("white_balance_temperature_auto=0");
-      std::stringstream ss;
-      ss << "white_balance_temperature=" << white_balance_;
-      cam.set_v4l_parameters(ss.str());
+      cam.set_v4l_parameter("white_balance_temperature_auto", 0);
+      cam.set_v4l_parameter("white_balance_temperature", white_balance_);
     }
 
     // check auto exposure
     if (!autoexposure_)
     {
       // turn down exposure control (from max of 3)
-      cam.set_v4l_parameters("exposure_auto=1");
+      cam.set_v4l_parameter("exposure_auto", 1);
       // change the exposure level
-      std::stringstream ss;
-      ss << "exposure_absolute=" << exposure_;
-      cam.set_v4l_parameters(ss.str());
+      cam.set_v4l_parameter("exposure_absolute", exposure_);
     }
 
     // check auto focus
     if (autofocus_)
     {
       cam.camera_set_auto_focus(1);
-      cam.set_v4l_parameters("focus_auto=1");
+      cam.set_v4l_parameter("focus_auto", 1);
     }
     else
     {
-      cam.set_v4l_parameters("focus_auto=0");
+      cam.set_v4l_parameter("focus_auto", 0);
       if (focus_ >= 0)
       {
-        std::stringstream ss;
-        ss << "focus_absolute=" << focus_;
-        cam.set_v4l_parameters(ss.str());
+        cam.set_v4l_parameter("focus_absolute", focus_);
       }
     }
   }
