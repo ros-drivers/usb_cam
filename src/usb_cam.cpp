@@ -1131,14 +1131,13 @@ void UsbCam::camera_set_auto_focus(int value)
 /**
 * Set video device parameters via calls to v4l-utils.
 *
-* @param dev The device (e.g., "/dev/video0")
 * @param param The full parameter to set (e.g., "focus_auto=1")
 */
-void UsbCam::set_v4l_parameters(std::string dev, std::string param)
+void UsbCam::set_v4l_parameters(std::string param)
 {
   // build the command
   std::stringstream ss;
-  ss << "v4l2-ctl --device=" << dev << " -c " << param << " 2>&1";
+  ss << "v4l2-ctl --device=" << camera_dev << " -c " << param << " 2>&1";
   std::string cmd = ss.str();
 
   // capture the output

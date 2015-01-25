@@ -154,68 +154,68 @@ public:
     if (brightness_ >= 0)
     {
       paramstream << "brightness=" << brightness_;
-      UsbCam::set_v4l_parameters(video_device_name_, paramstream.str());
+      cam.set_v4l_parameters(paramstream.str());
       paramstream.str("");
     }
 
     if (contrast_ >= 0)
     {
       paramstream << "contrast=" << contrast_;
-      UsbCam::set_v4l_parameters(video_device_name_, paramstream.str());
+      cam.set_v4l_parameters(paramstream.str());
       paramstream.str("");
     }
 
     if (saturation_ >= 0)
     {
       paramstream << "saturation=" << saturation_;
-      UsbCam::set_v4l_parameters(video_device_name_, paramstream.str());
+      cam.set_v4l_parameters(paramstream.str());
       paramstream.str("");
     }
 
     if (sharpness_ >= 0)
     {
       paramstream << "sharpness=" << sharpness_;
-      UsbCam::set_v4l_parameters(video_device_name_, paramstream.str());
+      cam.set_v4l_parameters(paramstream.str());
     }
 
     // check auto white balance
     if (auto_white_balance_)
     {
-      UsbCam::set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=1");
+      cam.set_v4l_parameters("white_balance_temperature_auto=1");
     }
     else
     {
-      UsbCam::set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=0");
+      cam.set_v4l_parameters("white_balance_temperature_auto=0");
       std::stringstream ss;
       ss << "white_balance_temperature=" << white_balance_;
-      UsbCam::set_v4l_parameters(video_device_name_, ss.str());
+      cam.set_v4l_parameters(ss.str());
     }
 
     // check auto exposure
     if (!autoexposure_)
     {
       // turn down exposure control (from max of 3)
-      UsbCam::set_v4l_parameters(video_device_name_, "exposure_auto=1");
+      cam.set_v4l_parameters("exposure_auto=1");
       // change the exposure level
       std::stringstream ss;
       ss << "exposure_absolute=" << exposure_;
-      UsbCam::set_v4l_parameters(video_device_name_, ss.str());
+      cam.set_v4l_parameters(ss.str());
     }
 
     // check auto focus
     if (autofocus_)
     {
       cam.camera_set_auto_focus(1);
-      UsbCam::set_v4l_parameters(video_device_name_, "focus_auto=1");
+      cam.set_v4l_parameters("focus_auto=1");
     }
     else
     {
-      UsbCam::set_v4l_parameters(video_device_name_, "focus_auto=0");
+      cam.set_v4l_parameters("focus_auto=0");
       if (focus_ >= 0)
       {
         std::stringstream ss;
         ss << "focus_absolute=" << focus_;
-        UsbCam::set_v4l_parameters(video_device_name_, ss.str());
+        cam.set_v4l_parameters(ss.str());
       }
     }
   }
