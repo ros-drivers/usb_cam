@@ -75,7 +75,7 @@ class UsbCam {
   ~UsbCam();
 
   // start camera
-  void start(const char* dev, io_method io, pixel_format pf,
+  void start(const std::string& dev, io_method io, pixel_format pf,
 		    int image_width, int image_height, int framerate);
   // shutdown camera
   void shutdown(void);
@@ -127,7 +127,7 @@ class UsbCam {
   void grab_image();
 
 
-  char *camera_dev_;
+  std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;
   io_method io_;
