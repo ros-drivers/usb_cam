@@ -35,11 +35,12 @@
 *********************************************************************/
 
 #include <ros/ros.h>
-#include <sensor_msgs/fill_image.h>
 #include <usb_cam/usb_cam.h>
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
+
+namespace usb_cam {
 
 class UsbCamNode
 {
@@ -49,7 +50,6 @@ public:
 
   // shared image message
   sensor_msgs::Image img_;
-  usb_cam_camera_image_t *camera_image_;
   image_transport::CameraPublisher image_pub_;
 
   // parameters
@@ -58,6 +58,8 @@ public:
       white_balance_;
   bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
+
+  UsbCam cam_;
 
   UsbCamNode() :
       node_("~")
@@ -110,14 +112,8 @@ public:
         image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
     // set the IO method
-    usb_cam_io_method io_method;
-    if (io_method_name_ == "mmap")
-      io_method = IO_METHOD_MMAP;
-    else if (io_method_name_ == "read")
-      io_method = IO_METHOD_READ;
-    else if (io_method_name_ == "userptr")
-      io_method = IO_METHOD_USERPTR;
-    else
+    UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
+    if(io_method == UsbCam::IO_METHOD_UNKNOWN)
     {
       ROS_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
       node_.shutdown();
@@ -125,18 +121,8 @@ public:
     }
 
     // set the pixel format
-    usb_cam_pixel_format pixel_format;
-    if (pixel_format_name_ == "yuyv")
-      pixel_format = PIXEL_FORMAT_YUYV;
-    else if (pixel_format_name_ == "uyvy")
-      pixel_format = PIXEL_FORMAT_UYVY;
-    else if (pixel_format_name_ == "mjpeg")
-      pixel_format = PIXEL_FORMAT_MJPEG;
-    else if (pixel_format_name_ == "yuvmono10")
-      pixel_format = PIXEL_FORMAT_YUVMONO10;
-    else if (pixel_format_name_ == "rgb24")
-      pixel_format = PIXEL_FORMAT_RGB24;
-    else
+    UsbCam::pixel_format pixel_format = UsbCam::pixel_format_from_string(pixel_format_name_);
+    if (pixel_format == UsbCam::PIXEL_FORMAT_UNKNOWN)
     {
       ROS_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
       node_.shutdown();
@@ -144,94 +130,75 @@ public:
     }
 
     // start the camera
-    camera_image_ = usb_cam_camera_start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
-        image_height_, framerate_);
+    cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
+		     image_height_, framerate_);
 
     // set camera parameters
-    std::stringstream paramstream;
     if (brightness_ >= 0)
     {
-      paramstream << "brightness=" << brightness_;
-      this->set_v4l_parameters(video_device_name_, paramstream.str());
-      paramstream.str("");
+      cam_.set_v4l_parameter("brightness", brightness_);
     }
 
     if (contrast_ >= 0)
     {
-      paramstream << "contrast=" << contrast_;
-      this->set_v4l_parameters(video_device_name_, paramstream.str());
-      paramstream.str("");
+      cam_.set_v4l_parameter("contrast", contrast_);
     }
 
     if (saturation_ >= 0)
     {
-      paramstream << "saturation=" << saturation_;
-      this->set_v4l_parameters(video_device_name_, paramstream.str());
-      paramstream.str("");
+      cam_.set_v4l_parameter("saturation", saturation_);
     }
 
     if (sharpness_ >= 0)
     {
-      paramstream << "sharpness=" << sharpness_;
-      this->set_v4l_parameters(video_device_name_, paramstream.str());
+      cam_.set_v4l_parameter("sharpness", sharpness_);
     }
 
     // check auto white balance
     if (auto_white_balance_)
     {
-      this->set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=1");
+      cam_.set_v4l_parameter("white_balance_temperature_auto", 1);
     }
     else
     {
-      this->set_v4l_parameters(video_device_name_, "white_balance_temperature_auto=0");
-      std::stringstream ss;
-      ss << "white_balance_temperature=" << white_balance_;
-      this->set_v4l_parameters(video_device_name_, ss.str());
+      cam_.set_v4l_parameter("white_balance_temperature_auto", 0);
+      cam_.set_v4l_parameter("white_balance_temperature", white_balance_);
     }
 
     // check auto exposure
     if (!autoexposure_)
     {
       // turn down exposure control (from max of 3)
-      this->set_v4l_parameters(video_device_name_, "exposure_auto=1");
+      cam_.set_v4l_parameter("exposure_auto", 1);
       // change the exposure level
-      std::stringstream ss;
-      ss << "exposure_absolute=" << exposure_;
-      this->set_v4l_parameters(video_device_name_, ss.str());
+      cam_.set_v4l_parameter("exposure_absolute", exposure_);
     }
 
     // check auto focus
     if (autofocus_)
     {
-      usb_cam_camera_set_auto_focus(1);
-      this->set_v4l_parameters(video_device_name_, "focus_auto=1");
+      cam_.set_auto_focus(1);
+      cam_.set_v4l_parameter("focus_auto", 1);
     }
     else
     {
-      this->set_v4l_parameters(video_device_name_, "focus_auto=0");
+      cam_.set_v4l_parameter("focus_auto", 0);
       if (focus_ >= 0)
       {
-        std::stringstream ss;
-        ss << "focus_absolute=" << focus_;
-        this->set_v4l_parameters(video_device_name_, ss.str());
+        cam_.set_v4l_parameter("focus_absolute", focus_);
       }
     }
   }
 
   virtual ~UsbCamNode()
   {
-    usb_cam_camera_shutdown();
+    cam_.shutdown();
   }
 
   bool take_and_send_image()
   {
     // grab the image
-    usb_cam_camera_grab_image(camera_image_);
-    // fill the info
-    fillImage(img_, "rgb8", camera_image_->height, camera_image_->width, 3 * camera_image_->width,
-        camera_image_->image);
-    // stamp the image
-    img_.header.stamp = ros::Time::now();
+    cam_.grab_image(&img_);
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
@@ -256,46 +223,14 @@ public:
     }
     return true;
   }
-
-private:
-
-  /**
-  * Set video device parameters via calls to v4l-utils.
-  *
-  * @param dev The device (e.g., "/dev/video0")
-  * @param param The full parameter to set (e.g., "focus_auto=1")
-  */
-  void set_v4l_parameters(std::string dev, std::string param)
-  {
-    // build the command
-    std::stringstream ss;
-    ss << "v4l2-ctl --device=" << dev << " -c " << param << " 2>&1";
-    std::string cmd = ss.str();
-
-    // capture the output
-    std::string output;
-    int buffer_size = 256;
-    char buffer[buffer_size];
-    FILE *stream = popen(cmd.c_str(), "r");
-    if (stream)
-    {
-      while (!feof(stream))
-        if (fgets(buffer, buffer_size, stream) != NULL)
-          output.append(buffer);
-      pclose(stream);
-      // any output should be an error
-      if (output.length() > 0)
-        ROS_WARN("%s", output.c_str());
-    }
-    else
-      ROS_WARN("usb_cam_node could not run '%s'", cmd.c_str());
-  }
 };
+
+}
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "usb_cam");
-  UsbCamNode a;
+  usb_cam::UsbCamNode a;
   a.spin();
   return EXIT_SUCCESS;
 }
