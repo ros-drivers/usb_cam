@@ -2,6 +2,26 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.0 (2015-01-26)
+------------------
+* Merge pull request #30 from mitchellwills/develop
+  Removed global state from usb_cam by encapsulating it inside an object
+* Made device name a std::string instead of const char*
+* Added usb_cam namespace
+* Added underscore sufix to class fields
+* Removed camera_ prefix from methods
+* Moved methods to parse pixel_format and io_method from string to UsbCam
+* Moved camera_image_t struct to be private in UsbCam
+* Cleaned up parameter assignment
+* Made set_v4l_parameters a non-static function
+* Moved set_v4l_parameters to UsbCam object
+* Removed global state from usb_cam by encapsulating it inside an object
+  function and structions in usb_cam.h became public and everything else is private
+* Merge pull request #28 from mitchellwills/develop
+  Fix installation of header files
+* Fix installation of header files
+* Contributors: Mitchell Wills, Russell Toris
+
 0.2.0 (2015-01-16)
 ------------------
 * Bug fix in camera info settings.
