@@ -314,16 +314,13 @@ void uyvy2rgb(char *YUV, char *RGB, int NumPixels)
   }
 }
 
-static void mono102rgb(char *RAW, char *RGB, int NumPixels)
+static void mono102mono8(char *RAW, char *MONO, int NumPixels)
 {
   int i, j;
-  for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 3)
+  for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 1)
   {
     //first byte is low byte, second byte is high byte; smash together and convert to 8-bit
-    unsigned char grayval = ((RAW[i + 0] >> 2) & 0x3F) | ((RAW[i + 1] << 6) & 0xC0);
-    RGB[j + 0] = grayval;
-    RGB[j + 1] = grayval;
-    RGB[j + 2] = grayval;
+    MONO[j] = (unsigned char)(((RAW[i + 0] >> 2) & 0x3F) | ((RAW[i + 1] << 6) & 0xC0));
   }
 }
 
@@ -463,7 +460,7 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
   {
     if (monochrome_)
     { //actually format V4L2_PIX_FMT_Y16, but xioctl gets unhappy if you don't use the advertised type (yuyv)
-      mono102rgb((char*)src, dest->image, dest->width * dest->height);
+      mono102mono8((char*)src, dest->image, dest->width * dest->height);
     }
     else
     {
@@ -1063,11 +1060,19 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
 {
   // grab the image
   grab_image();
-  // fill the info
-  fillImage(*msg, "rgb8", image_->height, image_->width, 3 * image_->width,
-	    image_->image);
   // stamp the image
   msg->header.stamp = ros::Time::now();
+  // fill the info
+  if (monochrome_)
+  {
+    fillImage(*msg, "mono8", image_->height, image_->width, image_->width,
+        image_->image);
+  }
+  else
+  {
+    fillImage(*msg, "rgb8", image_->height, image_->width, 3 * image_->width,
+        image_->image);
+  }
 }
 
 void UsbCam::grab_image()
