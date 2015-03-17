@@ -97,7 +97,7 @@ public:
     node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
     // check for default camera info
-    if (camera_info_url_.size() == 0)
+    if (!cinfo_->isCalibrated())
     {
       cinfo_->setCameraName(video_device_name_);
       sensor_msgs::CameraInfo camera_info;
