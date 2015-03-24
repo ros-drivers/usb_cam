@@ -2,6 +2,13 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.2 (2015-03-24)
+------------------
+* Merge pull request #34 from eliasm/develop
+  fixed check whether calibration file exists
+* fixed check whether calibration file exists
+* Contributors: Elias Mueggler, Russell Toris
+
 0.3.1 (2015-02-20)
 ------------------
 * Merge pull request #32 from kmhallen/mono8
