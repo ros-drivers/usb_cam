@@ -55,7 +55,7 @@ public:
   // parameters
   std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
-      white_balance_;
+      white_balance_, gain_;
   bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
@@ -87,6 +87,7 @@ public:
     // enable/disable autoexposure
     node_.param("autoexposure", autoexposure_, true);
     node_.param("exposure", exposure_, 100);
+    node_.param("gain", gain_, -1); //0-100?, -1 "leave alone"
     // enable/disable auto white balance temperature
     node_.param("auto_white_balance", auto_white_balance_, true);
     node_.param("white_balance", white_balance_, 4000);
@@ -152,6 +153,11 @@ public:
     if (sharpness_ >= 0)
     {
       cam_.set_v4l_parameter("sharpness", sharpness_);
+    }
+
+    if (gain_ >= 0)
+    {
+      cam_.set_v4l_parameter("gain", gain_);
     }
 
     // check auto white balance
