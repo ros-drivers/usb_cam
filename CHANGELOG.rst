@@ -2,6 +2,13 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.3 (2015-05-14)
+------------------
+* Merge pull request #36 from jsarrett/develop
+  add gain parameter
+* add gain parameter
+* Contributors: James Sarrett, Russell Toris
+
 0.3.2 (2015-03-24)
 ------------------
 * Merge pull request #34 from eliasm/develop
