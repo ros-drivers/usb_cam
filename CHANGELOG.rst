@@ -2,6 +2,14 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.4 (2015-08-18)
+------------------
+* Installs launch files
+* Merge pull request #37 from tzutalin/develop
+  Add a launch file for easy test
+* Add a launch file for easy test
+* Contributors: Russell Toris, tzu.ta.lin
+
 0.3.3 (2015-05-14)
 ------------------
 * Merge pull request #36 from jsarrett/develop
