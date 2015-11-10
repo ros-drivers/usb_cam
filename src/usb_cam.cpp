@@ -1025,7 +1025,7 @@ void UsbCam::start(const std::string& dev, io_method io_method,
 
   image_->width = image_width;
   image_->height = image_height;
-  image_->bytes_per_pixel = 24;
+  image_->bytes_per_pixel = 3;      //corrected 11/10/15 (BYTES not BITS per pixel)
 
   image_->image_size = image_->width * image_->height * image_->bytes_per_pixel;
   image_->is_new = 0;
