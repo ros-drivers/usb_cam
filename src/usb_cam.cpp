@@ -356,7 +356,7 @@ void rgb242rgb(char *YUV, char *RGB, int NumPixels)
 UsbCam::UsbCam()
   : io_(IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0), avframe_camera_(NULL),
     avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL), avcodec_context_(NULL),
-    avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL) {
+    avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL), is_capturing_(false) {
 }
 UsbCam::~UsbCam()
 {
@@ -584,6 +584,8 @@ bool UsbCam::is_capturing() {
 
 void UsbCam::stop_capturing(void)
 {
+  if(!is_capturing_) return;
+
   is_capturing_ = false;
   enum v4l2_buf_type type;
 
@@ -606,6 +608,9 @@ void UsbCam::stop_capturing(void)
 
 void UsbCam::start_capturing(void)
 {
+
+  if(is_capturing_) return;
+
   unsigned int i;
   enum v4l2_buf_type type;
 
