@@ -39,6 +39,7 @@
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
+#include <std_srvs/Empty.h>
 
 namespace usb_cam {
 
@@ -54,12 +55,31 @@ public:
 
   // parameters
   std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
+  //std::string start_service_name_, start_service_name_;
+  bool streaming_status_;
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
       white_balance_, gain_;
   bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCam cam_;
+
+  ros::ServiceServer service_start_, service_stop_;
+
+
+
+  bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
+  {
+    cam_.start_capturing();
+    return true;
+  }
+
+
+  bool service_stop_cap( std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
+  {
+    cam_.stop_capturing();
+    return true;
+  }
 
   UsbCamNode() :
       node_("~")
@@ -97,6 +117,11 @@ public:
     node_.param("camera_name", camera_name_, std::string("head_camera"));
     node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
+
+    // create Services
+    service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
+    service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
+
     // check for default camera info
     if (!cinfo_->isCalibrated())
     {
@@ -222,13 +247,21 @@ public:
     ros::Rate loop_rate(this->framerate_);
     while (node_.ok())
     {
-      if (!take_and_send_image())
-        ROS_WARN("USB camera did not respond in time.");
+      if (cam_.is_capturing()) {
+        if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
+      }
       ros::spinOnce();
       loop_rate.sleep();
+
     }
     return true;
   }
+
+
+
+
+
+
 };
 
 }

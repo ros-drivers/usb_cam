@@ -93,6 +93,10 @@ class UsbCam {
   static io_method io_method_from_string(const std::string& str);
   static pixel_format pixel_format_from_string(const std::string& str);
 
+  void stop_capturing(void);
+  void start_capturing(void);
+  bool is_capturing();
+
  private:
   typedef struct
   {
@@ -115,8 +119,6 @@ class UsbCam {
   void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
   void process_image(const void * src, int len, camera_image_t *dest);
   int read_frame();
-  void stop_capturing(void);
-  void start_capturing(void);
   void uninit_device(void);
   void init_read(unsigned int buffer_size);
   void init_mmap(void);
@@ -125,6 +127,7 @@ class UsbCam {
   void close_device(void);
   void open_device(void);
   void grab_image();
+  bool is_capturing_;
 
 
   std::string camera_dev_;
