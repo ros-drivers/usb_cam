@@ -578,8 +578,13 @@ int UsbCam::read_frame()
   return 1;
 }
 
+bool UsbCam::is_capturing() {
+  return is_capturing_;
+}
+
 void UsbCam::stop_capturing(void)
 {
+  is_capturing_ = false;
   enum v4l2_buf_type type;
 
   switch (io_)
@@ -656,6 +661,7 @@ void UsbCam::start_capturing(void)
 
       break;
   }
+  is_capturing_ = true;
 }
 
 void UsbCam::uninit_device(void)
