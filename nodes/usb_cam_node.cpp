@@ -47,7 +47,10 @@ class UsbCamNode
 {
 public:
   // private ROS node handle
-  ros::NodeHandle node_;
+  ros::NodeHandle priv_node_handle_;
+
+  // relative ROS node handle
+  ros::NodeHandle node_handle_;
 
   // shared image message
   sensor_msgs::Image img_;
@@ -82,45 +85,45 @@ public:
   }
 
   UsbCamNode() :
-      node_("~")
+      priv_node_handle_("~")
   {
     // advertise the main image topic
-    image_transport::ImageTransport it(node_);
+    image_transport::ImageTransport it(node_handle_);
     image_pub_ = it.advertiseCamera("image_raw", 1);
 
     // grab the parameters
-    node_.param("video_device", video_device_name_, std::string("/dev/video0"));
-    node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
-    node_.param("contrast", contrast_, -1); //0-255, -1 "leave alone"
-    node_.param("saturation", saturation_, -1); //0-255, -1 "leave alone"
-    node_.param("sharpness", sharpness_, -1); //0-255, -1 "leave alone"
+    priv_node_handle_.param("video_device", video_device_name_, std::string("/dev/video0"));
+    priv_node_handle_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
+    priv_node_handle_.param("contrast", contrast_, -1); //0-255, -1 "leave alone"
+    priv_node_handle_.param("saturation", saturation_, -1); //0-255, -1 "leave alone"
+    priv_node_handle_.param("sharpness", sharpness_, -1); //0-255, -1 "leave alone"
     // possible values: mmap, read, userptr
-    node_.param("io_method", io_method_name_, std::string("mmap"));
-    node_.param("image_width", image_width_, 640);
-    node_.param("image_height", image_height_, 480);
-    node_.param("framerate", framerate_, 30);
+    priv_node_handle_.param("io_method", io_method_name_, std::string("mmap"));
+    priv_node_handle_.param("image_width", image_width_, 640);
+    priv_node_handle_.param("image_height", image_height_, 480);
+    priv_node_handle_.param("framerate", framerate_, 30);
     // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
-    node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
+    priv_node_handle_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
     // enable/disable autofocus
-    node_.param("autofocus", autofocus_, false);
-    node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
+    priv_node_handle_.param("autofocus", autofocus_, false);
+    priv_node_handle_.param("focus", focus_, -1); //0-255, -1 "leave alone"
     // enable/disable autoexposure
-    node_.param("autoexposure", autoexposure_, true);
-    node_.param("exposure", exposure_, 100);
-    node_.param("gain", gain_, -1); //0-100?, -1 "leave alone"
+    priv_node_handle_.param("autoexposure", autoexposure_, true);
+    priv_node_handle_.param("exposure", exposure_, 100);
+    priv_node_handle_.param("gain", gain_, -1); //0-100?, -1 "leave alone"
     // enable/disable auto white balance temperature
-    node_.param("auto_white_balance", auto_white_balance_, true);
-    node_.param("white_balance", white_balance_, 4000);
+    priv_node_handle_.param("auto_white_balance", auto_white_balance_, true);
+    priv_node_handle_.param("white_balance", white_balance_, 4000);
 
     // load the camera info
-    node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
-    node_.param("camera_name", camera_name_, std::string("head_camera"));
-    node_.param("camera_info_url", camera_info_url_, std::string(""));
-    cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
+    priv_node_handle_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
+    priv_node_handle_.param("camera_name", camera_name_, std::string("head_camera"));
+    priv_node_handle_.param("camera_info_url", camera_info_url_, std::string(""));
+    cinfo_.reset(new camera_info_manager::CameraInfoManager(node_handle_, camera_name_, camera_info_url_));
 
     // create Services
-    service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
-    service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
+    service_start_ = node_handle_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
+    service_stop_ = node_handle_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
 
     // check for default camera info
     if (!cinfo_->isCalibrated())
@@ -142,7 +145,7 @@ public:
     if(io_method == UsbCam::IO_METHOD_UNKNOWN)
     {
       ROS_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
-      node_.shutdown();
+      node_handle_.shutdown();
       return;
     }
 
@@ -151,7 +154,7 @@ public:
     if (pixel_format == UsbCam::PIXEL_FORMAT_UNKNOWN)
     {
       ROS_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
-      node_.shutdown();
+      node_handle_.shutdown();
       return;
     }
 
@@ -245,7 +248,7 @@ public:
   bool spin()
   {
     ros::Rate loop_rate(this->framerate_);
-    while (node_.ok())
+    while (node_handle_.ok())
     {
       if (cam_.is_capturing()) {
         if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
