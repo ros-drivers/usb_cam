@@ -473,6 +473,8 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
     mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_RGB24)
     rgb242rgb((char*)src, dest->image, dest->width * dest->height);
+  else if (pixelformat_ == V4L2_PIX_FMT_GREY)
+    memcpy(dest->image, (char*)src, dest->width * dest->height);
 }
 
 int UsbCam::read_frame()
@@ -1022,6 +1024,11 @@ void UsbCam::start(const std::string& dev, io_method io_method,
   {
     pixelformat_ = V4L2_PIX_FMT_RGB24;
   }
+  else if (pixel_format == PIXEL_FORMAT_GREY)
+  {
+    pixelformat_ = V4L2_PIX_FMT_GREY;
+    monochrome_ = true;
+  }
   else
   {
     ROS_ERROR("Unknown pixel format.");
@@ -1226,6 +1233,8 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_YUVMONO10;
     else if (str == "rgb24")
       return PIXEL_FORMAT_RGB24;
+    else if (str == "grey")
+      return PIXEL_FORMAT_GREY;
     else
       return PIXEL_FORMAT_UNKNOWN;
 }
