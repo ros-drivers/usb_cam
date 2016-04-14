@@ -60,8 +60,10 @@ namespace usb_cam {
 
 static void errno_exit(const char * s)
 {
-  ROS_ERROR("%s error %d, %s", s, errno, strerror(errno));
-  exit(EXIT_FAILURE);
+  std::ostringstream ostr;
+  ostr << s << " error " << errno << ": " << strerror(errno); 
+  ROS_ERROR("%s", ostr.str().c_str());
+  throw std::runtime_error(ostr.str());
 }
 
 static int xioctl(int fd, int request, void * arg)
@@ -531,7 +533,9 @@ int UsbCam::read_frame()
         }
       }
 
-      assert(buf.index < n_buffers_);
+      if(!(buf.index < n_buffers_)){
+         throw std::runtime_error("invalid buffer for mmap");
+      }
       len = buf.bytesused;
       process_image(buffers_[buf.index].start, len, image_);
 
@@ -567,7 +571,9 @@ int UsbCam::read_frame()
         if (buf.m.userptr == (unsigned long)buffers_[i].start && buf.length == buffers_[i].length)
           break;
 
-      assert(i < n_buffers_);
+      if(!(i < n_buffers_)){
+        throw std::runtime_error("invalid buffer for userptr");
+      }
       len = buf.bytesused;
       process_image((void *)buf.m.userptr, len, image_);
 
@@ -674,6 +680,7 @@ void UsbCam::start_capturing(void)
 void UsbCam::uninit_device(void)
 {
   unsigned int i;
+  if(!is_initialized_) return;
 
   switch (io_)
   {
@@ -694,6 +701,7 @@ void UsbCam::uninit_device(void)
   }
 
   free(buffers_);
+  is_initialized_ = false;
 }
 
 void UsbCam::init_read(unsigned int buffer_size)
@@ -702,8 +710,7 @@ void UsbCam::init_read(unsigned int buffer_size)
 
   if (!buffers_)
   {
-    ROS_ERROR("Out of memory");
-    exit(EXIT_FAILURE);
+    errno_exit("init_read");
   }
 
   buffers_[0].length = buffer_size;
@@ -711,8 +718,7 @@ void UsbCam::init_read(unsigned int buffer_size)
 
   if (!buffers_[0].start)
   {
-    ROS_ERROR("Out of memory");
-    exit(EXIT_FAILURE);
+    errno_exit("init_read");
   }
 }
 
@@ -730,8 +736,7 @@ void UsbCam::init_mmap(void)
   {
     if (EINVAL == errno)
     {
-      ROS_ERROR_STREAM(camera_dev_ << " does not support memory mapping");
-      exit(EXIT_FAILURE);
+      errno_exit("VIDIOC_REQBUFS : mmap not supported");
     }
     else
     {
@@ -741,8 +746,8 @@ void UsbCam::init_mmap(void)
 
   if (req.count < 2)
   {
-    ROS_ERROR_STREAM("Insufficient buffer memory on " << camera_dev_);
-    exit(EXIT_FAILURE);
+    //ROS_ERROR_STREAM("Insufficient buffer memory on " << camera_dev_);
+    errno_exit("Insufficient buffer memory");
   }
 
   buffers_ = (buffer*)calloc(req.count, sizeof(*buffers_));
@@ -750,7 +755,7 @@ void UsbCam::init_mmap(void)
   if (!buffers_)
   {
     ROS_ERROR("Out of memory");
-    exit(EXIT_FAILURE);
+    errno_exit("init_mmap");
   }
 
   for (n_buffers_ = 0; n_buffers_ < req.count; ++n_buffers_)
@@ -794,9 +799,9 @@ void UsbCam::init_userp(unsigned int buffer_size)
   {
     if (EINVAL == errno)
     {
-      ROS_ERROR_STREAM(camera_dev_ << " does not support "
-                "user pointer i/o");
-      exit(EXIT_FAILURE);
+      //ROS_ERROR_STREAM(camera_dev_ << " does not support "
+      //          "user pointer i/o");
+      errno_exit("VIDIOC_REQBUFS: user pointer not supported");
     }
     else
     {
@@ -809,7 +814,7 @@ void UsbCam::init_userp(unsigned int buffer_size)
   if (!buffers_)
   {
     ROS_ERROR("Out of memory");
-    exit(EXIT_FAILURE);
+    errno_exit("init_userp");
   }
 
   for (n_buffers_ = 0; n_buffers_ < 4; ++n_buffers_)
@@ -820,7 +825,7 @@ void UsbCam::init_userp(unsigned int buffer_size)
     if (!buffers_[n_buffers_].start)
     {
       ROS_ERROR("Out of memory");
-      exit(EXIT_FAILURE);
+      errno_exit("init_userp memalign");
     }
   }
 }
@@ -838,7 +843,7 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
     if (EINVAL == errno)
     {
       ROS_ERROR_STREAM(camera_dev_ << " is no V4L2 device");
-      exit(EXIT_FAILURE);
+      errno_exit("VIDIOC_QUERYCAP: not a V4L2 device");
     }
     else
     {
@@ -848,8 +853,8 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
 
   if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
   {
-    ROS_ERROR_STREAM(camera_dev_ << " is no video capture device");
-    exit(EXIT_FAILURE);
+    //ROS_ERROR_STREAM(camera_dev_ << " is no video capture device");
+    errno_exit("VIDIOC_QUERYCAP: not a capture device");
   }
 
   switch (io_)
@@ -857,8 +862,8 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
     case IO_METHOD_READ:
       if (!(cap.capabilities & V4L2_CAP_READWRITE))
       {
-        ROS_ERROR_STREAM(camera_dev_ << " does not support read i/o");
-        exit(EXIT_FAILURE);
+        //ROS_ERROR_STREAM(camera_dev_ << " does not support read i/o");
+        errno_exit("VIDIOC_QUERYCAP: read i/o not supported");
       }
 
       break;
@@ -867,8 +872,8 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
     case IO_METHOD_USERPTR:
       if (!(cap.capabilities & V4L2_CAP_STREAMING))
       {
-        ROS_ERROR_STREAM(camera_dev_ << " does not support streaming i/o");
-        exit(EXIT_FAILURE);
+        //ROS_ERROR_STREAM(camera_dev_ << " does not support streaming i/o");
+        errno_exit("VIDIOC_QUERYCAP: streaming i/o not supported");
       }
 
       break;
@@ -966,6 +971,7 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
 
 void UsbCam::close_device(void)
 {
+  if (fd_ == -1) return;
   if (-1 == close(fd_))
     errno_exit("close");
 
@@ -979,13 +985,13 @@ void UsbCam::open_device(void)
   if (-1 == stat(camera_dev_.c_str(), &st))
   {
     ROS_ERROR_STREAM("Cannot identify '" << camera_dev_ << "': " << errno << ", " << strerror(errno));
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Cannot stat device");
   }
 
   if (!S_ISCHR(st.st_mode))
   {
     ROS_ERROR_STREAM(camera_dev_ << " is no device");
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Not a character device ");
   }
 
   fd_ = open(camera_dev_.c_str(), O_RDWR /* required */| O_NONBLOCK, 0);
@@ -993,7 +999,7 @@ void UsbCam::open_device(void)
   if (-1 == fd_)
   {
     ROS_ERROR_STREAM("Cannot open '" << camera_dev_ << "': " << errno << ", " << strerror(errno));
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Cannot open device");
   }
 }
 
@@ -1032,7 +1038,7 @@ void UsbCam::start(const std::string& dev, io_method io_method,
   else
   {
     ROS_ERROR("Unknown pixel format.");
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Unknown pixel format.");
   }
 
   open_device();
@@ -1074,10 +1080,13 @@ void UsbCam::shutdown(void)
   image_ = NULL;
 }
 
-void UsbCam::grab_image(sensor_msgs::Image* msg)
+int UsbCam::grab_image(sensor_msgs::Image* msg)
 {
+  int r;
   // grab the image
-  grab_image();
+  if((r = grab_image()) != 0) {
+    return r;
+  }
   // stamp the image
   msg->header.stamp = ros::Time::now();
   // fill the info
@@ -1091,10 +1100,12 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
     fillImage(*msg, "rgb8", image_->height, image_->width, 3 * image_->width,
         image_->image);
   }
+  return 0;
 }
 
-void UsbCam::grab_image()
+int UsbCam::grab_image()
 {
+  // returns error 
   fd_set fds;
   struct timeval tv;
   int r;
@@ -1110,8 +1121,8 @@ void UsbCam::grab_image()
 
   if (-1 == r)
   {
-    if (EINTR == errno)
-      return;
+    //if (EINTR == errno)
+    //  return -EINTR;
 
     errno_exit("select");
   }
@@ -1119,11 +1130,12 @@ void UsbCam::grab_image()
   if (0 == r)
   {
     ROS_ERROR("select timeout");
-    exit(EXIT_FAILURE);
+    return -ETIMEDOUT;
   }
 
   read_frame();
   image_->is_new = 1;
+  return 0;
 }
 
 // enables/disables auto focus

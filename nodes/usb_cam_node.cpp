@@ -66,8 +66,6 @@ public:
 
   ros::ServiceServer service_start_, service_stop_;
 
-
-
   bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
     cam_.start_capturing();
@@ -133,7 +131,6 @@ public:
       cinfo_->setCameraInfo(camera_info);
     }
 
-
     ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS", camera_name_.c_str(), video_device_name_.c_str(),
         image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
@@ -156,8 +153,16 @@ public:
     }
 
     // start the camera
-    cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
-		     image_height_, framerate_);
+    try {
+      cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
+                    image_height_, framerate_);
+    } catch (std::runtime_error e){
+      std::string msg("Failed to start camera: ");
+      msg.append(e.what());
+      ROS_FATAL("%s", msg.c_str());
+      node_.shutdown();
+      return;
+    }
 
     // set camera parameters
     if (brightness_ >= 0)
@@ -228,8 +233,11 @@ public:
 
   bool take_and_send_image()
   {
+    int r;
     // grab the image
-    cam_.grab_image(&img_);
+    if((r = cam_.grab_image(&img_)) != 0) {
+      return false;
+    }
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
@@ -244,11 +252,27 @@ public:
 
   bool spin()
   {
+    bool timedout = false;
     ros::Rate loop_rate(this->framerate_);
     while (node_.ok())
     {
       if (cam_.is_capturing()) {
-        if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
+        try {
+          if (!take_and_send_image()) {
+            ROS_WARN("USB camera did not respond in time.");
+            timedout = true;
+          } else {
+            if (timedout) {
+              timedout = false;
+            }
+          }
+        } catch (std::runtime_error e){
+            std::string msg("Runtime error: ");
+            msg.append(e.what());
+            ROS_FATAL("%s", msg.c_str());
+            node_.shutdown();
+            return false;
+        }
       }
       ros::spinOnce();
       loop_rate.sleep();
