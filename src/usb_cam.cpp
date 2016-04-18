@@ -608,7 +608,7 @@ void UsbCam::stop_capturing(void)
       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
       if (-1 == xioctl(fd_, VIDIOC_STREAMOFF, &type))
-        errno_exit("VIDIOC_STREAMOFF");
+        ;//errno_exit("VIDIOC_STREAMOFF");
 
       break;
   }
