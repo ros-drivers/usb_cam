@@ -449,7 +449,6 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize, PIX_FMT_RGB24, SWS_BILINEAR, NULL,
 			      NULL,  NULL);
 
-  av_log_set_level(AV_LOG_ERROR);
   sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize, 0, ysize, avframe_rgb_->data,
             avframe_rgb_->linesize);
   sws_freeContext(video_sws_);
