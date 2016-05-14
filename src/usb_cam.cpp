@@ -54,6 +54,7 @@
 
 #include <usb_cam/usb_cam.h>
 
+
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
 namespace usb_cam {
@@ -375,8 +376,13 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   }
 
   avcodec_context_ = avcodec_alloc_context3(avcodec_);
+#if LIBAVCODEC_VERSION_MAJOR > 52
+  avframe_camera_ = av_frame_alloc();
+  avframe_rgb_ = av_frame_alloc();
+#else
   avframe_camera_ = avcodec_alloc_frame();
   avframe_rgb_ = avcodec_alloc_frame();
+#endif
 
   avpicture_alloc((AVPicture *)avframe_rgb_, PIX_FMT_RGB24, image_width, image_height);
 
@@ -442,6 +448,8 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
   video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize, PIX_FMT_RGB24, SWS_BILINEAR, NULL,
 			      NULL,  NULL);
+
+  av_log_set_level(AV_LOG_ERROR);
   sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize, 0, ysize, avframe_rgb_->data,
             avframe_rgb_->linesize);
   sws_freeContext(video_sws_);

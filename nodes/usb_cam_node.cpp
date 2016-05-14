@@ -40,6 +40,7 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
 #include <std_srvs/Empty.h>
+#include <libavutil/log.h>
 
 namespace usb_cam {
 
@@ -268,6 +269,7 @@ public:
 
 int main(int argc, char **argv)
 {
+  av_log_set_level(AV_LOG_ERROR);
   ros::init(argc, argv, "usb_cam");
   usb_cam::UsbCamNode a;
   a.spin();
