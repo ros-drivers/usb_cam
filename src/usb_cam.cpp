@@ -390,7 +390,7 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
 #endif
 
   avframe_camera_size_ = av_image_get_buffer_size(AV_PIX_FMT_YUV422P, image_width, image_height, 1);
-  avframe_rgb_size_ = av_image_get_buffer_size(AV_PIX_FMT_RGB4, image_width, image_height, 1);
+  avframe_rgb_size_ = av_image_get_buffer_size(AV_PIX_FMT_RGB24, image_width, image_height, 1);
 
   /* open it */
   if (avcodec_open2(avcodec_context_, avcodec_, &avoptions_) < 0)
@@ -440,16 +440,17 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
     return;
   }
 
-  video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL,
-			      NULL,  NULL);
-  sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize, 0, ysize, avframe_rgb_->data,
-            avframe_rgb_->linesize);
+  //video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL,  NULL);
+  video_sws_ = sws_getContext(xsize, ysize, AV_PIX_FMT_YUV422P, xsize, ysize, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL,  NULL);
+  sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize, 0, ysize, avframe_rgb_->data, avframe_rgb_->linesize);
   sws_freeContext(video_sws_);
 
-  int size = avpicture_layout((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size_);
+  int size = av_image_copy_to_buffer((uint8_t *)RGB, avframe_rgb_size_, (const uint8_t * const*)avframe_rgb_->data, avframe_rgb_->linesize, AV_PIX_FMT_RGB24, xsize, ysize, 1);
   if (size != avframe_rgb_size_)
   {
-    ROS_ERROR("webcam: avpicture_layout error: %d", size);
+    char errorstr[512];
+    av_strerror(size, errorstr, 512);
+    ROS_ERROR("webcam: avpicture_layout error: %d, %s", size, errorstr);
     return;
   }
 }
