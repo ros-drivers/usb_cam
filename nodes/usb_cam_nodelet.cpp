@@ -195,16 +195,21 @@ namespace usb_cam {
 
   bool UsbCamNodelet::take_and_send_image()
   {
+    sensor_msgs::Image *img_tmp=new sensor_msgs::Image();
+    img_tmp->header.frame_id = img_.header.frame_id;
+
     // grab the image
-    cam_.grab_image(&img_);
+    cam_.grab_image(img_tmp);
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
-    ci->header.frame_id = img_.header.frame_id;
-    ci->header.stamp = img_.header.stamp;
+    ci->header.frame_id = img_tmp->header.frame_id;
+    ci->header.stamp = img_tmp->header.stamp;
 
     // publish the image
-    image_pub_.publish(img_, *ci);
+    sensor_msgs::ImageConstPtr img_ptr(img_tmp);
+    image_pub_.publish(img_ptr, ci);
+    //ROS_INFO("usb_cam: publishing Img : 0x%x", &img_tmp->data[0]);
 
     return true;
   }
