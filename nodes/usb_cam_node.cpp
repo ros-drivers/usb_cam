@@ -58,7 +58,7 @@ public:
   //std::string start_service_name_, start_service_name_;
   bool streaming_status_;
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
-      white_balance_, gain_;
+      white_balance_, gain_, power_line_frequency_;
   bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
@@ -111,6 +111,8 @@ public:
     // enable/disable auto white balance temperature
     node_.param("auto_white_balance", auto_white_balance_, true);
     node_.param("white_balance", white_balance_, 4000);
+    // Powerline frequency filter: Off/50Hz/60Hz
+    node_.param("power_line_frequency", power_line_frequency_, -1);
 
     // load the camera info
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
@@ -219,6 +221,12 @@ public:
         cam_.set_v4l_parameter("focus_absolute", focus_);
       }
     }
+
+    if (power_line_frequency_ >= 0)
+    {
+      cam_.set_v4l_parameter("power_line_frequency", power_line_frequency_);
+    }
+
   }
 
   virtual ~UsbCamNode()
