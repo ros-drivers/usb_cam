@@ -76,28 +76,21 @@ public:
                      camera_name_.c_str(), video_device_name_.c_str(), image_width_, image_height_,
                      io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
-        UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
-        if(io_method == UsbCam::IO_METHOD_UNKNOWN)
+        io_method_ = UsbCam::io_method_from_string(io_method_name_);
+        if(io_method_ == UsbCam::IO_METHOD_UNKNOWN)
         {
             NODELET_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
             SHUTDOWN_NODELET();
             return;
         }
 
-        UsbCam::pixel_format pixel_format = UsbCam::pixel_format_from_string(pixel_format_name_);
-        if (pixel_format == UsbCam::PIXEL_FORMAT_UNKNOWN)
+        pixel_format_ = UsbCam::pixel_format_from_string(pixel_format_name_);
+        if (pixel_format_ == UsbCam::PIXEL_FORMAT_UNKNOWN)
         {
             NODELET_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
             SHUTDOWN_NODELET();
             return;
         }
-
-        // only way to initialise our UsbCam, but we don't want to start capturing yet
-        cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
-		               image_height_, framerate_);
-        cam_.stop_capturing();
-
-        set_v4l_params_();
 
         service_toggle_capture_ = nh.advertiseService("toggle_capture", &UsbCamNodelet::service_toggle_cap, this);
     }
@@ -122,6 +115,9 @@ public:
             if (!cam_.is_capturing())
             {
                 // if capturing was recently stopped, we should wait for thread to finish execution
+                cam_.start(video_device_name_.c_str(), io_method_, pixel_format_, image_width_,
+		               image_height_, framerate_);
+                set_v4l_params_();
                 cam_lock.unlock();
                 try
                 {
@@ -143,7 +139,7 @@ public:
         else
         {
             std::lock_guard<std::mutex> cam_lock(cam_mutex_);
-            cam_.stop_capturing();
+            cam_.shutdown();
             res.success = true;
         }
         return res.success;
@@ -325,6 +321,9 @@ private:
     bool autofocus_;
     bool autoexposure_;
     bool auto_white_balance_;
+
+    UsbCam::io_method io_method_;
+    UsbCam::pixel_format pixel_format_;
 
     boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
