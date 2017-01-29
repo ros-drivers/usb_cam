@@ -139,7 +139,9 @@ public:
         else
         {
             std::lock_guard<std::mutex> cam_lock(cam_mutex_);
-            cam_.shutdown();
+            if (cam_.is_capturing()) {
+                cam_.shutdown();
+            }
             res.success = true;
         }
         return res.success;
