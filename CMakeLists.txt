@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(usb_cam)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -34,17 +35,10 @@ include_directories(include
 )
 
 ## Build the USB camera library
-add_library(${PROJECT_NAME} src/usb_cam.cpp)
+add_library(${PROJECT_NAME}
+  src/usb_cam.cpp
+  nodes/usb_cam_node.cpp)
 target_link_libraries(${PROJECT_NAME}
-  ${avcodec_LIBRARIES}
-  ${swscale_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
-
-## Declare a cpp executable
-add_executable(${PROJECT_NAME}_node nodes/usb_cam_node.cpp)
-target_link_libraries(${PROJECT_NAME}_node
-  ${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${swscale_LIBRARIES}
   ${catkin_LIBRARIES}
@@ -53,12 +47,6 @@ target_link_libraries(${PROJECT_NAME}_node
 #############
 ## Install ##
 #############
-
-## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_node ${PROJECT_NAME}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
 
 ## Copy launch files
 install(DIRECTORY launch/
