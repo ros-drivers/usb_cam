@@ -228,10 +228,10 @@ void UsbCamNode::publish() {
 }
 
 void UsbCamNode::grab() {
-  static constexpr std::chrono::duration<double, std::milli> MinSleepDuration(0);
-  double dt = 100;
+  const std::chrono::duration<double, std::milli> min_sleep_duration(1000. / framerate_);
+  std::cout << "min_sleep_duration " << min_sleep_duration.count() << std::endl;
   while (ros::ok()) {
-    std::clock_t start = std::clock();
+    auto start = std::chrono::high_resolution_clock::now();
     {
       std::lock_guard<std::mutex> lock(image_mutex_);
       sensor_msgs::Image image_msg;
@@ -240,8 +240,8 @@ void UsbCamNode::grab() {
       image_available_ = true;
     }
 
-    std::clock_t end = std::clock();
-    std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(dt - (end - start)));
+    auto end = std::chrono::high_resolution_clock::now();
+    std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(min_sleep_duration - (end - start)));
     image_cv_.notify_all();
   }
 }
