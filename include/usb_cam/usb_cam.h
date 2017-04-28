@@ -55,6 +55,7 @@ extern "C"
 #include <string>
 #include <sstream>
 
+#include <nodelet/nodelet.h>
 #include <sensor_msgs/Image.h>
 
 namespace usb_cam {
