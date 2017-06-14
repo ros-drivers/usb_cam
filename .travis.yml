@@ -1,29 +1,35 @@
-language:
-  - cpp
-  - python
-python:
-  - "2.7"
+sudo: required 
+dist: trusty 
+language: generic 
 compiler:
   - gcc
-
-branches:
-  only:
-    - master
-    - develop
-
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+#    recipients:
+#      - jane@doe
+env:
+  matrix:
+    - USE_DEB=true  ROS_DISTRO="indigo"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - USE_DEB=true  ROS_DISTRO="indigo"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu  PRERELEASE=true
+    - USE_DEB=true  ROS_DISTRO="indigo"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - USE_DEB=true  ROS_DISTRO="jade"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - USE_DEB=true  ROS_DISTRO="jade"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - USE_DEB=true  ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - USE_DEB=true  ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu  PRERELEASE=true
+    - USE_DEB=true  ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - USE_DEB=true  ROS_DISTRO="lunar" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - USE_DEB=true  ROS_DISTRO="lunar" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu  PRERELEASE=true
+    - USE_DEB=true  ROS_DISTRO="lunar" ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+matrix:
+  allow_failures:
+    - env: USE_DEB=true  ROS_DISTRO="indigo"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu  PRERELEASE=true
+    - env: USE_DEB=true  ROS_DISTRO="jade"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: USE_DEB=true  ROS_DISTRO="jade"   ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
+    - env: USE_DEB=true  ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu  PRERELEASE=true
+    - env: USE_DEB=true  ROS_DISTRO="lunar" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu  PRERELEASE=true
 install:
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
-  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-  - sudo apt-get update -qq
-  - sudo apt-get install python-catkin-pkg python-rosdep ros-hydro-catkin -qq
-  - sudo rosdep init
-  - rosdep update 
-  - mkdir -p /tmp/ws/src
-  - ln -s `pwd` /tmp/ws/src/package
-  - cd /tmp/ws
-  - rosdep install --from-paths src --ignore-src --rosdistro hydro -y
-
-script:
-  - source /opt/ros/hydro/setup.bash
-  - catkin_make
-  - catkin_make install
+  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+script: 
+  - .ci_config/travis.sh
