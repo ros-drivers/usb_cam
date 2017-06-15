@@ -2,6 +2,12 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* .travis.yml: udpate to trusty
+* add AV\_ prefix to PIX_FMT\_* for X,Y (`#71 <https://github.com/ros-drivers/usb_cam/issues/71>`_)
+* Contributors: Kei Okada
+
 0.3.5 (2017-06-14)
 ------------------
 * add ROS Orphaned Package Maintainers to maintainer tag (`#69 <https://github.com/ros-drivers/usb_cam/issues/69>`_)
@@ -338,4 +344,4 @@ Changelog for package usb_cam
 * Working on the listerner that will write to HDFFormat.
 * Creating a listerner that can write to sofiehdfformat files.
 * Initial commit
-* Contributors: Adrian Cooke, Russell Toris, ¨Adrian
+* Contributors: Adrian Cooke, Russell Toris, Adrian
