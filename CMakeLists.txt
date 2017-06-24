@@ -19,6 +19,7 @@ pkg_check_modules(swscale libswscale REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
+  CATKIN_DEPENDS sensor_msgs std_msgs
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
 )
