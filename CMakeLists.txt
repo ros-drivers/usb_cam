@@ -1,34 +1,24 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(usb_cam)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS image_transport roscpp std_msgs std_srvs sensor_msgs camera_info_manager)
+
+# find_package(camera_info_manager REQUIRED)
+# find_package(image_transport REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 ## pkg-config libraries
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(avcodec libavcodec REQUIRED)
 pkg_check_modules(swscale libswscale REQUIRED)
 
-###################################################
-## Declare things to be passed to other projects ##
-###################################################
-
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-)
-
-###########
-## Build ##
-###########
-
 include_directories(include
-  ${catkin_INCLUDE_DIRS}
   ${avcodec_INCLUDE_DIRS}
   ${swscale_INCLUDE_DIRS}
 )
@@ -38,7 +28,6 @@ add_library(${PROJECT_NAME} src/usb_cam.cpp)
 target_link_libraries(${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${swscale_LIBRARIES}
-  ${catkin_LIBRARIES}
 )
 
 ## Declare a cpp executable
@@ -47,26 +36,21 @@ target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${swscale_LIBRARIES}
-  ${catkin_LIBRARIES}
+  # TODO(lucasw) should this have been in libavcodec?
+  avutil
 )
 
-#############
-## Install ##
-#############
-
-## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_node ${PROJECT_NAME}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ament_target_dependencies(${PROJECT_NAME}
+  "builtin_interfaces"
+  "rclcpp"
+  "sensor_msgs"
+  "std_msgs"
+  "std_srvs"
 )
 
-## Copy launch files
-install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-  FILES_MATCHING PATTERN "*.launch"
-)
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/show_image.py DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
-)
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+
+ament_package()

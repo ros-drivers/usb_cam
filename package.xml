@@ -1,7 +1,9 @@
-<package>
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>usb_cam</name>
-  <version>0.3.6</version>
-  <description>A ROS Driver for V4L USB Cameras</description>
+  <version>0.3.7</version>
+  <description>A ROS2 Driver for V4L USB Cameras</description>
 
   <maintainer email="evanflynn.msu@gmail.com">Evan Flynn</maintainer>
   
@@ -10,25 +12,37 @@
   <license>BSD</license>
 
   <url type="website">http://wiki.ros.org/usb_cam</url>
-  <url type="bugtracker">https://github.com/bosch-ros-pkg/usb_cam/issues</url>
-  <url type="repository">https://github.com/bosch-ros-pkg/usb_cam</url>
+  <url type="bugtracker">https://github.com/ros-drivers/usb_cam/issues</url>
+  <url type="repository">https://github.com/ros-drivers/usb_cam</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>image_transport</build_depend> 
-  <build_depend>roscpp</build_depend> 
-  <build_depend>std_msgs</build_depend> 
-  <build_depend>std_srvs</build_depend> 
-  <build_depend>sensor_msgs</build_depend> 
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+<!--
+  <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>ffmpeg</build_depend>
   <build_depend>camera_info_manager</build_depend>
 
-  <run_depend>image_transport</run_depend> 
-  <run_depend>roscpp</run_depend> 
-  <run_depend>std_msgs</run_depend> 
-  <run_depend>std_srvs</run_depend> 
-  <run_depend>sensor_msgs</run_depend> 
+  <run_depend>image_transport</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
   <run_depend>ffmpeg</run_depend>
   <run_depend>camera_info_manager</run_depend>
   <run_depend>v4l-utils</run_depend>
+-->
+
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

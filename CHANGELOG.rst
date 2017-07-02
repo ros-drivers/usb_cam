@@ -2,6 +2,11 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.7 (2018-10-29)
+------------------
+
+* ROS2 version
+
 0.3.6 (2017-06-15)
 ------------------
 * .travis.yml: udpate to trusty
