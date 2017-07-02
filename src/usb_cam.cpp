@@ -58,6 +58,38 @@
 
 namespace usb_cam {
 
+void monotonicToRealTime(const timespec& monotonic_time, timespec& real_time)
+{
+  struct timespec real_sample1, real_sample2, monotonic_sample;
+
+  // TODO(lucasw) Disable interrupts here?
+  // otherwise what if there is a delay/interruption between sampling the times?
+  clock_gettime(CLOCK_REALTIME, &real_sample1);
+  clock_gettime(CLOCK_MONOTONIC, &monotonic_sample);
+  clock_gettime(CLOCK_REALTIME, &real_sample2);
+
+  timespec time_diff;
+  time_diff.tv_sec = real_sample2.tv_sec - monotonic_sample.tv_sec;
+  time_diff.tv_nsec = real_sample2.tv_nsec - monotonic_sample.tv_nsec;
+
+  // This isn't available outside of the kernel
+  // real_time = timespec_add(monotonic_time, time_diff);
+
+  const long NSEC_PER_SEC = 1000000000;
+  real_time.tv_sec = monotonic_time.tv_sec + time_diff.tv_sec;
+  real_time.tv_nsec = monotonic_time.tv_nsec + time_diff.tv_nsec;
+  if (real_time.tv_nsec >= NSEC_PER_SEC)
+  {
+    ++real_time.tv_sec;
+    real_time.tv_nsec -= NSEC_PER_SEC;
+  }
+  else if (real_time.tv_nsec < 0)
+  {
+    --real_time.tv_sec;
+    real_time.tv_nsec += NSEC_PER_SEC;
+  }
+}
+
 static void errno_exit(const char * s)
 {
   ROS_ERROR("%s error %d, %s", s, errno, strerror(errno));
@@ -487,6 +519,9 @@ int UsbCam::read_frame()
   struct v4l2_buffer buf;
   unsigned int i;
   int len;
+  ros::Time stamp;
+  timespec buf_time;
+  timespec real_time;
 
   switch (io_)
   {
@@ -510,6 +545,7 @@ int UsbCam::read_frame()
       }
 
       process_image(buffers_[0].start, len, image_);
+      // TODO(lucasw) how to get timestamp with this method?
 
       break;
 
@@ -536,12 +572,19 @@ int UsbCam::read_frame()
         }
       }
 
+      // need to get buf time here otherwise process_image will zero it
+      TIMEVAL_TO_TIMESPEC(&buf.timestamp, &buf_time);
+      monotonicToRealTime(buf_time, real_time);
+      stamp = ros::Time(real_time.tv_sec, real_time.tv_nsec);
+
       assert(buf.index < n_buffers_);
       len = buf.bytesused;
       process_image(buffers_[buf.index].start, len, image_);
 
       if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf))
         errno_exit("VIDIOC_QBUF");
+
+      image_->stamp = stamp;
 
       break;
 
@@ -568,6 +611,10 @@ int UsbCam::read_frame()
         }
       }
 
+      TIMEVAL_TO_TIMESPEC(&buf.timestamp, &buf_time);
+      monotonicToRealTime(buf_time, real_time);
+      stamp = ros::Time(real_time.tv_sec, real_time.tv_nsec);
+
       for (i = 0; i < n_buffers_; ++i)
         if (buf.m.userptr == (unsigned long)buffers_[i].start && buf.length == buffers_[i].length)
           break;
@@ -579,6 +626,7 @@ int UsbCam::read_frame()
       if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf))
         errno_exit("VIDIOC_QBUF");
 
+      image_->stamp = stamp;
       break;
   }
 
@@ -1112,6 +1160,8 @@ void UsbCam::grab_image()
   tv.tv_usec = 0;
 
   r = select(fd_ + 1, &fds, NULL, NULL, &tv);
+  // if the v4l2_buffer timestamp isn't available use this time, though
+  // it may be 10s of milliseconds after the frame acquisition.
   image_->stamp = ros::Time::now();
 
   if (-1 == r)
