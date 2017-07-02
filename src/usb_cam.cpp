@@ -1084,7 +1084,7 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
   // grab the image
   grab_image();
   // stamp the image
-  msg->header.stamp = ros::Time::now();
+  msg->header.stamp = image_->stamp;
   // fill the info
   if (monochrome_)
   {
@@ -1112,6 +1112,7 @@ void UsbCam::grab_image()
   tv.tv_usec = 0;
 
   r = select(fd_ + 1, &fds, NULL, NULL, &tv);
+  image_->stamp = ros::Time::now();
 
   if (-1 == r)
   {
