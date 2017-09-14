@@ -15,14 +15,6 @@
 
 #include <usb_cam/usb_cam.h>
 
-#define SHUTDOWN_NODELET() \
-NODELET_FATAL_ONCE("Unloading nodelet"); \
-nodelet::NodeletUnload unload_service; \
-unload_service.request.name = getName(); \
-if (!ros::service::call(ros::this_node::getName() + "/unload_nodelet", unload_service)) { \
-    ros::shutdown(); \
-}
-
 namespace usb_cam
 {
 static const std::string DEFAULT_CAMERA_NAME = "head_camera";
@@ -80,7 +72,6 @@ public:
         if(io_method_ == UsbCam::IO_METHOD_UNKNOWN)
         {
             NODELET_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
-            SHUTDOWN_NODELET();
             return;
         }
 
@@ -88,7 +79,6 @@ public:
         if (pixel_format_ == UsbCam::PIXEL_FORMAT_UNKNOWN)
         {
             NODELET_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
-            SHUTDOWN_NODELET();
             return;
         }
 
@@ -149,6 +139,12 @@ public:
 
     void spin()
     {
+        if(io_method_ == UsbCam::IO_METHOD_UNKNOWN || pixel_format_ == UsbCam::PIXEL_FORMAT_UNKNOWN)
+        {
+            NODELET_ERROR("Unknown IO method % s or Pixel format %s", io_method_name_, pixel_format_name_);
+            return;
+        }
+
         ros::Rate loop_rate(framerate_);
         try
         {
