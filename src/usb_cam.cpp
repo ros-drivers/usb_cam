@@ -347,6 +347,35 @@ static void yuyv2rgb(char *YUV, char *RGB, int NumPixels)
   }
 }
 
+// Used by MS LifeCam Studio
+// See http://linuxtv.org/downloads/v4l-dvb-apis/V4L2-PIX-FMT-M420.html
+void m4202rgb(char *YUV, char *RGB, int width, int height)
+{
+  int c, i, j, k, l;
+  unsigned char y0, y1, u, v;
+  unsigned char r, g, b;
+
+
+  for (j=0, i=0; j<height; j+=2, i+=3) {
+    for (c=0; c<width; c+=1) {
+      y0 = YUV[i*width + c];
+      y1 = YUV[(i+1)*width + c];
+      if (c%2 == 0) {
+        u = YUV[(i+2)*width + c];
+        v = YUV[(i+2)*width + c+1];
+      }
+      YUV2RGB (y0, u, v, &r, &g, &b);
+      RGB[3*(j*width+c) + 0] = r;
+      RGB[3*(j*width+c) + 1] = g;
+      RGB[3*(j*width+c) + 2] = b;
+      YUV2RGB (y1, u, v, &r, &g, &b);
+      RGB[3*((j+1)*width+c) + 0] = r;
+      RGB[3*((j+1)*width+c) + 1] = g;
+      RGB[3*((j+1)*width+c) + 2] = b;
+    }
+  }
+}
+
 void rgb242rgb(char *YUV, char *RGB, int NumPixels)
 {
   memcpy(RGB, YUV, NumPixels * 3);
@@ -478,6 +507,8 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
     mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_RGB24)
     rgb242rgb((char*)src, dest->image, dest->width * dest->height);
+  else if (pixelformat_ == V4L2_PIX_FMT_M420)
+    m4202rgb((char*)src, dest->image, dest->width, dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_GREY)
     memcpy(dest->image, (char*)src, dest->width * dest->height);
 }
@@ -1034,6 +1065,10 @@ void UsbCam::start(const std::string& dev, io_method io_method,
     pixelformat_ = V4L2_PIX_FMT_GREY;
     monochrome_ = true;
   }
+  else if (pixel_format == PIXEL_FORMAT_M420)
+  {
+    pixelformat_ = V4L2_PIX_FMT_M420;
+  }
   else
   {
     ROS_ERROR("Unknown pixel format.");
@@ -1240,6 +1275,8 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_RGB24;
     else if (str == "grey")
       return PIXEL_FORMAT_GREY;
+    else if (str == "m420")
+      return PIXEL_FORMAT_M420;
     else
       return PIXEL_FORMAT_UNKNOWN;
 }
