@@ -1129,7 +1129,7 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
   // stamp the image
   msg->header.stamp = ros::Time::now();
   // fill the info
-  if (encoding_ == "rbg8")
+  if (encoding_ == "rgb8")
   {
     fillImage(*msg, encoding_, image_->height, image_->width, 3 * image_->width,
                 image_->image);
