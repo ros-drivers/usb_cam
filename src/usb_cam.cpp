@@ -526,6 +526,11 @@ int UsbCam::read_frame()
 
             /* fall through */
 
+          case ENODEV:
+            ROS_WARN("Connection to camera has been lost.");
+            this->shutdown();
+            return 0;
+
           default:
             errno_exit("VIDIOC_DQBUF");
         }
@@ -535,8 +540,9 @@ int UsbCam::read_frame()
       len = buf.bytesused;
       process_image(buffers_[buf.index].start, len, image_);
 
-      if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf))
+      if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf)) {
         errno_exit("VIDIOC_QBUF");
+      }
 
       break;
 
@@ -577,6 +583,7 @@ int UsbCam::read_frame()
       break;
   }
 
+  image_->is_new = 1;
   return 1;
 }
 
@@ -602,7 +609,8 @@ void UsbCam::stop_capturing(void)
       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
       if (-1 == xioctl(fd_, VIDIOC_STREAMOFF, &type))
-        errno_exit("VIDIOC_STREAMOFF");
+        if (errno != ENODEV)
+          errno_exit("VIDIOC_STREAMOFF");
 
       break;
   }
@@ -1078,6 +1086,8 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
 {
   // grab the image
   grab_image();
+  if (ENODEV == errno) return;
+
   // stamp the image
   msg->header.stamp = ros::Time::now();
   // fill the info
@@ -1123,7 +1133,6 @@ void UsbCam::grab_image()
   }
 
   read_frame();
-  image_->is_new = 1;
 }
 
 // enables/disables auto focus

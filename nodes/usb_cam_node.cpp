@@ -42,7 +42,6 @@
 #include <std_srvs/Empty.h>
 
 namespace usb_cam {
-
 class UsbCamNode
 {
 public:
@@ -137,6 +136,11 @@ public:
     ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS", camera_name_.c_str(), video_device_name_.c_str(),
         image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
+    init_camera();
+  }
+
+  void init_camera() {
+
     // set the IO method
     UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
     if(io_method == UsbCam::IO_METHOD_UNKNOWN)
@@ -230,6 +234,7 @@ public:
   {
     // grab the image
     cam_.grab_image(&img_);
+    if (ENODEV == errno) return false;
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
@@ -247,21 +252,23 @@ public:
     ros::Rate loop_rate(this->framerate_);
     while (node_.ok())
     {
-      if (cam_.is_capturing()) {
-        if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
+      if (cam_.is_capturing()) { 
+        if (!take_and_send_image())
+          ROS_WARN("USB camera did not respond in time.");
+      } else if (camera_is_connected()) {
+        this->init_camera();
+        ROS_INFO("Connection to camera re-established");
       }
       ros::spinOnce();
       loop_rate.sleep();
-
     }
     return true;
   }
 
-
-
-
-
-
+private:
+    inline bool camera_is_connected() {
+      return ( access( video_device_name_.c_str(), R_OK) != -1);
+    }
 };
 
 }
@@ -271,5 +278,6 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "usb_cam");
   usb_cam::UsbCamNode a;
   a.spin();
+  std::cout << "finishing" << std::endl;
   return EXIT_SUCCESS;
 }
