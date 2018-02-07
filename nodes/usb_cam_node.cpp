@@ -234,8 +234,10 @@ public:
   {
     // grab the image
     cam_.grab_image(&img_);
-    if (ENODEV == errno) return false;
-
+    if (ENODEV == errno) {
+        cam_.shutdown(); 
+        return false;
+    }
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
     ci->header.frame_id = img_.header.frame_id;
