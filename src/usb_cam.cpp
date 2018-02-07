@@ -539,9 +539,8 @@ int UsbCam::read_frame()
       len = buf.bytesused;
       process_image(buffers_[buf.index].start, len, image_);
 
-      if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf)) {
+      if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf)) 
         errno_exit("VIDIOC_QBUF");
-      }
 
       break;
 
@@ -619,6 +618,7 @@ void UsbCam::start_capturing(void)
 {
 
   if(is_capturing_) return;
+  if (fd_ == -1) return;  // @WZ: in case we shutdown due to disconnect
 
   unsigned int i;
   enum v4l2_buf_type type;
