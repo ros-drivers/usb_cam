@@ -526,7 +526,7 @@ int UsbCam::read_frame()
 
             /* fall through */
 
-          case ENODEV:  // @WZ: added to handle disconnection
+          case ENODEV:
             ROS_WARN("Connection to camera has been lost.");
             return 0;
 
@@ -581,7 +581,7 @@ int UsbCam::read_frame()
       break;
   }
 
-  image_->is_new = 1;  // @WZ: moved from grab_image:1135 to handle ENODEV without segfaulting
+  image_->is_new = 1;
   return 1;
 }
 
@@ -618,7 +618,7 @@ void UsbCam::start_capturing(void)
 {
 
   if(is_capturing_) return;
-  if (fd_ == -1) return;  // @WZ: in case we shutdown due to disconnect
+  if (fd_ == -1) return;
 
   unsigned int i;
   enum v4l2_buf_type type;
@@ -1085,7 +1085,7 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
 {
   // grab the image
   grab_image();
-  if (ENODEV == errno) return;  // @WZ: propagating ENODEV up, since image_ will be null
+  if (ENODEV == errno) return;
 
   // stamp the image
   msg->header.stamp = ros::Time::now();
