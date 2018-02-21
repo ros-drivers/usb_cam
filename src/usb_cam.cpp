@@ -526,7 +526,7 @@ int UsbCam::read_frame()
 
             /* fall through */
 
-          case ENODEV:
+          case ENODEV:  // @WZ: added to handle disconnection
             ROS_WARN("Connection to camera has been lost.");
             return 0;
 
@@ -606,10 +606,11 @@ void UsbCam::stop_capturing(void)
     case IO_METHOD_USERPTR:
       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-      if (-1 == xioctl(fd_, VIDIOC_STREAMOFF, &type))
-        if (errno != ENODEV)
+      if (-1 == xioctl(fd_, VIDIOC_STREAMOFF, &type)) {
+        if (errno != ENODEV) {
           errno_exit("VIDIOC_STREAMOFF");
-
+        }
+      }
       break;
   }
 }
@@ -618,7 +619,7 @@ void UsbCam::start_capturing(void)
 {
 
   if(is_capturing_) return;
-  if (fd_ == -1) return;
+  if (fd_ == -1) return;  // @WZ: in case we shutdown due to disconnect
 
   unsigned int i;
   enum v4l2_buf_type type;
@@ -1085,7 +1086,7 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
 {
   // grab the image
   grab_image();
-  if (ENODEV == errno) return;
+  if (ENODEV == errno) return;  // @WZ: propagating ENODEV up, since image_ will be null
 
   // stamp the image
   msg->header.stamp = ros::Time::now();

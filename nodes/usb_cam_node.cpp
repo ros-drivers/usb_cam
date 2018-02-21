@@ -40,6 +40,7 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
 #include <std_srvs/Empty.h>
+#include <exception>
 
 namespace usb_cam {
 class UsbCamNode
@@ -79,6 +80,8 @@ public:
     cam_.stop_capturing();
     return true;
   }
+
+  struct CameraInitializationException {};
 
   UsbCamNode() :
       node_("~")
@@ -136,10 +139,12 @@ public:
     ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS", camera_name_.c_str(), video_device_name_.c_str(),
         image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
-    init_camera();
+    if (!init_camera()) {
+      throw CameraInitializationException();
+    }
   }
 
-  void init_camera() {
+  bool init_camera() {
 
     // set the IO method
     UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
@@ -147,7 +152,7 @@ public:
     {
       ROS_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
       node_.shutdown();
-      return;
+      return false;
     }
 
     // set the pixel format
@@ -156,7 +161,7 @@ public:
     {
       ROS_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
       node_.shutdown();
-      return;
+      return false;
     }
 
     // start the camera
@@ -223,6 +228,7 @@ public:
         cam_.set_v4l_parameter("focus_absolute", focus_);
       }
     }
+    return true;
   }
 
   virtual ~UsbCamNode()
@@ -258,7 +264,9 @@ public:
         if (!take_and_send_image())
           ROS_WARN("USB camera did not respond in time.");
       } else if (camera_is_connected()) {
-        this->init_camera();
+        if (!this->init_camera()) {
+          throw CameraInitializationException();
+        }
         ROS_INFO("Connection to camera re-established");
       }
       ros::spinOnce();
@@ -269,7 +277,7 @@ public:
 
 private:
     inline bool camera_is_connected() {
-      return ( access( video_device_name_.c_str(), R_OK) != -1);
+      return access(video_device_name_.c_str(), R_OK) != -1;
     }
 };
 
@@ -280,6 +288,5 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "usb_cam");
   usb_cam::UsbCamNode a;
   a.spin();
-  std::cout << "finishing" << std::endl;
   return EXIT_SUCCESS;
 }
