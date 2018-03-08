@@ -40,9 +40,9 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
 #include <std_srvs/Empty.h>
+#include <exception>
 
 namespace usb_cam {
-
 class UsbCamNode
 {
 public:
@@ -80,6 +80,8 @@ public:
     cam_.stop_capturing();
     return true;
   }
+
+  struct CameraInitializationException {};
 
   UsbCamNode() :
       node_("~")
@@ -137,13 +139,20 @@ public:
     ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS", camera_name_.c_str(), video_device_name_.c_str(),
         image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
 
+    if (!init_camera()) {
+      throw CameraInitializationException();
+    }
+  }
+
+  bool init_camera() {
+
     // set the IO method
     UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
     if(io_method == UsbCam::IO_METHOD_UNKNOWN)
     {
       ROS_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
       node_.shutdown();
-      return;
+      return false;
     }
 
     // set the pixel format
@@ -152,7 +161,7 @@ public:
     {
       ROS_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
       node_.shutdown();
-      return;
+      return false;
     }
 
     // start the camera
@@ -219,6 +228,7 @@ public:
         cam_.set_v4l_parameter("focus_absolute", focus_);
       }
     }
+    return true;
   }
 
   virtual ~UsbCamNode()
@@ -230,7 +240,10 @@ public:
   {
     // grab the image
     cam_.grab_image(&img_);
-
+    if (ENODEV == errno) {
+        cam_.shutdown(); 
+        return false;
+    }
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
     ci->header.frame_id = img_.header.frame_id;
@@ -247,21 +260,25 @@ public:
     ros::Rate loop_rate(this->framerate_);
     while (node_.ok())
     {
-      if (cam_.is_capturing()) {
-        if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
+      if (cam_.is_capturing()) { 
+        if (!take_and_send_image())
+          ROS_WARN("USB camera did not respond in time.");
+      } else if (!camera_is_connected()) {
+        if (!this->init_camera()) {
+          throw CameraInitializationException();
+        }
+        ROS_INFO("Connection to camera re-established");
       }
       ros::spinOnce();
       loop_rate.sleep();
-
     }
     return true;
   }
 
-
-
-
-
-
+private:
+    inline bool camera_is_connected() {
+      return access(video_device_name_.c_str(), R_OK) != -1;
+    }
 };
 
 }
