@@ -263,7 +263,7 @@ public:
       if (cam_.is_capturing()) { 
         if (!take_and_send_image())
           ROS_WARN("USB camera did not respond in time.");
-      } else if (camera_is_connected()) {
+      } else if (!camera_is_connected()) {
         if (!this->init_camera()) {
           throw CameraInitializationException();
         }
