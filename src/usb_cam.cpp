@@ -478,6 +478,8 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
     mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_RGB24)
     rgb242rgb((char*)src, dest->image, dest->width * dest->height);
+  else if (pixelformat_ == V4L2_PIX_FMT_BGR24)
+    dest->image = (char*)src;
   else if (pixelformat_ == V4L2_PIX_FMT_GREY)
     memcpy(dest->image, (char*)src, dest->width * dest->height);
 }
@@ -1029,6 +1031,10 @@ void UsbCam::start(const std::string& dev, io_method io_method,
   {
     pixelformat_ = V4L2_PIX_FMT_RGB24;
   }
+  else if (pixel_format == PIXEL_FORMAT_BGR24)
+  {
+    pixelformat_ = V4L2_PIX_FMT_BGR24;
+  }
   else if (pixel_format == PIXEL_FORMAT_GREY)
   {
     pixelformat_ = V4L2_PIX_FMT_GREY;
@@ -1090,6 +1096,11 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
   {
     fillImage(*msg, "mono8", image_->height, image_->width, image_->width,
         image_->image);
+  }
+  else if(pixelformat_ == V4L2_PIX_FMT_BGR24)
+  {
+      fillImage(*msg, "bgr8", image_->height, image_->width, 3 * image_->width,
+          image_->image);
   }
   else
   {
@@ -1238,6 +1249,8 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_YUVMONO10;
     else if (str == "rgb24")
       return PIXEL_FORMAT_RGB24;
+    else if (str == "bgr24")
+      return PIXEL_FORMAT_BGR24;
     else if (str == "grey")
       return PIXEL_FORMAT_GREY;
     else
