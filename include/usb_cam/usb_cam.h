@@ -85,7 +85,7 @@ class UsbCam {
   // void grab_image(sensor_msgs::msg::Image:::SharedPtr image);
   void grab_image(builtin_interfaces::msg::Time& stamp,
       std::string& encoding, uint32_t& height, uint32_t& width,
-      uint32_t& step, void* data);
+      uint32_t& step, std::vector<uint8_t>& data);
 
   // enables/disable auto focus
   void set_auto_focus(int value);

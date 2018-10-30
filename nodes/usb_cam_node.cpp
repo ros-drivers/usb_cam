@@ -34,24 +34,24 @@
 *
 *********************************************************************/
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <usb_cam/usb_cam.h>
-#include <image_transport/image_transport.h>
-#include <camera_info_manager/camera_info_manager.h>
+// #include <image_transport/image_transport.h>
+// #include <camera_info_manager/camera_info_manager.h>
+#include <sensor_msgs/msg/image.hpp>
 #include <sstream>
-#include <std_srvs/Empty.h>
+// #include <std_srvs/srv/Empty.h>
+
+using namespace std::chrono_literals;
 
 namespace usb_cam {
 
-class UsbCamNode
+class UsbCamNode : public rclcpp::Node
 {
 public:
-  // private ROS node handle
-  ros::NodeHandle node_;
-
   // shared image message
-  sensor_msgs::Image img_;
-  image_transport::CameraPublisher image_pub_;
+  sensor_msgs::msg::Image::SharedPtr img_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
 
   // parameters
   std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
@@ -60,13 +60,14 @@ public:
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
       white_balance_, gain_;
   bool autofocus_, autoexposure_, auto_white_balance_;
-  boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
+  // boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCam cam_;
 
+  rclcpp::TimerBase::SharedPtr timer_;
+
+#if 0
   ros::ServiceServer service_start_, service_stop_;
-
-
 
   bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
@@ -80,20 +81,36 @@ public:
     cam_.stop_capturing();
     return true;
   }
+#endif
 
-  UsbCamNode() :
-      node_("~")
+  UsbCamNode() : Node("usb_cam"),
+      video_device_name_("/dev/video0"),
+      io_method_name_("mmap"),
+      image_width_(640),
+      image_height_(480),
+      framerate_(30),
+      pixel_format_name_("mjpeg")
   {
     // advertise the main image topic
-    image_transport::ImageTransport it(node_);
-    image_pub_ = it.advertiseCamera("image_raw", 1);
+    image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("image_raw");
+
+#if 0
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(shared_from_this());
 
     // grab the parameters
-    node_.param("video_device", video_device_name_, std::string("/dev/video0"));
+    auto dev_param = parameters_client->get_parameter("video_device");
+    if (dev_param)
+      video_device_name_ = dev_param.value_to_string();
+#endif
+
+#if 0
     node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
     node_.param("contrast", contrast_, -1); //0-255, -1 "leave alone"
     node_.param("saturation", saturation_, -1); //0-255, -1 "leave alone"
     node_.param("sharpness", sharpness_, -1); //0-255, -1 "leave alone"
+#endif
+
+#if 0
     // possible values: mmap, read, userptr
     node_.param("io_method", io_method_name_, std::string("mmap"));
     node_.param("image_width", image_width_, 640);
@@ -101,6 +118,9 @@ public:
     node_.param("framerate", framerate_, 30);
     // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
     node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
+#endif
+
+#if 0
     // enable/disable autofocus
     node_.param("autofocus", autofocus_, false);
     node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
@@ -111,7 +131,9 @@ public:
     // enable/disable auto white balance temperature
     node_.param("auto_white_balance", auto_white_balance_, true);
     node_.param("white_balance", white_balance_, 4000);
+#endif
 
+#if 0
     // load the camera info
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
     node_.param("camera_name", camera_name_, std::string("head_camera"));
@@ -132,17 +154,19 @@ public:
       camera_info.height = image_height_;
       cinfo_->setCameraInfo(camera_info);
     }
+#endif
 
-
-    ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS", camera_name_.c_str(), video_device_name_.c_str(),
-        image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
+    RCLCPP_INFO(this->get_logger(), "Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS",
+        camera_name_.c_str(), video_device_name_.c_str(),
+        image_width_, image_height_, io_method_name_.c_str(),
+        pixel_format_name_.c_str(), framerate_);
 
     // set the IO method
     UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
     if(io_method == UsbCam::IO_METHOD_UNKNOWN)
     {
-      ROS_FATAL("Unknown IO method '%s'", io_method_name_.c_str());
-      node_.shutdown();
+      RCLCPP_ERROR(this->get_logger(), "Unknown IO method '%s'", io_method_name_.c_str());
+      rclcpp::shutdown();
       return;
     }
 
@@ -150,8 +174,8 @@ public:
     UsbCam::pixel_format pixel_format = UsbCam::pixel_format_from_string(pixel_format_name_);
     if (pixel_format == UsbCam::PIXEL_FORMAT_UNKNOWN)
     {
-      ROS_FATAL("Unknown pixel format '%s'", pixel_format_name_.c_str());
-      node_.shutdown();
+      RCLCPP_ERROR(this->get_logger(), "Unknown pixel format '%s'", pixel_format_name_.c_str());
+      rclcpp::shutdown();
       return;
     }
 
@@ -159,6 +183,7 @@ public:
     cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
 		     image_height_, framerate_);
 
+#if 0
     // set camera parameters
     if (brightness_ >= 0)
     {
@@ -219,6 +244,10 @@ public:
         cam_.set_v4l_parameter("focus_absolute", focus_);
       }
     }
+#endif
+
+    timer_ = this->create_wall_timer(33ms,  // 1s * (1.0 / framerate_),
+        std::bind(&UsbCamNode::update, this));
   }
 
   virtual ~UsbCamNode()
@@ -229,8 +258,10 @@ public:
   bool take_and_send_image()
   {
     // grab the image
-    cam_.grab_image(&img_);
+    cam_.grab_image(img_->header.stamp, img_->encoding, img_->height, img_->width,
+        img_->step, img_->data);
 
+#if 0
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
     ci->header.frame_id = img_.header.frame_id;
@@ -238,38 +269,31 @@ public:
 
     // publish the image
     image_pub_.publish(img_, *ci);
+#endif
 
     return true;
   }
 
-  bool spin()
+  void update()
   {
-    ros::Rate loop_rate(this->framerate_);
-    while (node_.ok())
-    {
-      if (cam_.is_capturing()) {
-        if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
-      }
-      ros::spinOnce();
-      loop_rate.sleep();
-
+    if (cam_.is_capturing()) {
+      if (!take_and_send_image())
+        RCLCPP_WARN(this->get_logger(), "USB camera did not respond in time.");
     }
-    return true;
   }
-
-
-
-
-
-
 };
 
 }
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "usb_cam");
-  usb_cam::UsbCamNode a;
-  a.spin();
-  return EXIT_SUCCESS;
+  rclcpp::init(argc, argv);
+
+  // Force flush of the stdout buffer.
+  // This ensures a correct sync of all prints
+  // even when executed simultaneously within a launch file.
+  setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+  rclcpp::spin(std::make_shared<usb_cam::UsbCamNode>());
+  rclcpp::shutdown();
+  return 0;
 }

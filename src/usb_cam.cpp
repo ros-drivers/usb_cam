@@ -1139,7 +1139,7 @@ void UsbCam::shutdown(void)
 
 void UsbCam::grab_image(builtin_interfaces::msg::Time& stamp,
     std::string& encoding, uint32_t& height, uint32_t& width,
-    uint32_t& step, void* data)
+    uint32_t& step, std::vector<uint8_t>& data)
 {
   // grab the image
   grab_image();
@@ -1160,7 +1160,8 @@ void UsbCam::grab_image(builtin_interfaces::msg::Time& stamp,
   step = image_->width;
   // TODO(lucasw) create an Image here and already have the memory allocated,
   // eliminate this copy
-  memcpy(data, image_->image, step * height);
+  data.resize(step * height);
+  memcpy(&data[0], image_->image, step * height);
 }
 
 void UsbCam::grab_image()

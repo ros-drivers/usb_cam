@@ -31,14 +31,14 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ## Declare a cpp executable
-if(false)
 add_executable(${PROJECT_NAME}_node nodes/usb_cam_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${swscale_LIBRARIES}
+  # TODO(lucasw) should this have been in libavcodec?
+  avutil
 )
-endif()
 
 ament_target_dependencies(${PROJECT_NAME}
   "builtin_interfaces"
@@ -48,7 +48,7 @@ ament_target_dependencies(${PROJECT_NAME}
   "std_srvs"
 )
 
-install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
