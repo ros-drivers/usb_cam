@@ -52,10 +52,11 @@ extern "C"
 #define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
 #endif
 
+#include <builtin_interfaces/msg/time.hpp>
+#include <rclcpp/time.hpp>
+// #include <sensor_msgs/msg/image.h>
 #include <string>
 #include <sstream>
-
-#include <sensor_msgs/Image.h>
 
 namespace usb_cam {
 
@@ -81,7 +82,10 @@ class UsbCam {
   void shutdown(void);
 
   // grabs a new image from the camera
-  void grab_image(sensor_msgs::Image* image);
+  // void grab_image(sensor_msgs::msg::Image:::SharedPtr image);
+  void grab_image(builtin_interfaces::msg::Time& stamp,
+      std::string& encoding, uint32_t& height, uint32_t& width,
+      uint32_t& step, void* data);
 
   // enables/disable auto focus
   void set_auto_focus(int value);
@@ -98,13 +102,14 @@ class UsbCam {
   bool is_capturing();
 
  private:
+  // TODO(lucasw) just store an Image shared_ptr here
   typedef struct
   {
     int width;
     int height;
     int bytes_per_pixel;
     int image_size;
-    ros::Time stamp;
+    builtin_interfaces::msg::Time stamp;
     char *image;
     int is_new;
   } camera_image_t;
@@ -131,6 +136,7 @@ class UsbCam {
   bool is_capturing_;
 
 
+  rclcpp::Clock::SharedPtr clock_;
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;

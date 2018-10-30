@@ -39,22 +39,29 @@
 #include <string.h>
 #include <assert.h>
 #include <fcntl.h>              /* low-level i/o */
+#include <iostream>
 #include <unistd.h>
 #include <errno.h>
 #include <malloc.h>
+#include <rclcpp/rclcpp.hpp>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
-#include <ros/ros.h>
 #include <boost/lexical_cast.hpp>
-#include <sensor_msgs/fill_image.h>
+// #include <sensor_msgs/fill_image.h>
 
 #include <usb_cam/usb_cam.h>
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
+
+#define ROS_INFO(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_ERROR(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_WARN(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_DEBUG(msg, ...) // ##__VA_ARGS__
+#define ROS_ERROR_STREAM(msg) std::cerr << msg << "\n"
 
 namespace usb_cam {
 
@@ -389,6 +396,7 @@ UsbCam::UsbCam()
   : io_(IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0), avframe_camera_(NULL),
     avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL), avcodec_context_(NULL),
     avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL), is_capturing_(false) {
+  clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
 }
 UsbCam::~UsbCam()
 {
@@ -519,7 +527,7 @@ int UsbCam::read_frame()
   struct v4l2_buffer buf;
   unsigned int i;
   int len;
-  ros::Time stamp;
+  builtin_interfaces::msg::Time stamp;
   timespec buf_time;
   timespec real_time;
 
@@ -575,7 +583,8 @@ int UsbCam::read_frame()
       // need to get buf time here otherwise process_image will zero it
       TIMEVAL_TO_TIMESPEC(&buf.timestamp, &buf_time);
       monotonicToRealTime(buf_time, real_time);
-      stamp = ros::Time(real_time.tv_sec, real_time.tv_nsec);
+      stamp.sec = real_time.tv_sec;
+      stamp.nanosec = real_time.tv_nsec;
 
       assert(buf.index < n_buffers_);
       len = buf.bytesused;
@@ -613,7 +622,8 @@ int UsbCam::read_frame()
 
       TIMEVAL_TO_TIMESPEC(&buf.timestamp, &buf_time);
       monotonicToRealTime(buf_time, real_time);
-      stamp = ros::Time(real_time.tv_sec, real_time.tv_nsec);
+      stamp.sec = real_time.tv_sec;
+      stamp.nanosec = real_time.tv_nsec;
 
       for (i = 0; i < n_buffers_; ++i)
         if (buf.m.userptr == (unsigned long)buffers_[i].start && buf.length == buffers_[i].length)
@@ -1127,23 +1137,30 @@ void UsbCam::shutdown(void)
   image_ = NULL;
 }
 
-void UsbCam::grab_image(sensor_msgs::Image* msg)
+void UsbCam::grab_image(builtin_interfaces::msg::Time& stamp,
+    std::string& encoding, uint32_t& height, uint32_t& width,
+    uint32_t& step, void* data)
 {
   // grab the image
   grab_image();
   // stamp the image
-  msg->header.stamp = image_->stamp;
+  stamp = image_->stamp;
   // fill the info
   if (monochrome_)
   {
-    fillImage(*msg, "mono8", image_->height, image_->width, image_->width,
-        image_->image);
+    encoding = "mono8";
   }
   else
   {
-    fillImage(*msg, "rgb8", image_->height, image_->width, 3 * image_->width,
-        image_->image);
+    // TODO(lucasw) aren't there other encoding types?
+    encoding = "rgb8";
   }
+  height = image_->height;
+  width = image_->width;
+  step = image_->width;
+  // TODO(lucasw) create an Image here and already have the memory allocated,
+  // eliminate this copy
+  memcpy(data, image_->image, step * height);
 }
 
 void UsbCam::grab_image()
@@ -1162,7 +1179,7 @@ void UsbCam::grab_image()
   r = select(fd_ + 1, &fds, NULL, NULL, &tv);
   // if the v4l2_buffer timestamp isn't available use this time, though
   // it may be 10s of milliseconds after the frame acquisition.
-  image_->stamp = ros::Time::now();
+  image_->stamp = clock_->now();
 
   if (-1 == r)
   {
@@ -1180,6 +1197,8 @@ void UsbCam::grab_image()
 
   read_frame();
   image_->is_new = 1;
+  // TODO(lucasw)
+  // return true;
 }
 
 // enables/disables auto focus
