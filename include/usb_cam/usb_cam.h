@@ -58,6 +58,18 @@ extern "C"
 #include <string>
 #include <sstream>
 
+#define ROS_INFO(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_ERROR(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_WARN(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_DEBUG(msg, ...) printf(msg,  ##__VA_ARGS__)
+// #define ROS_DEBUG(msg, ...) // ##__VA_ARGS__
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
+#define INFO(msg) std::cout << "I [" << __FILENAME__ << ":" << __LINE__ << " " << __FUNCTION__ << "] " << msg << "\n"
+#define WARN(msg) std::cout << "W [" << __FILENAME__ << ":" << __LINE__ << " " << __FUNCTION__ << "] " << msg << "\n"
+#define ERROR(msg) std::cerr << "E [" << __FILENAME__ << ":" << __LINE__ << " " << __FUNCTION__ << "] " << msg << std::endl
+#define ROS_ERROR_STREAM(msg) ERROR(msg)
+
 namespace usb_cam {
 
 class UsbCam {
@@ -76,29 +88,29 @@ class UsbCam {
   ~UsbCam();
 
   // start camera
-  void start(const std::string& dev, io_method io, pixel_format pf,
+  bool start(const std::string& dev, io_method io, pixel_format pf,
 		    int image_width, int image_height, int framerate);
   // shutdown camera
-  void shutdown(void);
+  bool shutdown(void);
 
   // grabs a new image from the camera
-  // void grab_image(sensor_msgs::msg::Image:::SharedPtr image);
-  void grab_image(builtin_interfaces::msg::Time& stamp,
+  // bool get_image(sensor_msgs::msg::Image:::SharedPtr image);
+  bool get_image(builtin_interfaces::msg::Time& stamp,
       std::string& encoding, uint32_t& height, uint32_t& width,
       uint32_t& step, std::vector<uint8_t>& data);
 
   // enables/disable auto focus
-  void set_auto_focus(int value);
+  bool set_auto_focus(int value);
 
   // Set video device parameters
-  void set_v4l_parameter(const std::string& param, int value);
-  void set_v4l_parameter(const std::string& param, const std::string& value);
+  bool set_v4l_parameter(const std::string& param, int value);
+  bool set_v4l_parameter(const std::string& param, const std::string& value);
 
   static io_method io_method_from_string(const std::string& str);
   static pixel_format pixel_format_from_string(const std::string& str);
 
-  void stop_capturing(void);
-  void start_capturing(void);
+  bool stop_capturing(void);
+  bool start_capturing(void);
   bool is_capturing();
 
  private:
@@ -122,17 +134,17 @@ class UsbCam {
 
 
   int init_mjpeg_decoder(int image_width, int image_height);
-  void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
-  void process_image(const void * src, int len, camera_image_t *dest);
-  int read_frame();
-  void uninit_device(void);
-  void init_read(unsigned int buffer_size);
-  void init_mmap(void);
-  void init_userp(unsigned int buffer_size);
-  void init_device(int image_width, int image_height, int framerate);
-  void close_device(void);
-  void open_device(void);
-  void grab_image();
+  bool mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
+  bool process_image(const void * src, int len, camera_image_t *dest);
+  bool read_frame();
+  bool uninit_device(void);
+  bool init_read(unsigned int buffer_size);
+  bool init_mmap(void);
+  bool init_userp(unsigned int buffer_size);
+  bool init_device(int image_width, int image_height, int framerate);
+  bool close_device(void);
+  bool open_device(void);
+  bool grab_image();
   bool is_capturing_;
 
 

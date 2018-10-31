@@ -86,11 +86,12 @@ public:
   UsbCamNode() : Node("usb_cam"),
       video_device_name_("/dev/video0"),
       io_method_name_("mmap"),
-      image_width_(640),
-      image_height_(480),
-      framerate_(30),
+      image_width_(960),
+      image_height_(540),
+      framerate_(15),
       pixel_format_name_("mjpeg")
   {
+    img_ = std::make_shared<sensor_msgs::msg::Image>();
     // advertise the main image topic
     image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("image_raw");
 
@@ -116,6 +117,7 @@ public:
     node_.param("image_width", image_width_, 640);
     node_.param("image_height", image_height_, 480);
     node_.param("framerate", framerate_, 30);
+    node_.param("frame_id", frame_id, 30);
     // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
     node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
 #endif
@@ -133,6 +135,7 @@ public:
     node_.param("white_balance", white_balance_, 4000);
 #endif
 
+    std::string camera_frame_id = "map";
 #if 0
     // load the camera info
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
@@ -155,6 +158,7 @@ public:
       cinfo_->setCameraInfo(camera_info);
     }
 #endif
+    img_->header.frame_id = camera_frame_id;
 
     RCLCPP_INFO(this->get_logger(), "Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS",
         camera_name_.c_str(), video_device_name_.c_str(),
@@ -246,20 +250,26 @@ public:
     }
 #endif
 
-    timer_ = this->create_wall_timer(33ms,  // 1s * (1.0 / framerate_),
+    // TODO(lucasw) should this check a little faster than expected frame rate?
+    timer_ = this->create_wall_timer(33ms,
         std::bind(&UsbCamNode::update, this));
+    INFO("starting timer");
   }
 
   virtual ~UsbCamNode()
   {
+    WARN("shutting down");
     cam_.shutdown();
   }
 
   bool take_and_send_image()
   {
     // grab the image
-    cam_.grab_image(img_->header.stamp, img_->encoding, img_->height, img_->width,
-        img_->step, img_->data);
+    if (!cam_.get_image(img_->header.stamp, img_->encoding, img_->height, img_->width,
+        img_->step, img_->data)) {
+      ERROR("grab failed");
+      return false;
+    }
 
 #if 0
     // grab the camera info
@@ -270,6 +280,8 @@ public:
     // publish the image
     image_pub_.publish(img_, *ci);
 #endif
+    // INFO(img_->data.size() << " " << img_->width << " " << img_->height << " " << img_->step);
+    image_pub_->publish(img_);
 
     return true;
   }
@@ -277,8 +289,9 @@ public:
   void update()
   {
     if (cam_.is_capturing()) {
-      if (!take_and_send_image())
-        RCLCPP_WARN(this->get_logger(), "USB camera did not respond in time.");
+      if (!take_and_send_image()) {
+        WARN("USB camera did not respond in time.");
+      }
     }
   }
 };
@@ -294,6 +307,7 @@ int main(int argc, char **argv)
   // even when executed simultaneously within a launch file.
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
   rclcpp::spin(std::make_shared<usb_cam::UsbCamNode>());
+  INFO("node done");
   rclcpp::shutdown();
   return 0;
 }
