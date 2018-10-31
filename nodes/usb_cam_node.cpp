@@ -42,6 +42,11 @@
 #include <sstream>
 // #include <std_srvs/srv/Empty.h>
 
+std::ostream& operator<<(std::ostream& ostr, const rclcpp::Time& tm) {
+  ostr << tm.nanoseconds();
+  return ostr;
+}
+
 using namespace std::chrono_literals;
 
 namespace usb_cam {
@@ -54,12 +59,28 @@ public:
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
 
   // parameters
-  std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
-  //std::string start_service_name_, start_service_name_;
-  bool streaming_status_;
-  int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
-      white_balance_, gain_;
-  bool autofocus_, autoexposure_, auto_white_balance_;
+  std::string video_device_name_ = "/dev/video0";
+  std::string frame_id_ = "map";
+
+  std::string io_method_name_ = "mmap";
+  // these parameters all have to be a combination supported by the device
+  // Use
+  // v4l2-ctl --device=0 --list-formats-ext
+  // to discover them,
+  // or guvcview
+  std::string pixel_format_name_ = "yuyv";
+  int image_width_ = 640;
+  int image_height_ = 480;
+  int framerate_ = 15;
+
+  // std::string start_service_name_, start_service_name_;
+  // TODO(lucasw) use v4l2ucp for these?
+  // int exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
+  //    white_balance_, gain_;
+  // bool autofocus_, autoexposure_, auto_white_balance_;
+
+  std::string camera_name_;
+  // std::string camera_info_url_;
   // boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCam cam_;
@@ -83,46 +104,39 @@ public:
   }
 #endif
 
-  UsbCamNode() : Node("usb_cam"),
-      video_device_name_("/dev/video0"),
-      io_method_name_("mmap"),
-      image_width_(960),
-      image_height_(540),
-      framerate_(15),
-      pixel_format_name_("mjpeg")
+  UsbCamNode() : Node("usb_cam")
   {
+    // TODO(lucasw) use unique_ptr to reduce copies, see
+    // demos/intra_process_demo/include/image_pipeline/camera_node.hpp
     img_ = std::make_shared<sensor_msgs::msg::Image>();
     // advertise the main image topic
     image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("image_raw");
+  }
 
-#if 0
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(shared_from_this());
-
+  void init()
+  {
     // grab the parameters
-    auto dev_param = parameters_client->get_parameter("video_device");
-    if (dev_param)
-      video_device_name_ = dev_param.value_to_string();
-#endif
+    get_parameter_or("video_device", video_device_name_, video_device_name_);
+
+    // possible values: mmap, read, userptr
+    get_parameter_or("io_method", io_method_name_, io_method_name_);
+    get_parameter_or("frame_id", frame_id_, frame_id_);
+    // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
+    get_parameter_or("pixel_format", pixel_format_name_, pixel_format_name_);
+    get_parameter_or("framerate", framerate_, framerate_);
+    if (framerate_ <= 0)
+    {
+      RCLCPP_ERROR(get_logger(), "bad framerate %d", framerate_);
+      return;
+    }
+    get_parameter_or("image_width", image_width_, image_width_);
+    get_parameter_or("image_height", image_height_, image_height_);
 
 #if 0
     node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
     node_.param("contrast", contrast_, -1); //0-255, -1 "leave alone"
     node_.param("saturation", saturation_, -1); //0-255, -1 "leave alone"
     node_.param("sharpness", sharpness_, -1); //0-255, -1 "leave alone"
-#endif
-
-#if 0
-    // possible values: mmap, read, userptr
-    node_.param("io_method", io_method_name_, std::string("mmap"));
-    node_.param("image_width", image_width_, 640);
-    node_.param("image_height", image_height_, 480);
-    node_.param("framerate", framerate_, 30);
-    node_.param("frame_id", frame_id, 30);
-    // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
-    node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
-#endif
-
-#if 0
     // enable/disable autofocus
     node_.param("autofocus", autofocus_, false);
     node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
@@ -135,11 +149,10 @@ public:
     node_.param("white_balance", white_balance_, 4000);
 #endif
 
-    std::string camera_frame_id = "map";
+    get_parameter_or("camera_name", camera_name_, std::string("head_camera"));
 #if 0
     // load the camera info
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
-    node_.param("camera_name", camera_name_, std::string("head_camera"));
     node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
 
@@ -158,7 +171,7 @@ public:
       cinfo_->setCameraInfo(camera_info);
     }
 #endif
-    img_->header.frame_id = camera_frame_id;
+    img_->header.frame_id = frame_id_;
 
     RCLCPP_INFO(this->get_logger(), "Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS",
         camera_name_.c_str(), video_device_name_.c_str(),
@@ -186,6 +199,8 @@ public:
     // start the camera
     cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
 		     image_height_, framerate_);
+
+    cam_.get_formats();
 
 #if 0
     // set camera parameters
@@ -251,9 +266,12 @@ public:
 #endif
 
     // TODO(lucasw) should this check a little faster than expected frame rate?
-    timer_ = this->create_wall_timer(33ms,
+    // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
+    const int period_ms = 1000.0 / framerate_;
+    timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(static_cast<long int>(period_ms)),
         std::bind(&UsbCamNode::update, this));
-    INFO("starting timer");
+    INFO("starting timer " << period_ms);
   }
 
   virtual ~UsbCamNode()
@@ -289,9 +307,14 @@ public:
   void update()
   {
     if (cam_.is_capturing()) {
+      // If the camera exposure longer higher than the framerate period
+      // then that caps the framerate.
+      // auto t0 = now();
       if (!take_and_send_image()) {
         WARN("USB camera did not respond in time.");
       }
+      // auto diff = now() - t0;
+      // INFO(diff.nanoseconds() / 1e6 << " " << int(t0.nanoseconds() / 1e9));
     }
   }
 };
@@ -306,7 +329,9 @@ int main(int argc, char **argv)
   // This ensures a correct sync of all prints
   // even when executed simultaneously within a launch file.
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
-  rclcpp::spin(std::make_shared<usb_cam::UsbCamNode>());
+  auto usb_cam_node = std::make_shared<usb_cam::UsbCamNode>();
+  usb_cam_node->init();
+  rclcpp::spin(usb_cam_node);
   INFO("node done");
   rclcpp::shutdown();
   return 0;

@@ -99,6 +99,8 @@ class UsbCam {
       std::string& encoding, uint32_t& height, uint32_t& width,
       uint32_t& step, std::vector<uint8_t>& data);
 
+  void get_formats();  // std::vector<usb_cam::msg::Format>& formats);
+
   // enables/disable auto focus
   bool set_auto_focus(int value);
 

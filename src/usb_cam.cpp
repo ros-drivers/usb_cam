@@ -49,6 +49,7 @@
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+// #include <usb_cam/msg/formats.hpp>
 
 #include <boost/lexical_cast.hpp>
 // #include <sensor_msgs/fill_image.h>
@@ -1052,11 +1053,17 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
   memset(&stream_params, 0, sizeof(stream_params));
   stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (xioctl(fd_, VIDIOC_G_PARM, &stream_params) < 0) {
-    std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+    ERROR("can't set stream params " << errno);
     return false;  // ("Couldn't query v4l fps!");
   }
   INFO("Capability flag: 0x" << std::hex << stream_params.parm.capture.capability << std::dec);
+  if (!stream_params.parm.capture.capability & V4L2_CAP_TIMEPERFRAME)
+  {
+    ERROR("V4L2_CAP_TIMEPERFRAME not supported");
+  }
 
+  // TODO(lucasw) need to get list of valid numerator/denominator pairs
+  // and match closest to what user put in.
   stream_params.parm.capture.timeperframe.numerator = 1;
   stream_params.parm.capture.timeperframe.denominator = framerate;
   if (xioctl(fd_, VIDIOC_S_PARM, &stream_params) < 0)
@@ -1156,9 +1163,19 @@ bool UsbCam::start(const std::string& dev, io_method io_method,
     return false;  //(EXIT_FAILURE);
   }
 
-  open_device();
-  init_device(image_width, image_height, framerate);
-  start_capturing();
+  // TODO(lucasw) throw exceptions instead of return value checking
+  if (!open_device())
+  {
+    return false;
+  }
+  if (!init_device(image_width, image_height, framerate))
+  {
+    return false;
+  }
+  if (!start_capturing())
+  {
+    return false;
+  }
 
   image_ = (camera_image_t *)calloc(1, sizeof(camera_image_t));
 
@@ -1229,6 +1246,41 @@ bool UsbCam::get_image(builtin_interfaces::msg::Time& stamp,
   data.resize(step * height);
   memcpy(&data[0], image_->image, data.size());
   return true;
+}
+
+void UsbCam::get_formats()  // std::vector<usb_cam::msg::Format>& formats)
+{
+  INFO("formats:");
+  struct v4l2_fmtdesc fmt;
+  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  fmt.index = 0;
+  for (fmt.index = 0; xioctl(fd_, VIDIOC_ENUM_FMT, &fmt) == 0; ++fmt.index) {
+    INFO(fmt.index << " " << fmt.type << " " << fmt.flags << " '" << fmt.description
+        << "' " << std::hex << fmt.pixelformat << std::dec);
+
+    struct v4l2_frmsizeenum size;
+    size.index = 0;
+    size.pixel_format = fmt.pixelformat;
+
+    for (size.index = 0; xioctl(fd_, VIDIOC_ENUM_FRAMESIZES, &size) == 0; ++size.index) {
+      INFO(size.discrete.width << " " << size.discrete.height);
+      struct v4l2_frmivalenum interval;
+      interval.index = 0;
+      interval.pixel_format = size.pixel_format;
+      interval.width = size.discrete.width;
+      interval.height = size.discrete.height;
+      for (interval.index = 0; xioctl(fd_, VIDIOC_ENUM_FRAMEINTERVALS, &interval) == 0;
+          ++interval.index) {
+        if (interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
+          INFO(interval.type << " "
+            << interval.discrete.numerator << " / "
+            << interval.discrete.denominator);
+        } else {
+          INFO("other type");
+        }
+      }  // interval loop
+    }  // size loop
+  }  // fmt loop
 }
 
 bool UsbCam::grab_image()
@@ -1383,5 +1435,25 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
     else
       return PIXEL_FORMAT_UNKNOWN;
 }
+
+#if 0
+std::string UsbCam::pixel_format_to_string(__u32 pixelformat)
+{
+      return PIXEL_FORMAT_YUYV;
+      return "yuyv";
+    else if (str == "uyvy")
+      return PIXEL_FORMAT_UYVY;
+    else if (str == "mjpeg")
+      return PIXEL_FORMAT_MJPEG;
+    else if (str == "yuvmono10")
+      return PIXEL_FORMAT_YUVMONO10;
+    else if (str == "rgb24")
+      return PIXEL_FORMAT_RGB24;
+    else if (str == "grey")
+      return PIXEL_FORMAT_GREY;
+    else
+      return PIXEL_FORMAT_UNKNOWN;
+}
+#endif
 
 }
