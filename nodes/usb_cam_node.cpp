@@ -99,15 +99,13 @@ public:
     img_ = std::make_shared<sensor_msgs::msg::Image>();
     // advertise the main image topic
     image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("image_raw");
+  }
 
-#if 0
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(shared_from_this());
-
+  void init()
+  {
     // grab the parameters
-    auto dev_param = parameters_client->get_parameter("video_device");
-    if (dev_param)
-      video_device_name_ = dev_param.value_to_string();
-#endif
+    set_parameter_if_not_set("test", "blah");
+    get_parameter_or("video_device", video_device_name_, std::string("foo"));  //video_device_name_);
 
 #if 0
     node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
@@ -295,7 +293,7 @@ public:
 
   void update()
   {
-    INFO(now());
+    // INFO(now());
     if (cam_.is_capturing()) {
       if (!take_and_send_image()) {
         WARN("USB camera did not respond in time.");
@@ -314,7 +312,9 @@ int main(int argc, char **argv)
   // This ensures a correct sync of all prints
   // even when executed simultaneously within a launch file.
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
-  rclcpp::spin(std::make_shared<usb_cam::UsbCamNode>());
+  auto usb_cam_node = std::make_shared<usb_cam::UsbCamNode>();
+  usb_cam_node->init();
+  rclcpp::spin(usb_cam_node);
   INFO("node done");
   rclcpp::shutdown();
   return 0;

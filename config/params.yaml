@@ -1,0 +1,3 @@
+usb_cam:
+  ros__parameters:
+    video_device: "/dev/video3"

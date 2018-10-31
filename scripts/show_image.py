@@ -3,6 +3,7 @@
 import cv2
 import numpy as np
 import rclpy
+import time
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -52,7 +53,12 @@ def main(args=None):
     rclpy.init(args=args)
 
     examine_image = ExamineImage()
-    rclpy.spin(examine_image)
+    # TODO(lucasw) this is taking 100% cpu
+    # rclpy.spin(examine_image)
+    # this is also taking 100% cpu
+    while rclpy.ok():
+        rclpy.spin_once(examine_image)
+        time.sleep(0.1)
 
     examine_image.destroy_node()
     rclpy.shutdown()
