@@ -49,6 +49,7 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/show_image.py DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
