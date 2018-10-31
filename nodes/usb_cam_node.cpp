@@ -42,6 +42,11 @@
 #include <sstream>
 // #include <std_srvs/srv/Empty.h>
 
+std::ostream& operator<<(std::ostream& ostr, const rclcpp::Time& tm) {
+  ostr << tm.nanoseconds();
+  return ostr;
+}
+
 using namespace std::chrono_literals;
 
 namespace usb_cam {
@@ -251,7 +256,9 @@ public:
 #endif
 
     // TODO(lucasw) should this check a little faster than expected frame rate?
-    timer_ = this->create_wall_timer(33ms,
+    // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
+    timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(static_cast<long int>(1000.0 / framerate_)),
         std::bind(&UsbCamNode::update, this));
     INFO("starting timer");
   }
@@ -288,6 +295,7 @@ public:
 
   void update()
   {
+    INFO(now());
     if (cam_.is_capturing()) {
       if (!take_and_send_image()) {
         WARN("USB camera did not respond in time.");
