@@ -22,7 +22,7 @@ class ExamineImage(Node):
 
     def image_callback(self, msg):
         sz = (msg.height, msg.width)
-        print(msg.header.stamp)
+        # print(msg.header.stamp)
         if False:
             print("{encoding} {width} {height} {step} {data_size}".format(
                 encoding=msg.encoding, width=msg.width, height=msg.height,

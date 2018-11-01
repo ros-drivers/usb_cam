@@ -1,3 +1,10 @@
 usb_cam:
   ros__parameters:
-    video_device: "/dev/video3"
+    video_device: "/dev/video0"
+    framerate: 15
+    io_method: "mmap"
+    frame_id: "camera"
+    pixel_format: "yuyv"
+    image_width: 640
+    image_height: 480
+    camera_name: "test"
