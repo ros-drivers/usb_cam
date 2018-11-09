@@ -16,9 +16,9 @@ def generate_launch_description():
             help='video device', default='dev/video0')
     parser.add_argument('-wd', '--width', dest='width', type=int,
             help='image width', default=640)
-    parser.add_argument('-ht', '--height', dest='height', type=str,
+    parser.add_argument('-ht', '--height', dest='height', type=int,
             help='image height', default=480)
-    parser.add_argument('-f', '--fps', dest='frame_rate', type=str,
+    parser.add_argument('-f', '--fps', dest='frame_rate', type=float,
             help='frame rate', default=5)
     args = parser.parse_args(sys.argv[4:])
 
