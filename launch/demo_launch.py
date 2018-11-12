@@ -20,7 +20,7 @@ def generate_launch_description():
             help='image height', default=480)
     parser.add_argument('-f', '--fps', dest='frame_rate', type=float,
             help='frame rate', default=5)
-    args = parser.parse_args(sys.argv[4:])
+    args, unknown = parser.parse_known_args(sys.argv[4:])
 
     usb_cam_dir = get_package_share_directory('usb_cam')
     print('usb_cam dir ' + usb_cam_dir)
