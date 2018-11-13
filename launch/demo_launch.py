@@ -13,7 +13,7 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     parser = argparse.ArgumentParser(description='usb_cam demo')
     parser.add_argument('-d', '--device', dest='device', type=str,
-            help='video device', default='dev/video0')
+            help='video device', default='/dev/video0')
     parser.add_argument('-wd', '--width', dest='width', type=int,
             help='image width', default=640)
     parser.add_argument('-ht', '--height', dest='height', type=int,

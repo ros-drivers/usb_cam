@@ -1156,9 +1156,19 @@ bool UsbCam::start(const std::string& dev, io_method io_method,
     return false;  //(EXIT_FAILURE);
   }
 
-  open_device();
-  init_device(image_width, image_height, framerate);
-  start_capturing();
+  // TODO(lucasw) throw exceptions instead of return value checking
+  if (!open_device())
+  {
+    return false;
+  }
+  if (!init_device(image_width, image_height, framerate))
+  {
+    return false;
+  }
+  if (!start_capturing())
+  {
+    return false;
+  }
 
   image_ = (camera_image_t *)calloc(1, sizeof(camera_image_t));
 
