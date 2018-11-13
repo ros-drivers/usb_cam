@@ -1052,11 +1052,17 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
   memset(&stream_params, 0, sizeof(stream_params));
   stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (xioctl(fd_, VIDIOC_G_PARM, &stream_params) < 0) {
-    std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+    ERROR("can't set stream params " << errno);
     return false;  // ("Couldn't query v4l fps!");
   }
   INFO("Capability flag: 0x" << std::hex << stream_params.parm.capture.capability << std::dec);
+  if (!stream_params.parm.capture.capability & V4L2_CAP_TIMEPERFRAME)
+  {
+    ERROR("V4L2_CAP_TIMEPERFRAME not supported");
+  }
 
+  // TODO(lucasw) need to get list of valid numerator/denominator pairs
+  // and match closest to what user put in.
   stream_params.parm.capture.timeperframe.numerator = 1;
   stream_params.parm.capture.timeperframe.denominator = framerate;
   if (xioctl(fd_, VIDIOC_S_PARM, &stream_params) < 0)

@@ -65,7 +65,8 @@ public:
   std::string io_method_name_ = "mmap";
   // these parameters all have to be a combination supported by the device
   // Use
-  // v4l2-ctl --device=0 --list-formats-ext to discover them,
+  // v4l2-ctl --device=0 --list-formats-ext
+  // to discover them,
   // or guvcview
   std::string pixel_format_name_ = "yuyv";
   int image_width_ = 640;
@@ -268,7 +269,7 @@ public:
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(static_cast<long int>(period_ms)),
         std::bind(&UsbCamNode::update, this));
-    INFO("starting timer");
+    INFO("starting timer " << period_ms);
   }
 
   virtual ~UsbCamNode()
@@ -304,8 +305,8 @@ public:
   void update()
   {
     if (cam_.is_capturing()) {
-      // TODO(lucasw) if framerate is 8 or below, then grabbing an image takes
-      // one ms, but if it is higher then the time here jumps to 130 ms
+      // If the camera exposure longer higher than the framerate period
+      // then that caps the framerate.
       // auto t0 = now();
       if (!take_and_send_image()) {
         WARN("USB camera did not respond in time.");
