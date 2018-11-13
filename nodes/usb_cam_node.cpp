@@ -64,7 +64,8 @@ public:
 
   std::string io_method_name_ = "mmap";
   // these parameters all have to be a combination supported by the device
-  // Use v4l2-ctl --device=0 --list-formats-ext to discover them,
+  // Use
+  // v4l2-ctl --device=0 --list-formats-ext to discover them,
   // or guvcview
   std::string pixel_format_name_ = "yuyv";
   int image_width_ = 640;
@@ -122,6 +123,11 @@ public:
     // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
     get_parameter_or("pixel_format", pixel_format_name_, pixel_format_name_);
     get_parameter_or("framerate", framerate_, framerate_);
+    if (framerate_ <= 0)
+    {
+      RCLCPP_ERROR(get_logger(), "bad framerate %d", framerate_);
+      return;
+    }
     get_parameter_or("image_width", image_width_, image_width_);
     get_parameter_or("image_height", image_height_, image_height_);
 
@@ -258,8 +264,9 @@ public:
 
     // TODO(lucasw) should this check a little faster than expected frame rate?
     // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
+    const int period_ms = 1000.0 / framerate_;
     timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(static_cast<long int>(1000.0 / framerate_)),
+        std::chrono::milliseconds(static_cast<long int>(period_ms)),
         std::bind(&UsbCamNode::update, this));
     INFO("starting timer");
   }
@@ -296,11 +303,15 @@ public:
 
   void update()
   {
-    // INFO(now());
     if (cam_.is_capturing()) {
+      // TODO(lucasw) if framerate is 8 or below, then grabbing an image takes
+      // one ms, but if it is higher then the time here jumps to 130 ms
+      // auto t0 = now();
       if (!take_and_send_image()) {
         WARN("USB camera did not respond in time.");
       }
+      // auto diff = now() - t0;
+      // INFO(diff.nanoseconds() / 1e6 << " " << int(t0.nanoseconds() / 1e9));
     }
   }
 };

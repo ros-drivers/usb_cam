@@ -5,6 +5,7 @@ import launch
 import launch_ros.actions
 import os
 import sys
+import time
 import yaml
 
 from ament_index_python.packages import get_package_share_directory
@@ -26,7 +27,7 @@ def generate_launch_description():
     print('usb_cam dir ' + usb_cam_dir)
     launches = []
 
-    prefix = "/tmp/ros2/"
+    prefix = "/tmp/ros2/" + str(int(time.time())) + "/"
     if not os.path.exists(prefix):
         os.makedirs(prefix)
 
@@ -34,7 +35,7 @@ def generate_launch_description():
     # TODO(lucasw) if these are an invalid combination usb_cam just dies-
     # need a more helpfull error message.
     device = args.device
-    framerate = args.frame_rate
+    framerate = int(args.frame_rate)
     width = args.width
     height = args.height
 
