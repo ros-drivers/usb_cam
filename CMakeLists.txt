@@ -28,6 +28,8 @@ pkg_check_modules(swscale libswscale REQUIRED)
 ## Build ##
 ###########
 
+include_directories(include)
+
 ## Build the USB camera library
 add_library(${PROJECT_NAME} src/usb_cam.cpp)
 ament_target_dependencies(${PROJECT_NAME}

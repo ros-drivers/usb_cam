@@ -34,12 +34,10 @@
 *
 *********************************************************************/
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <usb_cam/usb_cam.h>
-#include <image_transport/image_transport.h>
-#include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
-#include <std_srvs/Empty.h>
+#include <std_srvs/srv/empty.h>
 
 namespace usb_cam {
 

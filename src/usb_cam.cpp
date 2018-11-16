@@ -48,11 +48,10 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <boost/lexical_cast.hpp>
-#include <sensor_msgs/fill_image.h>
 
-#include <usb_cam/usb_cam.h>
+#include "usb_cam/usb_cam.h"
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
@@ -75,6 +74,24 @@ static int xioctl(int fd, int request, void * arg)
   return r;
 }
 
+static bool fillImage(Image& image,
+                      const std::string& encoding_arg,
+                      uint32_t rows_arg,
+                      uint32_t cols_arg,
+                      uint32_t step_arg,
+                      const void* data_arg)
+{
+  image.encoding = encoding_arg;
+  image.height   = rows_arg;
+  image.width    = cols_arg;
+  image.step     = step_arg;
+  size_t st0 = (step_arg * rows_arg);
+  image.data.resize(st0);
+  memcpy(&image.data[0], data_arg, st0);
+    image.is_bigendian = 0;
+    return true;
+}
+  
 const unsigned char uchar_clipping_table[] = {
     0,
     0,
