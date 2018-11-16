@@ -63,12 +63,12 @@ target_link_libraries(${PROJECT_NAME}_node
 ## Mark executables and/or libraries for installation
 install(TARGETS
   ${PROJECT_NAME}_node
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 ## Copy launch files
 install(DIRECTORY launch/
-  DESTINATION launch
+  DESTINATION share/${PROJECT_NAME}
   FILES_MATCHING PATTERN "*.launch"
 )
 
