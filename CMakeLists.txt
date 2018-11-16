@@ -40,10 +40,12 @@ ament_target_dependencies(${PROJECT_NAME}
   "sensor_msgs"
   "avcodec"
   "swscale")
+list(APPEND ${PROJECT_NAME}_LIBRARIES "${PROJECT_NAME}")
 
 ## Declare a cpp executable
 add_executable(${PROJECT_NAME}_node nodes/usb_cam_node.cpp)
 ament_target_dependencies(${PROJECT_NAME}_node
+  ${PROJECT_NAME}
   "rclcpp"
   "rmw_implementation"
   "std_msgs"
@@ -51,6 +53,8 @@ ament_target_dependencies(${PROJECT_NAME}_node
   "sensor_msgs"
   "avcodec"
   "swscale")
+target_link_libraries(${PROJECT_NAME}_node
+  avutil)
   
 #############
 ## Install ##
