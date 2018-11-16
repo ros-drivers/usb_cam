@@ -99,10 +99,10 @@ static bool fillImage(sensor_msgs::msg::Image& image,
   size_t st0 = (step_arg * rows_arg);
   image.data.resize(st0);
   memcpy(&image.data[0], data_arg, st0);
-    image.is_bigendian = 0;
-    return true;
+  image.is_bigendian = 0;
+  return true;
 }
-  
+
 const unsigned char uchar_clipping_table[] = {
     0,
     0,
