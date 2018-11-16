@@ -57,6 +57,8 @@ public:
 
   UsbCam cam_;
 
+  rclcpp::TimerBase::SharedPtr timer_;
+  
   UsbCamNode() : Node("usb_cam")
   {
     // advertise the main image topic
@@ -75,7 +77,7 @@ public:
     get_parameter_or("image_height", image_height_, 480);
     get_parameter_or("framerate", framerate_, 30);    
     // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
-    get_parameter_or("pixel_format", pixel_format_name_, std::string("mjpeg"));
+    get_parameter_or("pixel_format", pixel_format_name_, std::string("yuyv"));
     // enable/disable autofocus
     get_parameter_or("autofocus", autofocus_, false);
     get_parameter_or("focus", focus_, -1); //0-255, -1 "leave alone"
@@ -177,8 +179,13 @@ public:
         cam_.set_v4l_parameter("focus_absolute", focus_);
       }
     }
-  }
 
+    const int period_ms = 1;
+    timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(static_cast<long int>(period_ms)),
+      std::bind(&UsbCamNode::update, this));
+  }
+  
   virtual ~UsbCamNode()
   {
     cam_.shutdown();
@@ -198,7 +205,9 @@ public:
   void update()
   {
     if (cam_.is_capturing()) {
-      if (!take_and_send_image()) RCLCPP_WARN(get_logger(), "USB camera did not respond in time.");
+      if (!take_and_send_image()) {
+        RCLCPP_WARN(get_logger(), "USB camera did not respond in time.");
+      }
     }
   }
 
