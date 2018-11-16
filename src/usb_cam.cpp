@@ -1112,7 +1112,8 @@ void UsbCam::grab_image(sensor_msgs::msg::Image* msg)
   // grab the image
   grab_image();
   // stamp the image
-  msg->header.stamp = ros::Time::now();
+  rclcpp::Clock ros_clock(RCL_ROS_TIME);
+  msg->header.stamp = ros_clock.now();
   // fill the info
   if (monochrome_)
   {
