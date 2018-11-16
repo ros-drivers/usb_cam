@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>usb_cam</name>
   <version>0.4.0</version>
   <description>A ROS Driver for V4L USB Cameras</description>
@@ -24,12 +24,12 @@
   <build_depend>ffmpeg</build_depend>
   <build_depend>camera_info_manager</build_depend>
 
-  <run_depend>image_transport</run_depend> 
-  <run_depend>roscpp</run_depend> 
-  <run_depend>std_msgs</run_depend> 
-  <run_depend>std_srvs</run_depend> 
-  <run_depend>sensor_msgs</run_depend> 
-  <run_depend>ffmpeg</run_depend>
-  <run_depend>camera_info_manager</run_depend>
-  <run_depend>v4l-utils</run_depend>
+  <exec_depend>image_transport</exec_depend> 
+  <exec_depend>roscpp</exec_depend> 
+  <exec_depend>std_msgs</exec_depend> 
+  <exec_depend>std_srvs</exec_depend> 
+  <exec_depend>sensor_msgs</exec_depend> 
+  <exec_depend>ffmpeg</exec_depend>
+  <exec_depend>camera_info_manager</exec_depend>
+  <exec_depend>v4l-utils</exec_depend>
 </package>
