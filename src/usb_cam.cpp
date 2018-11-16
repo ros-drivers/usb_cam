@@ -85,7 +85,7 @@ static int xioctl(int fd, int request, void * arg)
   return r;
 }
 
-static bool fillImage(Image& image,
+static bool fillImage(sensor_msgs::msg::Image& image,
                       const std::string& encoding_arg,
                       uint32_t rows_arg,
                       uint32_t cols_arg,
@@ -1107,7 +1107,7 @@ void UsbCam::shutdown(void)
   image_ = NULL;
 }
 
-void UsbCam::grab_image(sensor_msgs::Image* msg)
+void UsbCam::grab_image(sensor_msgs::msg::Image* msg)
 {
   // grab the image
   grab_image();
