@@ -18,6 +18,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(avcodec libavcodec REQUIRED)
 pkg_check_modules(swscale libswscale REQUIRED)
 
+# idl stuff
+# msg/Format.msg
+
 include_directories(include
   ${avcodec_INCLUDE_DIRS}
   ${swscale_INCLUDE_DIRS}

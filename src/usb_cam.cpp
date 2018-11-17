@@ -49,6 +49,7 @@
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+// #include <usb_cam/msg/formats.hpp>
 
 #include <boost/lexical_cast.hpp>
 // #include <sensor_msgs/fill_image.h>
@@ -1247,6 +1248,41 @@ bool UsbCam::get_image(builtin_interfaces::msg::Time& stamp,
   return true;
 }
 
+void UsbCam::get_formats()  // std::vector<usb_cam::msg::Format>& formats)
+{
+  INFO("formats:");
+  struct v4l2_fmtdesc fmt;
+  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  fmt.index = 0;
+  for (fmt.index = 0; xioctl(fd_, VIDIOC_ENUM_FMT, &fmt) == 0; ++fmt.index) {
+    INFO(fmt.index << " " << fmt.type << " " << fmt.flags << " '" << fmt.description
+        << "' " << std::hex << fmt.pixelformat << std::dec);
+
+    struct v4l2_frmsizeenum size;
+    size.index = 0;
+    size.pixel_format = fmt.pixelformat;
+
+    for (size.index = 0; xioctl(fd_, VIDIOC_ENUM_FRAMESIZES, &size) == 0; ++size.index) {
+      INFO(size.discrete.width << " " << size.discrete.height);
+      struct v4l2_frmivalenum interval;
+      interval.index = 0;
+      interval.pixel_format = size.pixel_format;
+      interval.width = size.discrete.width;
+      interval.height = size.discrete.height;
+      for (interval.index = 0; xioctl(fd_, VIDIOC_ENUM_FRAMEINTERVALS, &interval) == 0;
+          ++interval.index) {
+        if (interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
+          INFO(interval.type << " "
+            << interval.discrete.numerator << " / "
+            << interval.discrete.denominator);
+        } else {
+          INFO("other type");
+        }
+      }  // interval loop
+    }  // size loop
+  }  // fmt loop
+}
+
 bool UsbCam::grab_image()
 {
   fd_set fds;
@@ -1399,5 +1435,25 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
     else
       return PIXEL_FORMAT_UNKNOWN;
 }
+
+#if 0
+std::string UsbCam::pixel_format_to_string(__u32 pixelformat)
+{
+      return PIXEL_FORMAT_YUYV;
+      return "yuyv";
+    else if (str == "uyvy")
+      return PIXEL_FORMAT_UYVY;
+    else if (str == "mjpeg")
+      return PIXEL_FORMAT_MJPEG;
+    else if (str == "yuvmono10")
+      return PIXEL_FORMAT_YUVMONO10;
+    else if (str == "rgb24")
+      return PIXEL_FORMAT_RGB24;
+    else if (str == "grey")
+      return PIXEL_FORMAT_GREY;
+    else
+      return PIXEL_FORMAT_UNKNOWN;
+}
+#endif
 
 }
