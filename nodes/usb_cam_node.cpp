@@ -184,6 +184,7 @@ public:
     while (rclcpp::ok())
     {
       update();
+      RCLCPP_DEBUG(get_logger(), "Got new image");
       rate->sleep();
     }
   }
