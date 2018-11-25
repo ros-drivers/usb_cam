@@ -62,7 +62,7 @@ public:
   UsbCamNode() : Node("usb_cam")
   {
     // advertise the main image topic
-    image_pub_ = create_publisher<sensor_msgs::msg::Image>("image_raw");
+    image_pub_ = create_publisher<sensor_msgs::msg::Image>("image_raw", rmw_qos_profile_sensor_data);
 
     // grab the parameters
     get_parameter_or("video_device", video_device_name_, std::string("/dev/video0"));
