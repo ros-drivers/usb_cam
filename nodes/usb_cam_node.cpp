@@ -180,10 +180,12 @@ public:
       }
     }
 
-    const int period_ms = 1;
-    timer_ = this->create_wall_timer(
-      std::chrono::milliseconds(static_cast<long int>(period_ms)),
-      std::bind(&UsbCamNode::update, this));
+    auto rate = std::make_unique<rclcpp::Rate>(double(framerate_));
+    while (rclcpp::ok())
+    {
+      update();
+      rate->sleep();
+    }
   }
   
   virtual ~UsbCamNode()
