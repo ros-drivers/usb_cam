@@ -77,7 +77,7 @@ public:
     get_parameter_or("image_height", image_height_, 480);
     get_parameter_or("framerate", framerate_, 30);    
     // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
-    get_parameter_or("pixel_format", pixel_format_name_, std::string("yuyv"));
+    get_parameter_or("pixel_format", pixel_format_name_, std::string("mjpeg"));
     // enable/disable autofocus
     get_parameter_or("autofocus", autofocus_, false);
     get_parameter_or("focus", focus_, -1); //0-255, -1 "leave alone"
