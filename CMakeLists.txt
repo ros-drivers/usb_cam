@@ -69,7 +69,7 @@ install(TARGETS
 ## Copy launch files
 install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.launch.py"
+  FILES_MATCHING PATTERN "*.launch.py" PATTERN "*.yaml"
 )
 
 install(DIRECTORY include/${PROJECT_NAME}/
