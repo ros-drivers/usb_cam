@@ -39,6 +39,8 @@
 #include <sstream>
 #include <std_srvs/srv/empty.h>
 
+using namespace std::literals::chrono_literals;
+
 namespace usb_cam {
 
 class UsbCamNode : public rclcpp::Node
@@ -180,13 +182,7 @@ public:
       }
     }
 
-    auto rate = std::make_unique<rclcpp::Rate>(double(framerate_));
-    while (rclcpp::ok())
-    {
-      update();
-      RCLCPP_DEBUG(get_logger(), "Got new image");
-      rate->sleep();
-    }
+    timer_ = create_wall_timer(1s / framerate_, [this]() { update(); });
   }
   
   virtual ~UsbCamNode()
@@ -224,5 +220,6 @@ int main(int argc, char **argv)
   auto usb_cam = std::make_shared<usb_cam::UsbCamNode>();
   rclcpp::spin(usb_cam);
   rclcpp::shutdown();
+  usb_cam.reset();
   return 0;
 }
