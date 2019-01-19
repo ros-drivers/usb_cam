@@ -363,14 +363,15 @@ UsbCam::~UsbCam()
   shutdown();
 }
 
-int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
+int UsbCam::init_decoder(int image_width, int image_height,
+    color_format color_format, AVCodecID codec_id, const char *codec_name)
 {
   avcodec_register_all();
 
-  avcodec_ = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+  avcodec_ = avcodec_find_decoder(codec_id);
   if (!avcodec_)
   {
-    ROS_ERROR("Could not find MJPEG decoder");
+    ROS_ERROR("Could not find %s decoder", codec_name);
     return 0;
   }
 
@@ -385,25 +386,47 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
 
   avpicture_alloc((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, image_width, image_height);
 
-  avcodec_context_->codec_id = AV_CODEC_ID_MJPEG;
+  avcodec_context_->codec_id = codec_id;
   avcodec_context_->width = image_width;
   avcodec_context_->height = image_height;
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
-  avcodec_context_->pix_fmt = AV_PIX_FMT_YUV422P;
+  if (color_format == COLOR_FORMAT_YUV422P)
+    avcodec_context_->pix_fmt = AV_PIX_FMT_YUV422P;
+  else
+    avcodec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
+
   avcodec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
 #endif
 
-  avframe_camera_size_ = avpicture_get_size(AV_PIX_FMT_YUV422P, image_width, image_height);
+  if (color_format == COLOR_FORMAT_YUV422P)
+    avframe_camera_size_ = avpicture_get_size(AV_PIX_FMT_YUV422P, image_width, image_height);
+  else 
+  {
+    avframe_camera_size_ = avpicture_get_size(AV_PIX_FMT_YUV420P, image_width, image_height);
+    // libav warns when YUV420P is chosen, supress the warnings
+    av_log_set_level(AV_LOG_ERROR);
+  }
+
   avframe_rgb_size_ = avpicture_get_size(AV_PIX_FMT_RGB24, image_width, image_height);
 
   /* open it */
   if (avcodec_open2(avcodec_context_, avcodec_, &avoptions_) < 0)
   {
-    ROS_ERROR("Could not open MJPEG Decoder");
+    ROS_ERROR("Could not open %s Decoder", codec_name);
     return 0;
   }
   return 1;
+}
+
+int UsbCam::init_mjpeg_decoder(int image_width, int image_height, color_format color_format)
+{
+  return init_decoder(image_width, image_height, color_format, AV_CODEC_ID_MJPEG, "MJPEG");
+}
+
+int UsbCam::init_h264_decoder(int image_width, int image_height, color_format color_format)
+{
+  return init_decoder(image_width, image_height, color_format, AV_CODEC_ID_H264, "H264");
 }
 
 void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
@@ -459,6 +482,8 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   }
 }
 
+
+
 void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
 {
   if (pixelformat_ == V4L2_PIX_FMT_YUYV)
@@ -476,6 +501,10 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
     uyvy2rgb((char*)src, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_MJPEG)
     mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
+  else if (pixelformat_ == V4L2_PIX_FMT_H264)
+  { // libav handles the decoding, so reusing the same function is fine
+    mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
+  }
   else if (pixelformat_ == V4L2_PIX_FMT_RGB24)
     rgb242rgb((char*)src, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_GREY)
@@ -1003,7 +1032,8 @@ void UsbCam::open_device(void)
 }
 
 void UsbCam::start(const std::string& dev, io_method io_method,
-		   pixel_format pixel_format, int image_width, int image_height,
+		   pixel_format pixel_format, color_format color_format,
+       int image_width, int image_height,
 		   int framerate)
 {
   camera_dev_ = dev;
@@ -1017,7 +1047,12 @@ void UsbCam::start(const std::string& dev, io_method io_method,
   else if (pixel_format == PIXEL_FORMAT_MJPEG)
   {
     pixelformat_ = V4L2_PIX_FMT_MJPEG;
-    init_mjpeg_decoder(image_width, image_height);
+    init_mjpeg_decoder(image_width, image_height, color_format);
+  }
+  else if (pixel_format == PIXEL_FORMAT_H264)
+  {
+    pixelformat_ = V4L2_PIX_FMT_H264;
+    init_h264_decoder(image_width, image_height, color_format);
   }
   else if (pixel_format == PIXEL_FORMAT_YUVMONO10)
   {
@@ -1240,8 +1275,20 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_RGB24;
     else if (str == "grey")
       return PIXEL_FORMAT_GREY;
+    else if (str == "h264")
+      return PIXEL_FORMAT_H264;
     else
       return PIXEL_FORMAT_UNKNOWN;
+}
+
+UsbCam::color_format UsbCam::color_format_from_string(const std::string& str)
+{
+    if (str == "yuv420p")
+      return COLOR_FORMAT_YUV420P;
+    else if (str == "yuv422p")
+      return COLOR_FORMAT_YUV422P;
+    else
+      return COLOR_FORMAT_UNKNOWN;
 }
 
 }
