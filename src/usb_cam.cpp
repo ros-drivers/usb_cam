@@ -61,7 +61,7 @@ namespace usb_cam {
 static void errno_exit(const char * s)
 {
   ROS_ERROR("%s error %d, %s", s, errno, strerror(errno));
-  exit(EXIT_FAILURE);
+//  exit(EXIT_FAILURE);
 }
 
 static int xioctl(int fd, int request, void * arg)
@@ -505,6 +505,7 @@ int UsbCam::read_frame()
             /* fall through */
 
           default:
+            is_capturing_ = false;
             errno_exit("read");
         }
       }
@@ -532,6 +533,7 @@ int UsbCam::read_frame()
             /* fall through */
 
           default:
+            is_capturing_ = false;
             errno_exit("VIDIOC_DQBUF");
         }
       }
@@ -540,8 +542,10 @@ int UsbCam::read_frame()
       len = buf.bytesused;
       process_image(buffers_[buf.index].start, len, image_);
 
-      if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf))
+      if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf)) {
+        is_capturing_ = false;
         errno_exit("VIDIOC_QBUF");
+      }
 
       break;
 
@@ -564,6 +568,7 @@ int UsbCam::read_frame()
             /* fall through */
 
           default:
+            is_capturing_ = false;
             errno_exit("VIDIOC_DQBUF");
         }
       }
@@ -576,8 +581,10 @@ int UsbCam::read_frame()
       len = buf.bytesused;
       process_image((void *)buf.m.userptr, len, image_);
 
-      if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf))
+      if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf)) {
+        is_capturing_ = false;
         errno_exit("VIDIOC_QBUF");
+      }
 
       break;
   }
@@ -1118,13 +1125,16 @@ void UsbCam::grab_image()
     if (EINTR == errno)
       return;
 
+    is_capturing_ = false;
     errno_exit("select");
   }
 
   if (0 == r)
   {
     ROS_ERROR("select timeout");
-    exit(EXIT_FAILURE);
+    is_capturing_ = false;
+    //exit(EXIT_FAILURE);
+    errno_exit("select");
   }
 
   read_frame();

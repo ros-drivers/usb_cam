@@ -35,6 +35,7 @@
 *********************************************************************/
 
 #include <ros/ros.h>
+#include <sys/stat.h>
 #include <usb_cam/usb_cam.h>
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
@@ -239,20 +240,38 @@ public:
     // publish the image
     image_pub_.publish(img_, *ci);
 
-    return true;
+    return cam_.is_capturing();
   }
 
   bool spin()
   {
+    UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
+    UsbCam::pixel_format pixel_format = UsbCam::pixel_format_from_string(pixel_format_name_);
+
     ros::Rate loop_rate(this->framerate_);
+    ros::Rate try_rate(1);
+    int i = 0;
+    struct stat st;
     while (node_.ok())
     {
       if (cam_.is_capturing()) {
-        if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
+        if (!take_and_send_image()) {
+            ROS_WARN("USB camera did not respond in time.");
+            continue;
+        }
+        i = 0;
+        ros::spinOnce();
+        loop_rate.sleep();
+      } else {
+        i++;
+        std::cout << "try " << i << " times to connect" << std::endl;
+        if (-1 != stat(video_device_name_.c_str(), &st)) {
+            cam_.shutdown();
+            cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_, image_height_, framerate_);
+        }
+        ros::spinOnce();
+        try_rate.sleep();
       }
-      ros::spinOnce();
-      loop_rate.sleep();
-
     }
     return true;
   }
