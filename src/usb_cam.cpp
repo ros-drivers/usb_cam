@@ -1011,7 +1011,7 @@ void UsbCam::open_device(void)
 
 void UsbCam::start(const std::string& dev, io_method io_method,
 		   pixel_format pixel_format, int image_width, int image_height,
-		   int framerate)
+		   int framerate,float resize_fx, float resize_fy)
 {
   camera_dev_ = dev;
 

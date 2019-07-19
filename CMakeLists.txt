@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(usb_cam)
-
+add_definitions(-std=c++11)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS image_transport roscpp std_msgs std_srvs sensor_msgs camera_info_manager)
-
+find_package(catkin REQUIRED COMPONENTS image_transport roscpp std_msgs std_srvs sensor_msgs camera_info_manager cv_bridge)
+find_package(OpenCV 3 REQUIRED)
 ## pkg-config libraries
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(avcodec libavcodec REQUIRED)
@@ -31,6 +31,7 @@ include_directories(include
   ${catkin_INCLUDE_DIRS}
   ${avcodec_INCLUDE_DIRS}
   ${swscale_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Build the USB camera library
@@ -39,6 +40,8 @@ target_link_libraries(${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${swscale_LIBRARIES}
   ${catkin_LIBRARIES}
+  ${cv_bridge_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 ## Declare a cpp executable
@@ -48,6 +51,8 @@ target_link_libraries(${PROJECT_NAME}_node
   ${avcodec_LIBRARIES}
   ${swscale_LIBRARIES}
   ${catkin_LIBRARIES}
+  ${cv_bridge_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 #############

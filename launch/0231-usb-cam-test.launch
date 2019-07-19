@@ -1,0 +1,12 @@
+<launch>
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/usb-cam-0231-1" />
+    <param name="image_width" value="1920" />
+    <param name="image_height" value="1024" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <param name="resize_fx" value="0.1" />
+    <param name="resize_fy" value="0.1" />
+  </node>
+</launch>

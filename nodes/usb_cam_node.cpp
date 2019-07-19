@@ -39,8 +39,12 @@
 #include <usb_cam/usb_cam.h>
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
-#include <sstream>
+
 #include <std_srvs/Empty.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
+#include <sensor_msgs/image_encodings.h>
+#include <opencv2/imgproc/imgproc.hpp>
 
 namespace usb_cam {
 
@@ -53,6 +57,12 @@ public:
   // shared image message
   sensor_msgs::Image img_;
   image_transport::CameraPublisher image_pub_;
+
+  //Change image pixel
+  sensor_msgs::ImagePtr msg = nullptr;
+  cv::Mat imgcv, imgcv_resized;
+  cv_bridge::CvImagePtr cv_ptr = nullptr;
+  float resize_fx = 1.f, resize_fy = 1.f;
 
   // parameters
   std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
@@ -89,6 +99,9 @@ public:
     image_transport::ImageTransport it(node_);
     image_pub_ = it.advertiseCamera("image_raw", 1);
 
+    //pixel_resize_
+    node_.param("resize_fx",resize_fx,1.f);
+    node_.param("resize_fy",resize_fy,1.f);
     // grab the parameters
     node_.param("video_device", video_device_name_, std::string("/dev/video0"));
     node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
@@ -158,7 +171,7 @@ public:
 
     // start the camera
     cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
-		     image_height_, framerate_);
+		     image_height_, framerate_, resize_fx, resize_fy);
 
     // set camera parameters
     if (brightness_ >= 0)
@@ -237,6 +250,19 @@ public:
     ci->header.frame_id = img_.header.frame_id;
     ci->header.stamp = img_.header.stamp;
 
+    //Change image pixel
+    cv_ptr = cv_bridge::toCvCopy(img_, sensor_msgs::image_encodings::BGR8);
+    cv_ptr->image.copyTo(imgcv);
+    
+    //插值方式：INTER_NEAREST(0.012)  INTER_LINEAR(0.012)  INTER_AREA(0.012)  INTER_CUBIC(0.0014)  INTER_LANCZOS4(0.06)
+    //To shrink an image, it will generally look best with cv::INTER_AREA interpolation, whereas to enlarge an image, 
+    // it will generally look best with cv::INTER_CUBIC (slow) or cv::INTER_LINEAR (faster but still looks OK).
+    cv::resize(imgcv, imgcv_resized, cv::Size(), resize_fx, resize_fy, cv::INTER_AREA);  
+       
+    msg  = cv_bridge::CvImage(std_msgs::Header(), "bgr8", imgcv_resized).toImageMsg();
+    msg->header = img_.header;
+    img_ = *msg;
+
     // publish the image
     image_pub_.publish(img_, *ci);
 
@@ -267,7 +293,7 @@ public:
         std::cout << "try " << i << " times to connect" << std::endl;
         if (-1 != stat(video_device_name_.c_str(), &st)) {
             cam_.shutdown();
-            cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_, image_height_, framerate_);
+            cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_, image_height_, framerate_, resize_fx, resize_fy);
         }
         ros::spinOnce();
         try_rate.sleep();
