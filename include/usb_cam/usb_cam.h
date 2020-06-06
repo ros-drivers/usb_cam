@@ -104,6 +104,7 @@ class UsbCam {
     int height;
     int bytes_per_pixel;
     int image_size;
+    ros::Time stamp;
     char *image;
     int is_new;
   } camera_image_t;
