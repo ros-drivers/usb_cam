@@ -8,6 +8,10 @@ For full documentation, see [the ROS wiki](http://ros.org/wiki/usb_cam).
 
 [Doxygen](http://docs.ros.org/indigo/api/usb_cam/html/) files can be found on the ROS wiki.
 
+### Dependencies
+$ sudo apt-get update
+$ sudo apt-get install v4l-utils
+
 ### License
 usb_cam is released with a BSD license. For full terms and conditions, see the [LICENSE](LICENSE) file.
 
