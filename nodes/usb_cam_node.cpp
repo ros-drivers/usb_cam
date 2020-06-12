@@ -54,7 +54,7 @@ public:
   image_transport::CameraPublisher image_pub_;
 
   // parameters
-  std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
+  std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_, color_format_name_ ;
   //std::string start_service_name_, start_service_name_;
   bool streaming_status_;
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
@@ -101,6 +101,8 @@ public:
     node_.param("framerate", framerate_, 30);
     // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
     node_.param("pixel_format", pixel_format_name_, std::string("mjpeg"));
+    // possible values: yuv420p, yuv422p
+    node_.param("color_format", color_format_name_, std::string("yuv422p"));
     // enable/disable autofocus
     node_.param("autofocus", autofocus_, false);
     node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
@@ -155,8 +157,17 @@ public:
       return;
     }
 
+    // set the color format
+    UsbCam::color_format color_format = UsbCam::color_format_from_string(color_format_name_);
+    if (color_format == UsbCam::COLOR_FORMAT_UNKNOWN)
+    {
+      ROS_FATAL("Unknown color format '%s'", color_format_name_.c_str());
+      node_.shutdown();
+      return;
+    }
+
     // start the camera
-    cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
+    cam_.start(video_device_name_.c_str(), io_method, pixel_format, color_format, image_width_,
 		     image_height_, framerate_);
 
     // set camera parameters
