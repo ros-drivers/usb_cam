@@ -37,6 +37,8 @@
 #define USB_CAM_USB_CAM_H
 
 #include <asm/types.h>          /* for videodev2.h */
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
 
 extern "C"
 {
@@ -76,7 +78,8 @@ class UsbCam {
 
   // start camera
   void start(const std::string& dev, io_method io, pixel_format pf,
-		    int image_width, int image_height, int framerate);
+		    int image_width, int image_height, int framerate,
+                    float resize_fx, float resize_fy);
   // shutdown camera
   void shutdown(void);
 

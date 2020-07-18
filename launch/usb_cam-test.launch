@@ -6,8 +6,10 @@
     <param name="pixel_format" value="yuyv" />
     <param name="camera_frame_id" value="usb_cam" />
     <param name="io_method" value="mmap"/>
+    <param name="resize_fx" value="0.1" />
+    <param name="resize_fy" value="0.1" />
   </node>
-  <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
+    <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
     <remap from="image" to="/usb_cam/image_raw"/>
     <param name="autosize" value="true" />
   </node>

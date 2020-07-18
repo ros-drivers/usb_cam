@@ -1,0 +1,10 @@
+1）查看相机是否连上ecu：
+lsusb 查看是否有 ID 2a0b:00db
+ls -l /dev/video* 是否有例如：video0 video1
+2) 固定相机的设备号
+看相机的串口信息： udevadm info --attribute-walk --name=/dev/video0
+查看ATTRS{idProduct} = “00db” ATTRS{idVendor}=="2a0b"的KERNELS的名称：一般为“2-5”的形式
+将usb-cam-0231-1.rules中的KERNELS=="2-4"中 2-4 改成你查看的名称 2-5
+重复上面3步,设置另一个相机
+两个相机都设置完后， ./set-udev.sh
+ls -l /dev/usb-cam-0231*   查看是否成功
