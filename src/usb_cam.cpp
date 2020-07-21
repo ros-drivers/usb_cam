@@ -292,7 +292,7 @@ static void YUV2RGB(const unsigned char y, const unsigned char u, const unsigned
   *b = CLIPVALUE(b2);
 }
 
-void uyvy2rgb(char *YUV, char *RGB, int NumPixels)
+void uyvy2rgb(unsigned char *YUV, char *RGB, int NumPixels)
 {
   int i, j;
   unsigned char y0, y1, u, v;
@@ -314,7 +314,7 @@ void uyvy2rgb(char *YUV, char *RGB, int NumPixels)
   }
 }
 
-static void mono102mono8(char *RAW, char *MONO, int NumPixels)
+static void mono102mono8(unsigned char *RAW, char *MONO, int NumPixels)
 {
   int i, j;
   for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 1)
@@ -324,7 +324,7 @@ static void mono102mono8(char *RAW, char *MONO, int NumPixels)
   }
 }
 
-static void yuyv2rgb(char *YUV, char *RGB, int NumPixels)
+static void yuyv2rgb(unsigned char *YUV, char *RGB, int NumPixels)
 {
   int i, j;
   unsigned char y0, y1, u, v;
@@ -347,7 +347,7 @@ static void yuyv2rgb(char *YUV, char *RGB, int NumPixels)
   }
 }
 
-void rgb242rgb(char *YUV, char *RGB, int NumPixels)
+void rgb242rgb(unsigned char *YUV, char *RGB, int NumPixels)
 {
   memcpy(RGB, YUV, NumPixels * 3);
 }
@@ -406,7 +406,7 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   return 1;
 }
 
-void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
+void UsbCam::mjpeg2rgb(unsigned char *MJPEG, int len, char *RGB, int NumPixels)
 {
   int got_picture;
 
@@ -465,21 +465,25 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
   {
     if (monochrome_)
     { //actually format V4L2_PIX_FMT_Y16, but xioctl gets unhappy if you don't use the advertised type (yuyv)
-      mono102mono8((char*)src, dest->image, dest->width * dest->height);
+      mono102mono8((unsigned char*)src, dest->image, dest->width * dest->height);
     }
     else
     {
-      yuyv2rgb((char*)src, dest->image, dest->width * dest->height);
+      yuyv2rgb((unsigned char*)src, dest->image, dest->width * dest->height);
     }
   }
   else if (pixelformat_ == V4L2_PIX_FMT_UYVY)
-    uyvy2rgb((char*)src, dest->image, dest->width * dest->height);
+    uyvy2rgb((unsigned char*)src, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_MJPEG)
-    mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
+    mjpeg2rgb((unsigned char*)src, len, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_RGB24)
-    rgb242rgb((char*)src, dest->image, dest->width * dest->height);
+    rgb242rgb((unsigned char*)src, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_GREY)
-    memcpy(dest->image, (char*)src, dest->width * dest->height);
+    memcpy(dest->image, (unsigned char*)src, dest->width * dest->height);
+  else if (pixelformat_ == V4L2_PIX_FMT_GREY)
+    memcpy(dest->image, (unsigned char*)src, dest->width * dest->height);
+  else if (pixelformat_ == V4L2_PIX_FMT_Y10)
+    mono102mono8((unsigned char*)src, dest->image, dest->width * dest->height);
 }
 
 int UsbCam::read_frame()
@@ -920,12 +924,13 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
   fmt.fmt.pix.width = image_width;
   fmt.fmt.pix.height = image_height;
   fmt.fmt.pix.pixelformat = pixelformat_;
-  fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
+  fmt.fmt.pix.field = V4L2_FIELD_NONE;
 
   if (-1 == xioctl(fd_, VIDIOC_S_FMT, &fmt))
     errno_exit("VIDIOC_S_FMT");
 
   /* Note VIDIOC_S_FMT may change width and height. */
+  pixelformat_ = fmt.fmt.pix.pixelformat;
 
   /* Buggy driver paranoia. */
   min = fmt.fmt.pix.width * 2;
@@ -941,17 +946,17 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
   struct v4l2_streamparm stream_params;
   memset(&stream_params, 0, sizeof(stream_params));
   stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (xioctl(fd_, VIDIOC_G_PARM, &stream_params) < 0)
-    errno_exit("Couldn't query v4l fps!");
+  if (!xioctl(fd_, VIDIOC_G_PARM, &stream_params))
+  {
+	  ROS_DEBUG("Capability flag: 0x%x", stream_params.parm.capture.capability);
 
-  ROS_DEBUG("Capability flag: 0x%x", stream_params.parm.capture.capability);
-
-  stream_params.parm.capture.timeperframe.numerator = 1;
-  stream_params.parm.capture.timeperframe.denominator = framerate;
-  if (xioctl(fd_, VIDIOC_S_PARM, &stream_params) < 0)
-    ROS_WARN("Couldn't set camera framerate");
-  else
-    ROS_DEBUG("Set framerate to be %i", framerate);
+	  stream_params.parm.capture.timeperframe.numerator = 1;
+	  stream_params.parm.capture.timeperframe.denominator = framerate;
+	  if (xioctl(fd_, VIDIOC_S_PARM, &stream_params) < 0)
+	    ROS_WARN("Couldn't set camera framerate");
+	  else
+	    ROS_DEBUG("Set framerate to be %i", framerate);
+  }
 
   switch (io_)
   {
@@ -1032,6 +1037,11 @@ void UsbCam::start(const std::string& dev, io_method io_method,
   else if (pixel_format == PIXEL_FORMAT_GREY)
   {
     pixelformat_ = V4L2_PIX_FMT_GREY;
+    monochrome_ = true;
+  }
+  else if (pixel_format == PIXEL_FORMAT_Y10)
+  {
+    pixelformat_ = V4L2_PIX_FMT_Y10;
     monochrome_ = true;
   }
   else
@@ -1240,6 +1250,8 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_RGB24;
     else if (str == "grey")
       return PIXEL_FORMAT_GREY;
+    else if (str == "Y10")
+      return PIXEL_FORMAT_Y10;
     else
       return PIXEL_FORMAT_UNKNOWN;
 }
