@@ -105,7 +105,7 @@ public:
     node_.param("autofocus", autofocus_, false);
     node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
     // enable/disable autoexposure
-    node_.param("autoexposure", autoexposure_, true);
+    node_.param("autoexposure", autoexposure_, false);
     node_.param("exposure", exposure_, 100);
     node_.param("gain", gain_, -1); //0-100?, -1 "leave alone"
     // enable/disable auto white balance temperature
