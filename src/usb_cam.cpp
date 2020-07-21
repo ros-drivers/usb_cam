@@ -316,11 +316,13 @@ void uyvy2rgb(unsigned char *YUV, char *RGB, int NumPixels)
 
 static void mono102mono8(unsigned char *RAW, char *MONO, int NumPixels)
 {
-  int i, j;
-  for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 1)
+  unsigned short *raw16 = (unsigned short*)RAW;
+  int i;
+  
+  for (i = 0; i < NumPixels; i++)
   {
     //first byte is low byte, second byte is high byte; smash together and convert to 8-bit
-    MONO[j] = (unsigned char)(((RAW[i + 0] >> 2) & 0x3F) | ((RAW[i + 1] << 6) & 0xC0));
+    MONO[i] = raw16[i] >> 2;
   }
 }
 
