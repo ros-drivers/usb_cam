@@ -31,4 +31,5 @@
   <run_depend>ffmpeg</run_depend>
   <run_depend>camera_info_manager</run_depend>
   <run_depend>v4l-utils</run_depend>
+  <run_depend>image_view</run_depend>
 </package>
