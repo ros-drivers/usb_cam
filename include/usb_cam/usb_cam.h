@@ -43,6 +43,7 @@ extern "C"
 #include <linux/videodev2.h>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
 #include <libavutil/mem.h>
 }
 
@@ -68,7 +69,7 @@ class UsbCam {
 
   typedef enum
   {
-    PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24, PIXEL_FORMAT_GREY, PIXEL_FORMAT_UNKNOWN
+    PIXEL_FORMAT_YUYV, PIXEL_FORMAT_Y10, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24, PIXEL_FORMAT_GREY, PIXEL_FORMAT_UNKNOWN
   } pixel_format;
 
   UsbCam();
@@ -116,7 +117,7 @@ class UsbCam {
 
 
   int init_mjpeg_decoder(int image_width, int image_height);
-  void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
+  void mjpeg2rgb(unsigned char *MJPEG, int len, char *RGB, int NumPixels);
   void process_image(const void * src, int len, camera_image_t *dest);
   int read_frame();
   void uninit_device(void);
