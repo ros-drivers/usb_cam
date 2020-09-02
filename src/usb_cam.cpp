@@ -435,6 +435,23 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
     ROS_ERROR("Webcam: expected picture but didn't get it...");
     return;
   }
+  switch(avcodec_context_->pix_fmt)
+  {
+  case AV_PIX_FMT_YUVJ420P:
+    avcodec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
+    avcodec_context_->color_range = AVCOL_RANGE_JPEG;
+    break;
+  case AV_PIX_FMT_YUVJ422P:
+    avcodec_context_->pix_fmt = AV_PIX_FMT_YUV422P;
+    avcodec_context_->color_range = AVCOL_RANGE_JPEG;
+    break;
+  case AV_PIX_FMT_YUVJ444P:
+    avcodec_context_->pix_fmt = AV_PIX_FMT_YUV444P;
+    avcodec_context_->color_range = AVCOL_RANGE_JPEG;
+    break;
+  default:
+    break;
+  }
 
   int xsize = avcodec_context_->width;
   int ysize = avcodec_context_->height;
