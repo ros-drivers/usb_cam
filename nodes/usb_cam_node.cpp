@@ -57,7 +57,7 @@ public:
   // shared image message
   sensor_msgs::msg::Image::SharedPtr img_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
-
+  
   // parameters
   std::string video_device_name_ = "/dev/video0";
   std::string frame_id_ = "map";
@@ -110,7 +110,7 @@ public:
     // demos/intra_process_demo/include/image_pipeline/camera_node.hpp
     img_ = std::make_shared<sensor_msgs::msg::Image>();
     // advertise the main image topic
-    image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("image_raw");
+    image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("image_raw", 100);
   }
 
   void init()
@@ -299,7 +299,7 @@ public:
     image_pub_.publish(img_, *ci);
 #endif
     // INFO(img_->data.size() << " " << img_->width << " " << img_->height << " " << img_->step);
-    image_pub_->publish(img_);
+    image_pub_->publish(*img_);
 
     return true;
   }
