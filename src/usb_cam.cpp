@@ -34,12 +34,8 @@
  *
  *********************************************************************/
 #define __STDC_CONSTANT_MACROS
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <fcntl.h>              /* low-level i/o */
-#include <iostream>
+#include <usb_cam/usb_cam.h>
+
 #include <unistd.h>
 #include <errno.h>
 #include <malloc.h>
@@ -49,12 +45,21 @@
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <boost/lexical_cast.hpp>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <fcntl.h>              /* low-level i/o */
+#include <iostream>
 // #include <usb_cam/msg/formats.hpp>
 
-#include <boost/lexical_cast.hpp>
 // #include <sensor_msgs/fill_image.h>
 
-#include <usb_cam/usb_cam.h>
+#include <memory>
+#include <string>
+#include <vector>
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
@@ -78,16 +83,14 @@ void monotonicToRealTime(const timespec& monotonic_time, timespec& real_time)
   // This isn't available outside of the kernel
   // real_time = timespec_add(monotonic_time, time_diff);
 
-  const long NSEC_PER_SEC = 1000000000;
+  const int64_t NSEC_PER_SEC = 1000000000;
   real_time.tv_sec = monotonic_time.tv_sec + time_diff.tv_sec;
   real_time.tv_nsec = monotonic_time.tv_nsec + time_diff.tv_nsec;
   if (real_time.tv_nsec >= NSEC_PER_SEC)
   {
     ++real_time.tv_sec;
     real_time.tv_nsec -= NSEC_PER_SEC;
-  }
-  else if (real_time.tv_nsec < 0)
-  {
+  } else if (real_time.tv_nsec < 0) {
     --real_time.tv_sec;
     real_time.tv_nsec += NSEC_PER_SEC;
   }
@@ -97,10 +100,11 @@ static int xioctl(int fd, int request, void * arg)
 {
   int r;
 
-  do
+  do {
     r = ioctl(fd, request, arg);
-  while (-1 == r && EINTR == errno);
-
+    continue;
+  } while (-1 == r && EINTR == errno);
+  
   return r;
 }
 
@@ -112,7 +116,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, // -128 - -121
+    0,  // -128 - -121
     0,
     0,
     0,
@@ -120,7 +124,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, // -120 - -113
+    0,  // -120 - -113
     0,
     0,
     0,
@@ -128,7 +132,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, // -112 - -105
+    0,  // -112 - -105
     0,
     0,
     0,
@@ -136,7 +140,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, // -104 -  -97
+    0,  // -104 -  -97
     0,
     0,
     0,
@@ -144,7 +148,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -96 -  -89
+    0,  //  -96 -  -89
     0,
     0,
     0,
@@ -152,7 +156,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -88 -  -81
+    0,  //  -88 -  -81
     0,
     0,
     0,
@@ -160,7 +164,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -80 -  -73
+    0,  //  -80 -  -73
     0,
     0,
     0,
@@ -168,7 +172,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -72 -  -65
+    0,  //  -72 -  -65
     0,
     0,
     0,
@@ -176,7 +180,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -64 -  -57
+    0,  //  -64 -  -57
     0,
     0,
     0,
@@ -184,7 +188,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -56 -  -49
+    0,  //  -56 -  -49
     0,
     0,
     0,
@@ -192,7 +196,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -48 -  -41
+    0,  //  -48 -  -41
     0,
     0,
     0,
@@ -200,7 +204,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -40 -  -33
+    0,  //  -40 -  -33
     0,
     0,
     0,
@@ -208,7 +212,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -32 -  -25
+    0,  //  -32 -  -25
     0,
     0,
     0,
@@ -216,7 +220,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -24 -  -17
+    0,  //  -24 -  -17
     0,
     0,
     0,
@@ -224,7 +228,7 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //  -16 -   -9
+    0,  //  -16 -   -9
     0,
     0,
     0,
@@ -232,33 +236,38 @@ const unsigned char uchar_clipping_table[] = {
     0,
     0,
     0,
-    0, //   -8 -   -1
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-    31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
-    60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88,
-    89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113,
-    114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136,
-    137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159,
-    160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182,
-    183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205,
-    206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228,
-    229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251,
-    252, 253, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, // 256-263
-    255, 255, 255, 255, 255, 255, 255, 255, // 264-271
-    255, 255, 255, 255, 255, 255, 255, 255, // 272-279
-    255, 255, 255, 255, 255, 255, 255, 255, // 280-287
-    255, 255, 255, 255, 255, 255, 255, 255, // 288-295
-    255, 255, 255, 255, 255, 255, 255, 255, // 296-303
-    255, 255, 255, 255, 255, 255, 255, 255, // 304-311
-    255, 255, 255, 255, 255, 255, 255, 255, // 312-319
-    255, 255, 255, 255, 255, 255, 255, 255, // 320-327
-    255, 255, 255, 255, 255, 255, 255, 255, // 328-335
-    255, 255, 255, 255, 255, 255, 255, 255, // 336-343
-    255, 255, 255, 255, 255, 255, 255, 255, // 344-351
-    255, 255, 255, 255, 255, 255, 255, 255, // 352-359
-    255, 255, 255, 255, 255, 255, 255, 255, // 360-367
-    255, 255, 255, 255, 255, 255, 255, 255, // 368-375
-    255, 255, 255, 255, 255, 255, 255, 255, // 376-383
+    0,  //   -8 -   -1
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+    61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+    81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+    101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115,
+    116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130,
+    131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145,
+    146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160,
+    161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175,
+    176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190,
+    191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205,
+    206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220,
+    221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235,
+    236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250,
+    251, 252, 253, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255,  // 256-263
+    255, 255, 255, 255, 255, 255, 255, 255,  // 264-271
+    255, 255, 255, 255, 255, 255, 255, 255,  // 272-279
+    255, 255, 255, 255, 255, 255, 255, 255,  // 280-287
+    255, 255, 255, 255, 255, 255, 255, 255,  // 288-295
+    255, 255, 255, 255, 255, 255, 255, 255,  // 296-303
+    255, 255, 255, 255, 255, 255, 255, 255,  // 304-311
+    255, 255, 255, 255, 255, 255, 255, 255,  // 312-319
+    255, 255, 255, 255, 255, 255, 255, 255,  // 320-327
+    255, 255, 255, 255, 255, 255, 255, 255,  // 328-335
+    255, 255, 255, 255, 255, 255, 255, 255,  // 336-343
+    255, 255, 255, 255, 255, 255, 255, 255,  // 344-351
+    255, 255, 255, 255, 255, 255, 255, 255,  // 352-359
+    255, 255, 255, 255, 255, 255, 255, 255,  // 360-367
+    255, 255, 255, 255, 255, 255, 255, 255,  // 368-375
+    255, 255, 255, 255, 255, 255, 255, 255,  // 376-383
     };
 const int clipping_table_offset = 128;
 
@@ -296,13 +305,13 @@ static unsigned char CLIPVALUE(int val)
  * [ B ]   [  1.0   2.041   0.002 ] [ V ]
  *
  */
-static bool YUV2RGB(const unsigned char y, const unsigned char u, const unsigned char v, unsigned char* r,
-                    unsigned char* g, unsigned char* b)
+static bool YUV2RGB(const unsigned char y, const unsigned char u, const unsigned char v,
+                    unsigned char* r, unsigned char* g, unsigned char* b)
 {
-  const int y2 = (int)y;
-  const int u2 = (int)u - 128;
-  const int v2 = (int)v - 128;
-  //std::cerr << "YUV=("<<y2<<","<<u2<<","<<v2<<")"<<std::endl;
+  const int y2 = static_cast<int>(y);
+  const int u2 = static_cast<int>(u - 128);
+  const int v2 = static_cast<int>(v - 128);
+  // std::cerr << "YUV=("<<y2<<","<<u2<<","<<v2<<")"<<std::endl;
 
   // This is the normal YUV conversion, but
   // appears to be incorrect for the firewire cameras
@@ -313,7 +322,7 @@ static bool YUV2RGB(const unsigned char y, const unsigned char u, const unsigned
   int r2 = y2 + ((v2 * 37221) >> 15);
   int g2 = y2 - (((u2 * 12975) + (v2 * 18949)) >> 15);
   int b2 = y2 + ((u2 * 66883) >> 15);
-  //std::cerr << "   RGB=("<<r2<<","<<g2<<","<<b2<<")"<<std::endl;
+  // std::cerr << "   RGB=("<<r2<<","<<g2<<","<<b2<<")"<<std::endl;
 
   // Cap the values.
   *r = CLIPVALUE(r2);
@@ -351,7 +360,7 @@ static bool mono102mono8(char *RAW, char *MONO, int NumPixels)
   int i, j;
   for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 1)
   {
-    //first byte is low byte, second byte is high byte; smash together and convert to 8-bit
+    // first byte is low byte, second byte is high byte; smash together and convert to 8-bit
     MONO[j] = (unsigned char)(((RAW[i + 0] >> 2) & 0x3F) | ((RAW[i + 1] << 6) & 0xC0));
   }
   return true;
@@ -390,9 +399,8 @@ void rgb242rgb(char *YUV, char *RGB, int NumPixels)
 UsbCam::UsbCam()
   : io_(IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0), avframe_camera_(NULL),
     avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL), avcodec_context_(NULL),
-    avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL), is_capturing_(false) {
-  clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
-}
+    avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL),
+    is_capturing_(false) { clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME); }
 UsbCam::~UsbCam()
 {
   shutdown();
@@ -418,7 +426,8 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   avframe_rgb_ = av_frame_alloc();
 #endif
 
-  avpicture_alloc((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, image_width, image_height);
+  avpicture_alloc(reinterpret_cast<AVPicture *>(avframe_rgb_),
+                    AV_PIX_FMT_RGB24, image_width, image_height);
 
   avcodec_context_->codec_id = AV_CODEC_ID_MJPEG;
   avcodec_context_->width = image_width;
@@ -446,8 +455,8 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
 
 bool UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 {
-  // INFO("mjpeg2rgb " << len << ", image 0x" << std::hex << (unsigned long int)RGB << std::dec << " " << NumPixels
-  //     << ", avframe_rgb_size_ " << avframe_rgb_size_);
+  // INFO("mjpeg2rgb " << len << ", image 0x" << std::hex << (unsigned long int)RGB \
+          << std::dec << " " << NumPixels << ", avframe_rgb_size_ " << avframe_rgb_size_);
   int got_picture;
 
   // clear the picture
@@ -470,7 +479,8 @@ bool UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
     return false;
   }
 #else
-  avcodec_decode_video(avcodec_context_, avframe_camera_, &got_picture, (uint8_t *) MJPEG, len);
+  avcodec_decode_video(avcodec_context_, avframe_camera_, &got_picture,
+                       reinterpret_cast<uint8_t *>(MJPEG), len);
 #endif
 
   if (!got_picture)
@@ -498,13 +508,14 @@ bool UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   // TODO(lucasw) only do if xsize and ysize or pix fmt is different from last time
   video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt,
       xsize, ysize, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
-  sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize, 0, ysize, avframe_rgb_->data,
-            avframe_rgb_->linesize);
+  sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize,
+                 0, ysize, avframe_rgb_->data, avframe_rgb_->linesize);
   // TODO(lucasw) keep around until parameters change
   sws_freeContext(video_sws_);
   #endif
 
-  int size = avpicture_layout((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size_);
+  int size = avpicture_layout(reinterpret_cast<AVPicture *>(avframe_rgb_), AV_PIX_FMT_RGB24,
+                                xsize, ysize, reinterpret_cast<uint8_t *>(RGB), avframe_rgb_size_);
   if (size != avframe_rgb_size_)
   {
     ROS_ERROR("webcam: avpicture_layout error: %d", size);
@@ -519,22 +530,22 @@ bool UsbCam::process_image(const void * src, int len, camera_image_t *dest)
   if (pixelformat_ == V4L2_PIX_FMT_YUYV)
   {
     if (monochrome_)
-    { //actually format V4L2_PIX_FMT_Y16, but xioctl gets unhappy if you don't use the advertised type (yuyv)
-      mono102mono8((char*)src, dest->image, dest->width * dest->height);
-    }
-    else
     {
-      yuyv2rgb((char*)src, dest->image, dest->width * dest->height);
+      // actually format V4L2_PIX_FMT_Y16, but xioctl gets unhappy
+      // if you don't use the advertised type (yuyv)
+      mono102mono8(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
+    } else {
+      yuyv2rgb(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
     }
+  } else if (pixelformat_ == V4L2_PIX_FMT_UYVY) {
+    uyvy2rgb(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
+  } else if (pixelformat_ == V4L2_PIX_FMT_MJPEG) {
+    return mjpeg2rgb(const_cast<char *>(reinterpret_cast<const char *>(src)), len, dest->image, dest->width * dest->height);
+  } else if (pixelformat_ == V4L2_PIX_FMT_RGB24) {
+    rgb242rgb(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
+  } else if (pixelformat_ == V4L2_PIX_FMT_GREY) {
+    memcpy(dest->image, const_cast<char *>(reinterpret_cast<const char *>(src)), dest->width * dest->height);
   }
-  else if (pixelformat_ == V4L2_PIX_FMT_UYVY)
-    uyvy2rgb((char*)src, dest->image, dest->width * dest->height);
-  else if (pixelformat_ == V4L2_PIX_FMT_MJPEG)
-    return mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
-  else if (pixelformat_ == V4L2_PIX_FMT_RGB24)
-    rgb242rgb((char*)src, dest->image, dest->width * dest->height);
-  else if (pixelformat_ == V4L2_PIX_FMT_GREY)
-    memcpy(dest->image, (char*)src, dest->width * dest->height);
 
   return true;;
 }
@@ -650,12 +661,13 @@ bool UsbCam::read_frame()
       stamp.nanosec = real_time.tv_nsec;
 
       for (i = 0; i < n_buffers_; ++i)
-        if (buf.m.userptr == (unsigned long)buffers_[i].start && buf.length == buffers_[i].length)
+        if (buf.m.userptr == reinterpret_cast<uint64_t>(buffers_[i].start) \
+            && buf.length == buffers_[i].length)
           break;
 
       assert(i < n_buffers_);
       len = buf.bytesused;
-      if (!process_image((void *)buf.m.userptr, len, image_))
+      if (!process_image(reinterpret_cast<const void *>(buf.m.userptr), len, image_))
         return false;
 
       if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf)) {
@@ -750,7 +762,7 @@ bool UsbCam::start_capturing(void)
         buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         buf.memory = V4L2_MEMORY_USERPTR;
         buf.index = i;
-        buf.m.userptr = (unsigned long)buffers_[i].start;
+        buf.m.userptr = reinterpret_cast<uint64_t>(buffers_[i].start);
         buf.length = buffers_[i].length;
 
         if (-1 == xioctl(fd_, VIDIOC_QBUF, &buf)) {
@@ -802,7 +814,7 @@ bool UsbCam::uninit_device(void)
 
 bool UsbCam::init_read(unsigned int buffer_size)
 {
-  buffers_ = (buffer*)calloc(1, sizeof(*buffers_));
+  buffers_ = reinterpret_cast<buffer *>(calloc(1, sizeof(*buffers_)));
 
   if (!buffers_)
   {
@@ -837,9 +849,7 @@ bool UsbCam::init_mmap(void)
     {
       ROS_ERROR_STREAM(camera_dev_ << " does not support memory mapping");
       return false;
-    }
-    else
-    {
+    } else {
       std::cerr << "error, quitting, TODO throw " << errno << std::endl;
       return false;  // ("VIDIOC_REQBUFS");
     }
@@ -851,7 +861,7 @@ bool UsbCam::init_mmap(void)
     return false;
   }
 
-  buffers_ = (buffer*)calloc(req.count, sizeof(*buffers_));
+  buffers_ = reinterpret_cast<buffer *>(calloc(req.count, sizeof(*buffers_)));
 
   if (!buffers_)
   {
@@ -875,9 +885,9 @@ bool UsbCam::init_mmap(void)
     }
 
     buffers_[n_buffers_].length = buf.length;
-    buffers_[n_buffers_].start = mmap(NULL /* start anywhere */, buf.length, PROT_READ | PROT_WRITE /* required */,
-				      MAP_SHARED /* recommended */,
-				      fd_, buf.m.offset);
+    buffers_[n_buffers_].start =
+      mmap(NULL /* start anywhere */, buf.length, PROT_READ | PROT_WRITE /* required */,
+           MAP_SHARED /* recommended */, fd_, buf.m.offset);
 
     if (MAP_FAILED == buffers_[n_buffers_].start) {
       std::cerr << "error, quitting, TODO throw " << errno << std::endl;
@@ -907,21 +917,19 @@ bool UsbCam::init_userp(unsigned int buffer_size)
     {
       ROS_ERROR_STREAM(camera_dev_ << " does not support "
                 "user pointer i/o");
-      return false;  //(EXIT_FAILURE);
-    }
-    else
-    {
+      return false;  // (EXIT_FAILURE);
+    } else {
       std::cerr << "error, quitting, TODO throw " << errno << std::endl;
       return false;  // ("VIDIOC_REQBUFS");
     }
   }
 
-  buffers_ = (buffer*)calloc(4, sizeof(*buffers_));
+  buffers_ = reinterpret_cast<buffer *>(calloc(4, sizeof(*buffers_)));
 
   if (!buffers_)
   {
     ROS_ERROR("Out of memory");
-    return false;  //(EXIT_FAILURE);
+    return false;  // (EXIT_FAILURE);
   }
 
   for (n_buffers_ = 0; n_buffers_ < 4; ++n_buffers_)
@@ -951,10 +959,8 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
     if (EINVAL == errno)
     {
       ROS_ERROR_STREAM(camera_dev_ << " is no V4L2 device");
-      return false;  //(EXIT_FAILURE);
-    }
-    else
-    {
+      return false;  // (EXIT_FAILURE);
+    } else {
       std::cerr << "error, quitting, TODO throw " << errno << std::endl;
       return false;  // ("VIDIOC_QUERYCAP");
     }
@@ -963,7 +969,7 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
   if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
   {
     ROS_ERROR_STREAM(camera_dev_ << " is no video capture device");
-    return false;  //(EXIT_FAILURE);
+    return false;  // (EXIT_FAILURE);
   }
 
   switch (io_)
@@ -972,7 +978,7 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
       if (!(cap.capabilities & V4L2_CAP_READWRITE))
       {
         ROS_ERROR_STREAM(camera_dev_ << " does not support read i/o");
-        return false;  //(EXIT_FAILURE);
+        return false;  // (EXIT_FAILURE);
       }
 
       break;
@@ -982,7 +988,7 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
       if (!(cap.capabilities & V4L2_CAP_STREAMING))
       {
         ROS_ERROR_STREAM(camera_dev_ << " does not support streaming i/o");
-        return false;  //(EXIT_FAILURE);
+        return false;  // (EXIT_FAILURE);
       }
 
       break;
@@ -1011,9 +1017,7 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
           break;
       }
     }
-  }
-  else
-  {
+  } else {
     /* Errors ignored. */
   }
 
@@ -1105,29 +1109,30 @@ bool UsbCam::open_device(void)
 
   if (-1 == stat(camera_dev_.c_str(), &st))
   {
-    ROS_ERROR_STREAM("Cannot identify '" << camera_dev_ << "': " << errno << ", " << strerror(errno));
-    return false;  //(EXIT_FAILURE);
+    ROS_ERROR_STREAM("Cannot identify '" << camera_dev_ << "': " \
+                       << errno << ", " << strerror(errno));
+    return false;  // (EXIT_FAILURE);
   }
 
   if (!S_ISCHR(st.st_mode))
   {
     ROS_ERROR_STREAM(camera_dev_ << " is no device");
-    return false;  //(EXIT_FAILURE);
+    return false;  // (EXIT_FAILURE);
   }
 
   fd_ = open(camera_dev_.c_str(), O_RDWR /* required */| O_NONBLOCK, 0);
 
   if (-1 == fd_)
   {
-    ROS_ERROR_STREAM("Cannot open '" << camera_dev_ << "': " << errno << ", " << strerror(errno));
-    return false;  //(EXIT_FAILURE);
+    ROS_ERROR_STREAM("Cannot open '" << camera_dev_ << "': " \
+                       << errno << ", " << strerror(errno));
+    return false;  // (EXIT_FAILURE);
   }
   return true;
 }
 
-bool UsbCam::start(const std::string& dev, io_method io_method,
-		   pixel_format pixel_format, int image_width, int image_height,
-		   int framerate)
+bool UsbCam::start(const std::string& dev, io_method io_method, pixel_format pixel_format,
+                   int image_width, int image_height, int framerate)
 {
   camera_dev_ = dev;
 
@@ -1141,26 +1146,19 @@ bool UsbCam::start(const std::string& dev, io_method io_method,
   {
     pixelformat_ = V4L2_PIX_FMT_MJPEG;
     init_mjpeg_decoder(image_width, image_height);
-  }
-  else if (pixel_format == PIXEL_FORMAT_YUVMONO10)
-  {
-    //actually format V4L2_PIX_FMT_Y16 (10-bit mono expresed as 16-bit pixels), but we need to use the advertised type (yuyv)
+  } else if (pixel_format == PIXEL_FORMAT_YUVMONO10) {
+    // actually format V4L2_PIX_FMT_Y16 (10-bit mono expresed as 16-bit pixels)
+    // but we need to use the advertised type (yuyv)
     pixelformat_ = V4L2_PIX_FMT_YUYV;
     monochrome_ = true;
-  }
-  else if (pixel_format == PIXEL_FORMAT_RGB24)
-  {
+  } else if (pixel_format == PIXEL_FORMAT_RGB24) {
     pixelformat_ = V4L2_PIX_FMT_RGB24;
-  }
-  else if (pixel_format == PIXEL_FORMAT_GREY)
-  {
+  } else if (pixel_format == PIXEL_FORMAT_GREY) {
     pixelformat_ = V4L2_PIX_FMT_GREY;
     monochrome_ = true;
-  }
-  else
-  {
+  } else {
     ROS_ERROR("Unknown pixel format.");
-    return false;  //(EXIT_FAILURE);
+    return false;  // (EXIT_FAILURE);
   }
 
   // TODO(lucasw) throw exceptions instead of return value checking
@@ -1177,16 +1175,16 @@ bool UsbCam::start(const std::string& dev, io_method io_method,
     return false;
   }
 
-  image_ = (camera_image_t *)calloc(1, sizeof(camera_image_t));
+  image_ = reinterpret_cast<camera_image_t *>(calloc(1, sizeof(camera_image_t)));
 
   image_->width = image_width;
   image_->height = image_height;
-  image_->bytes_per_pixel = 3;      //corrected 11/10/15 (BYTES not BITS per pixel)
+  image_->bytes_per_pixel = 3;  // corrected 11/10/15 (BYTES not BITS per pixel)
 
   image_->image_size = image_->width * image_->height * image_->bytes_per_pixel;
   image_->is_new = 0;
-  image_->image = (char *)calloc(image_->image_size, sizeof(char));
-  memset(image_->image, 0, image_->image_size * sizeof(char));
+  image_->image = reinterpret_cast<char *>(calloc(image_->image_size, sizeof(char *)));
+  memset(image_->image, 0, image_->image_size * sizeof(char *));
   return true;
 }
 
@@ -1224,7 +1222,8 @@ bool UsbCam::get_image(builtin_interfaces::msg::Time& stamp,
   if (!grab_image())
     return false;
   // TODO(lucasw) check if stamp is valid)
-  // INFO("stamp " << image_->stamp.sec << " " << image_->stamp.nanosec << " to " << stamp.sec << " " << stamp.nanosec);
+  // INFO("stamp " << image_->stamp.sec << " " << image_->stamp.nanosec << \
+          " to " << stamp.sec << " " << stamp.nanosec);
   // stamp the image
   stamp = image_->stamp;
   // fill in the info
@@ -1234,9 +1233,7 @@ bool UsbCam::get_image(builtin_interfaces::msg::Time& stamp,
   {
     encoding = "mono8";
     step = width;
-  }
-  else
-  {
+  } else {
     // TODO(lucasw) aren't there other encoding types?
     encoding = "rgb8";
     step = width * 3;
@@ -1337,20 +1334,14 @@ bool UsbCam::set_auto_focus(int value)
     {
       ERROR("VIDIOC_QUERYCTRL");
       return false;
-    }
-    else
-    {
+    } else {
       ERROR("V4L2_CID_FOCUS_AUTO is not supported");
       return false;
     }
-  }
-  else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)
-  {
+  } else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
     ERROR("V4L2_CID_FOCUS_AUTO is not supported");
     return false;
-  }
-  else
-  {
+  } else {
     memset(&control, 0, sizeof(control));
     control.id = V4L2_CID_FOCUS_AUTO;
     control.value = value;
@@ -1374,6 +1365,7 @@ bool UsbCam::set_v4l_parameter(const std::string& param, int value)
 {
   return set_v4l_parameter(param, boost::lexical_cast<std::string>(value));
 }
+
 /**
 * Set video device parameter via call to v4l-utils.
 *
@@ -1389,21 +1381,21 @@ bool UsbCam::set_v4l_parameter(const std::string& param, const std::string& valu
 
   // capture the output
   std::string output;
-  int buffer_size = 256;
-  char buffer[buffer_size];
+  const int kBufferSize = 256;
+  char buffer[kBufferSize];
   FILE *stream = popen(cmd.c_str(), "r");
   if (stream)
   {
     while (!feof(stream))
-      if (fgets(buffer, buffer_size, stream) != NULL)
+      if (fgets(buffer, kBufferSize, stream) != NULL)
         output.append(buffer);
     pclose(stream);
     // any output should be an error
     if (output.length() > 0)
       ROS_WARN("%s", output.c_str());
-  }
-  else
+  } else {
     ROS_WARN("usb_cam_node could not run '%s'", cmd.c_str());
+  }
 }
 
 UsbCam::io_method UsbCam::io_method_from_string(const std::string& str)
@@ -1435,7 +1427,6 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
     else
       return PIXEL_FORMAT_UNKNOWN;
 }
-
 #if 0
 std::string UsbCam::pixel_format_to_string(__u32 pixelformat)
 {
@@ -1455,5 +1446,4 @@ std::string UsbCam::pixel_format_to_string(__u32 pixelformat)
       return PIXEL_FORMAT_UNKNOWN;
 }
 #endif
-
-}
+}  // namespace usb_cam

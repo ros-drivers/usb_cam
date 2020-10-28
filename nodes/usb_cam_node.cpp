@@ -33,7 +33,6 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *
 *********************************************************************/
-
 #include <rclcpp/rclcpp.hpp>
 #include <usb_cam/usb_cam.h>
 // #include <image_transport/image_transport.h>
@@ -41,6 +40,9 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sstream>
 // #include <std_srvs/srv/Empty.h>
+
+#include <string>
+#include <memory>
 
 std::ostream& operator<<(std::ostream& ostr, const rclcpp::Time& tm) {
   ostr << tm.nanoseconds();
@@ -132,17 +134,17 @@ public:
     get_parameter_or("image_height", image_height_, image_height_);
 
 #if 0
-    node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
-    node_.param("contrast", contrast_, -1); //0-255, -1 "leave alone"
-    node_.param("saturation", saturation_, -1); //0-255, -1 "leave alone"
-    node_.param("sharpness", sharpness_, -1); //0-255, -1 "leave alone"
+    node_.param("brightness", brightness_, -1);  // 0-255, -1 "leave alone"
+    node_.param("contrast", contrast_, -1);  // 0-255, -1 "leave alone"
+    node_.param("saturation", saturation_, -1);  // 0-255, -1 "leave alone"
+    node_.param("sharpness", sharpness_, -1);  // 0-255, -1 "leave alone"
     // enable/disable autofocus
     node_.param("autofocus", autofocus_, false);
-    node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
+    node_.param("focus", focus_, -1);  // 0-255, -1 "leave alone"
     // enable/disable autoexposure
     node_.param("autoexposure", autoexposure_, true);
     node_.param("exposure", exposure_, 100);
-    node_.param("gain", gain_, -1); //0-100?, -1 "leave alone"
+    node_.param("gain", gain_, -1);  // 0-100?, -1 "leave alone"
     // enable/disable auto white balance temperature
     node_.param("auto_white_balance", auto_white_balance_, true);
     node_.param("white_balance", white_balance_, 4000);
@@ -197,7 +199,7 @@ public:
 
     // start the camera
     cam_.start(video_device_name_.c_str(), io_method, pixel_format, image_width_,
-		     image_height_, framerate_);
+               image_height_, framerate_);
 
     cam_.get_formats();
 
@@ -232,9 +234,7 @@ public:
     if (auto_white_balance_)
     {
       cam_.set_v4l_parameter("white_balance_temperature_auto", 1);
-    }
-    else
-    {
+    } else {
       cam_.set_v4l_parameter("white_balance_temperature_auto", 0);
       cam_.set_v4l_parameter("white_balance_temperature", white_balance_);
     }
@@ -253,9 +253,7 @@ public:
     {
       cam_.set_auto_focus(1);
       cam_.set_v4l_parameter("focus_auto", 1);
-    }
-    else
-    {
+    } else {
       cam_.set_v4l_parameter("focus_auto", 0);
       if (focus_ >= 0)
       {
@@ -268,7 +266,7 @@ public:
     // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
     const int period_ms = 1000.0 / framerate_;
     timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(static_cast<long int>(period_ms)),
+        std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
         std::bind(&UsbCamNode::update, this));
     INFO("starting timer " << period_ms);
   }
@@ -318,7 +316,7 @@ public:
   }
 };
 
-}
+}  // namespace usb_cam
 
 int main(int argc, char **argv)
 {

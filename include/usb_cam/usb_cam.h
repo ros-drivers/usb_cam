@@ -33,8 +33,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  *********************************************************************/
-#ifndef USB_CAM_USB_CAM_H
-#define USB_CAM_USB_CAM_H
+#ifndef USB_CAM__USB_CAM_H_
+#define USB_CAM__USB_CAM_H_
 
 #include <asm/types.h>          /* for videodev2.h */
 
@@ -53,9 +53,11 @@ extern "C"
 #endif
 
 #include <builtin_interfaces/msg/time.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <rclcpp/time.hpp>
 // #include <sensor_msgs/msg/image.h>
 #include <string>
+#include <vector>
 #include <sstream>
 
 #define ROS_INFO(msg, ...) printf(msg,  ##__VA_ARGS__)
@@ -65,9 +67,12 @@ extern "C"
 // #define ROS_DEBUG(msg, ...) // ##__VA_ARGS__
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
-#define INFO(msg) std::cout << "I [" << __FILENAME__ << ":" << __LINE__ << " " << __FUNCTION__ << "] " << msg << "\n"
-#define WARN(msg) std::cout << "W [" << __FILENAME__ << ":" << __LINE__ << " " << __FUNCTION__ << "] " << msg << "\n"
-#define ERROR(msg) std::cerr << "E [" << __FILENAME__ << ":" << __LINE__ << " " << __FUNCTION__ << "] " << msg << std::endl
+#define INFO(msg) std::cout << "I [" << __FILENAME__ << ":" << __LINE__ \
+                            << " " << __FUNCTION__ << "] " << msg << "\n"
+#define WARN(msg) std::cout << "W [" << __FILENAME__ << ":" << __LINE__ \
+                            << " " << __FUNCTION__ << "] " << msg << "\n"
+#define ERROR(msg) std::cerr << "E [" << __FILENAME__ << ":" << __LINE__ \
+                             << " " << __FUNCTION__ << "] " << msg << std::endl
 #define ROS_ERROR_STREAM(msg) ERROR(msg)
 
 namespace usb_cam {
@@ -76,12 +81,21 @@ class UsbCam {
  public:
   typedef enum
   {
-    IO_METHOD_READ, IO_METHOD_MMAP, IO_METHOD_USERPTR, IO_METHOD_UNKNOWN,
+    IO_METHOD_READ,
+    IO_METHOD_MMAP,
+    IO_METHOD_USERPTR,
+    IO_METHOD_UNKNOWN,
   } io_method;
 
   typedef enum
   {
-    PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24, PIXEL_FORMAT_GREY, PIXEL_FORMAT_UNKNOWN
+    PIXEL_FORMAT_YUYV,
+    PIXEL_FORMAT_UYVY,
+    PIXEL_FORMAT_MJPEG,
+    PIXEL_FORMAT_YUVMONO10,
+    PIXEL_FORMAT_RGB24,
+    PIXEL_FORMAT_GREY,
+    PIXEL_FORMAT_UNKNOWN
   } pixel_format;
 
   UsbCam();
@@ -89,7 +103,7 @@ class UsbCam {
 
   // start camera
   bool start(const std::string& dev, io_method io, pixel_format pf,
-		    int image_width, int image_height, int framerate);
+              int image_width, int image_height, int framerate);
   // shutdown camera
   bool shutdown(void);
 
@@ -167,10 +181,9 @@ class UsbCam {
   int avframe_rgb_size_;
   struct SwsContext *video_sws_;
   camera_image_t *image_;
-
 };
 
-}
+}  // namespace usb_cam
 
-#endif
+#endif  // USB_CAM__USB_CAM_H_
 
