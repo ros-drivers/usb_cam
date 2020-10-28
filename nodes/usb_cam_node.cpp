@@ -57,7 +57,6 @@ public:
   // shared image message
   sensor_msgs::msg::Image::SharedPtr img_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
-  
   // parameters
   std::string video_device_name_ = "/dev/video0";
   std::string frame_id_ = "map";
