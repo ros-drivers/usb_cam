@@ -436,6 +436,11 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
     return;
   }
 
+  if (avcodec_context_->pix_fmt == AV_PIX_FMT_YUVJ420P)
+  {
+    avcodec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
+  }
+
   int xsize = avcodec_context_->width;
   int ysize = avcodec_context_->height;
   int pic_size = avpicture_get_size(avcodec_context_->pix_fmt, xsize, ysize);
