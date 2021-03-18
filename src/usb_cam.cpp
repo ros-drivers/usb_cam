@@ -374,6 +374,8 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
     return 0;
   }
 
+  av_log_set_level(AV_LOG_ERROR);
+
   avcodec_context_ = avcodec_alloc_context3(avcodec_);
 #if LIBAVCODEC_VERSION_MAJOR < 55
   avframe_camera_ = avcodec_alloc_frame();
@@ -434,6 +436,11 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   {
     ROS_ERROR("Webcam: expected picture but didn't get it...");
     return;
+  }
+
+  if (avcodec_context_->pix_fmt == AV_PIX_FMT_YUVJ420P)
+  {
+    avcodec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
   }
 
   int xsize = avcodec_context_->width;
