@@ -33,8 +33,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  *********************************************************************/
-#ifndef USB_CAM_USB_CAM_H
-#define USB_CAM_USB_CAM_H
+#ifndef USB_CAM__USB_CAM_H_
+#define USB_CAM__USB_CAM_H_
 
 #include <asm/types.h>          /* for videodev2.h */
 
@@ -52,10 +52,28 @@ extern "C"
 #define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
 #endif
 
+#include <builtin_interfaces/msg/time.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/time.hpp>
+// #include <sensor_msgs/msg/image.h>
 #include <string>
+#include <vector>
 #include <sstream>
 
-#include <sensor_msgs/Image.h>
+#define ROS_INFO(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_ERROR(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_WARN(msg, ...) printf(msg,  ##__VA_ARGS__)
+#define ROS_DEBUG(msg, ...) printf(msg,  ##__VA_ARGS__)
+// #define ROS_DEBUG(msg, ...) // ##__VA_ARGS__
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
+#define INFO(msg) std::cout << "I [" << __FILENAME__ << ":" << __LINE__ \
+                            << " " << __FUNCTION__ << "] " << msg << "\n"
+#define WARN(msg) std::cout << "W [" << __FILENAME__ << ":" << __LINE__ \
+                            << " " << __FUNCTION__ << "] " << msg << "\n"
+#define ERROR(msg) std::cerr << "E [" << __FILENAME__ << ":" << __LINE__ \
+                             << " " << __FUNCTION__ << "] " << msg << std::endl
+#define ROS_ERROR_STREAM(msg) ERROR(msg)
 
 namespace usb_cam {
 
@@ -63,47 +81,63 @@ class UsbCam {
  public:
   typedef enum
   {
-    IO_METHOD_READ, IO_METHOD_MMAP, IO_METHOD_USERPTR, IO_METHOD_UNKNOWN,
+    IO_METHOD_READ,
+    IO_METHOD_MMAP,
+    IO_METHOD_USERPTR,
+    IO_METHOD_UNKNOWN,
   } io_method;
 
   typedef enum
   {
-    PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24, PIXEL_FORMAT_GREY, PIXEL_FORMAT_UNKNOWN
+    PIXEL_FORMAT_YUYV,
+    PIXEL_FORMAT_UYVY,
+    PIXEL_FORMAT_MJPEG,
+    PIXEL_FORMAT_YUVMONO10,
+    PIXEL_FORMAT_RGB24,
+    PIXEL_FORMAT_GREY,
+    PIXEL_FORMAT_UNKNOWN
   } pixel_format;
 
   UsbCam();
   ~UsbCam();
 
   // start camera
-  void start(const std::string& dev, io_method io, pixel_format pf,
-		    int image_width, int image_height, int framerate);
+  bool start(const std::string& dev, io_method io, pixel_format pf,
+              int image_width, int image_height, int framerate);
   // shutdown camera
-  void shutdown(void);
+  bool shutdown(void);
 
   // grabs a new image from the camera
-  void grab_image(sensor_msgs::Image* image);
+  // bool get_image(sensor_msgs::msg::Image:::SharedPtr image);
+  bool get_image(builtin_interfaces::msg::Time& stamp,
+      std::string& encoding, uint32_t& height, uint32_t& width,
+      uint32_t& step, std::vector<uint8_t>& data);
+
+  void get_formats();  // std::vector<usb_cam::msg::Format>& formats);
 
   // enables/disable auto focus
-  void set_auto_focus(int value);
+  bool set_auto_focus(int value);
 
   // Set video device parameters
-  void set_v4l_parameter(const std::string& param, int value);
-  void set_v4l_parameter(const std::string& param, const std::string& value);
+  bool set_v4l_parameter(const std::string& param, int value);
+  bool set_v4l_parameter(const std::string& param, const std::string& value);
 
   static io_method io_method_from_string(const std::string& str);
   static pixel_format pixel_format_from_string(const std::string& str);
 
-  void stop_capturing(void);
-  void start_capturing(void);
+  bool stop_capturing(void);
+  bool start_capturing(void);
   bool is_capturing();
 
  private:
+  // TODO(lucasw) just store an Image shared_ptr here
   typedef struct
   {
     int width;
     int height;
     int bytes_per_pixel;
     int image_size;
+    builtin_interfaces::msg::Time stamp;
     char *image;
     int is_new;
   } camera_image_t;
@@ -116,20 +150,21 @@ class UsbCam {
 
 
   int init_mjpeg_decoder(int image_width, int image_height);
-  void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
-  void process_image(const void * src, int len, camera_image_t *dest);
-  int read_frame();
-  void uninit_device(void);
-  void init_read(unsigned int buffer_size);
-  void init_mmap(void);
-  void init_userp(unsigned int buffer_size);
-  void init_device(int image_width, int image_height, int framerate);
-  void close_device(void);
-  void open_device(void);
-  void grab_image();
+  bool mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
+  bool process_image(const void * src, int len, camera_image_t *dest);
+  bool read_frame();
+  bool uninit_device(void);
+  bool init_read(unsigned int buffer_size);
+  bool init_mmap(void);
+  bool init_userp(unsigned int buffer_size);
+  bool init_device(int image_width, int image_height, int framerate);
+  bool close_device(void);
+  bool open_device(void);
+  bool grab_image();
   bool is_capturing_;
 
 
+  rclcpp::Clock::SharedPtr clock_;
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;
@@ -146,10 +181,9 @@ class UsbCam {
   int avframe_rgb_size_;
   struct SwsContext *video_sws_;
   camera_image_t *image_;
-
 };
 
-}
+}  // namespace usb_cam
 
-#endif
+#endif  // USB_CAM__USB_CAM_H_
 
