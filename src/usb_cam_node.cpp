@@ -57,22 +57,22 @@ class UsbCamNode : public rclcpp::Node
 {
 public:
   // shared image message
-  sensor_msgs::msg::Image::SharedPtr img_;
+  sensor_msgs::msg::Image::UniquePtr img_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
   // parameters
-  std::string video_device_name_ = "/dev/video0";
-  std::string frame_id_ = "map";
+  std::string video_device_name_;
+  std::string frame_id_;
 
-  std::string io_method_name_ = "mmap";
+  std::string io_method_name_;
   // these parameters all have to be a combination supported by the device
   // Use
   // v4l2-ctl --device=0 --list-formats-ext
   // to discover them,
   // or guvcview
-  std::string pixel_format_name_ = "yuyv";
-  int image_width_ = 640;
-  int image_height_ = 480;
-  int framerate_ = 15;
+  std::string pixel_format_name_;
+  int image_width_;
+  int image_height_;
+  int framerate_;
 
   // std::string start_service_name_, start_service_name_;
   // TODO(lucasw) use v4l2ucp for these?
@@ -105,73 +105,16 @@ public:
   }
 #endif
 
-  UsbCamNode() : Node("usb_cam")
+  UsbCamNode()
+  : Node("usb_cam"),
+    img_(new sensor_msgs::msg::Image()),
+    image_pub_(this->create_publisher<sensor_msgs::msg::Image>("image_raw", 100))
   {
-    // TODO(lucasw) use unique_ptr to reduce copies, see
-    // demos/intra_process_demo/include/image_pipeline/camera_node.hpp
-    img_ = std::make_shared<sensor_msgs::msg::Image>();
-    // advertise the main image topic
-    image_pub_ = this->create_publisher<sensor_msgs::msg::Image>("image_raw", 100);
+    get_params();
   }
 
   void init()
   {
-    // grab the parameters
-    get_parameter_or("video_device", video_device_name_, video_device_name_);
-
-    // possible values: mmap, read, userptr
-    get_parameter_or("io_method", io_method_name_, io_method_name_);
-    get_parameter_or("frame_id", frame_id_, frame_id_);
-    // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
-    get_parameter_or("pixel_format", pixel_format_name_, pixel_format_name_);
-    get_parameter_or("framerate", framerate_, framerate_);
-    if (framerate_ <= 0)
-    {
-      RCLCPP_ERROR(get_logger(), "bad framerate %d", framerate_);
-      return;
-    }
-    get_parameter_or("image_width", image_width_, image_width_);
-    get_parameter_or("image_height", image_height_, image_height_);
-
-#if 0
-    node_.param("brightness", brightness_, -1);  // 0-255, -1 "leave alone"
-    node_.param("contrast", contrast_, -1);  // 0-255, -1 "leave alone"
-    node_.param("saturation", saturation_, -1);  // 0-255, -1 "leave alone"
-    node_.param("sharpness", sharpness_, -1);  // 0-255, -1 "leave alone"
-    // enable/disable autofocus
-    node_.param("autofocus", autofocus_, false);
-    node_.param("focus", focus_, -1);  // 0-255, -1 "leave alone"
-    // enable/disable autoexposure
-    node_.param("autoexposure", autoexposure_, true);
-    node_.param("exposure", exposure_, 100);
-    node_.param("gain", gain_, -1);  // 0-100?, -1 "leave alone"
-    // enable/disable auto white balance temperature
-    node_.param("auto_white_balance", auto_white_balance_, true);
-    node_.param("white_balance", white_balance_, 4000);
-#endif
-
-    get_parameter_or("camera_name", camera_name_, std::string("head_camera"));
-#if 0
-    // load the camera info
-    node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
-    node_.param("camera_info_url", camera_info_url_, std::string(""));
-    cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
-
-    // create Services
-    service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
-    service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
-
-    // check for default camera info
-    if (!cinfo_->isCalibrated())
-    {
-      cinfo_->setCameraName(video_device_name_);
-      sensor_msgs::CameraInfo camera_info;
-      camera_info.header.frame_id = img_.header.frame_id;
-      camera_info.width = image_width_;
-      camera_info.height = image_height_;
-      cinfo_->setCameraInfo(camera_info);
-    }
-#endif
     img_->header.frame_id = frame_id_;
 
     RCLCPP_INFO(this->get_logger(), "Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS",
@@ -269,6 +212,102 @@ public:
         std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
         std::bind(&UsbCamNode::update, this));
     INFO("starting timer " << period_ms);
+  }
+ 
+  void get_params()
+  {
+    try {
+      video_device_name_ = declare_parameter("video_device").get<std::string>();
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The video device parameter provided was invalid");
+    }
+
+    try {
+      // possible values: mmap, read, userptr
+      io_method_name_ = declare_parameter("io_method").get<std::string>();
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The io method parameter provided was invalid");
+    }
+    
+    try {
+      frame_id_ = declare_parameter("frame_id").get<std::string>();
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The frame_id parameter provided was invalid");
+    }
+    // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
+    get_parameter_or("pixel_format", pixel_format_name_, pixel_format_name_);
+    try {
+      pixel_format_name_ = declare_parameter("pixel_format").get<std::string>();
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The pixel_format_name parameter provided was invalid");
+    }
+    
+    try {
+      framerate_ = declare_parameter("framerate").get<double>();
+      if (framerate_ <= 0)
+      {
+        RCLCPP_ERROR(get_logger(), "bad framerate %d", framerate_);
+        return;
+      }
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The framerate parameter provided was invalid");
+    }
+    
+    try {
+      image_width_ = declare_parameter("image_width").get<int>();
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The image_width parameter provided was invalid");
+    }
+    
+    try {
+      image_height_ = declare_parameter("image_height").get<int>();
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The image_height parameter provided was invalid");
+    }
+
+    try {
+      camera_name_ = declare_parameter("camera_name").get<std::string>();
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The camera_name parameter provided was invalid");
+    }
+#if 0
+    node_.param("brightness", brightness_, -1);  // 0-255, -1 "leave alone"
+    node_.param("contrast", contrast_, -1);  // 0-255, -1 "leave alone"
+    node_.param("saturation", saturation_, -1);  // 0-255, -1 "leave alone"
+    node_.param("sharpness", sharpness_, -1);  // 0-255, -1 "leave alone"
+    // enable/disable autofocus
+    node_.param("autofocus", autofocus_, false);
+    node_.param("focus", focus_, -1);  // 0-255, -1 "leave alone"
+    // enable/disable autoexposure
+    node_.param("autoexposure", autoexposure_, true);
+    node_.param("exposure", exposure_, 100);
+    node_.param("gain", gain_, -1);  // 0-100?, -1 "leave alone"
+    // enable/disable auto white balance temperature
+    node_.param("auto_white_balance", auto_white_balance_, true);
+    node_.param("white_balance", white_balance_, 4000);
+#endif
+
+#if 0
+    // load the camera info
+    node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
+    node_.param("camera_info_url", camera_info_url_, std::string(""));
+    cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
+
+    // create Services
+    service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
+    service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
+
+    // check for default camera info
+    if (!cinfo_->isCalibrated())
+    {
+      cinfo_->setCameraName(video_device_name_);
+      sensor_msgs::CameraInfo camera_info;
+      camera_info.header.frame_id = img_.header.frame_id;
+      camera_info.width = image_width_;
+      camera_info.height = image_height_;
+      cinfo_->setCameraInfo(camera_info);
+    }
+#endif
   }
 
   virtual ~UsbCamNode()
