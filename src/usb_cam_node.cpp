@@ -36,7 +36,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <usb_cam/usb_cam.h>
 // #include <image_transport/image_transport.h>
-// #include <camera_info_manager/camera_info_manager.h>
+#include <camera_info_manager/camera_info_manager.h>
 #include <sensor_msgs/msg/image.hpp>
 #include <sstream>
 // #include <std_srvs/srv/Empty.h>
@@ -81,8 +81,8 @@ public:
   // bool autofocus_, autoexposure_, auto_white_balance_;
 
   std::string camera_name_;
-  // std::string camera_info_url_;
-  // boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
+  std::string camera_info_url_;
+  std::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCam cam_;
 
@@ -270,6 +270,12 @@ public:
     } catch (rclcpp::ParameterTypeException & ex) {
       RCLCPP_ERROR(get_logger(), "The camera_name parameter provided was invalid");
     }
+    
+    try {
+      camera_info_url_ = declare_parameter("camera_info_url").get<std::string>();
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(get_logger(), "The camera_info_url parameter provided was invalid");
+    }
 #if 0
     node_.param("brightness", brightness_, -1);  // 0-255, -1 "leave alone"
     node_.param("contrast", contrast_, -1);  // 0-255, -1 "leave alone"
@@ -287,10 +293,7 @@ public:
     node_.param("white_balance", white_balance_, 4000);
 #endif
 
-#if 0
     // load the camera info
-    node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
-    node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
 
     // create Services
@@ -307,7 +310,6 @@ public:
       camera_info.height = image_height_;
       cinfo_->setCameraInfo(camera_info);
     }
-#endif
   }
 
   virtual ~UsbCamNode()
