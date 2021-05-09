@@ -17,7 +17,8 @@ class ExamineImage(Node):
         self.sub = self.create_subscription(
             Image,
             'image_raw',
-            self.image_callback)
+            self.image_callback,
+            100)
         # print("subscribed to " + self.sub.getTopic())
 
     def image_callback(self, msg):

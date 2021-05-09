@@ -59,6 +59,17 @@ UsbCamNode::UsbCamNode()
         std::placeholders::_2,
         std::placeholders::_3)))
 {
+  // declare params
+  this->declare_parameter("camera_name", "default_cam");
+  this->declare_parameter("camera_info_url", "");
+  this->declare_parameter("framerate", 10.0);
+  this->declare_parameter("frame_id", "default_cam");
+  this->declare_parameter("image_height", 480);
+  this->declare_parameter("image_width", 640);
+  this->declare_parameter("io_method", "mmap");
+  this->declare_parameter("pixel_format", "yuyv");
+  this->declare_parameter("video_device", "/dev/video0");
+
   get_params();
 }
 
@@ -85,6 +96,27 @@ void UsbCamNode::service_capture(
 
 void UsbCamNode::init()
 {
+  while (frame_id_ == "") {
+    RCLCPP_WARN_ONCE(this->get_logger(), "Required Parameters not set...waiting until they are set");
+    get_params();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
+
+  // load the camera info
+  cinfo_.reset(new camera_info_manager::CameraInfoManager(this, camera_name_, camera_info_url_));
+  // create Services
+  // service_capture_ = this->create_service<std_srvs::srv::SetBool>("set_capture", &UsbCamNode::service_capture);
+  // check for default camera info
+  if (!cinfo_->isCalibrated())
+  {
+    cinfo_->setCameraName(video_device_name_);
+    sensor_msgs::msg::CameraInfo camera_info;
+    camera_info.header.frame_id = img_->header.frame_id;
+    camera_info.width = image_width_;
+    camera_info.height = image_height_;
+    cinfo_->setCameraInfo(camera_info);
+  }
+
   img_->header.frame_id = frame_id_;
   RCLCPP_INFO(this->get_logger(), "Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS",
       camera_name_.c_str(), video_device_name_.c_str(),
@@ -94,7 +126,7 @@ void UsbCamNode::init()
   UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
   if(io_method == UsbCam::IO_METHOD_UNKNOWN)
   {
-    RCLCPP_ERROR(this->get_logger(), "Unknown IO method '%s'", io_method_name_.c_str());
+    RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown IO method '%s'", io_method_name_.c_str());
     rclcpp::shutdown();
     return;
   }
@@ -102,7 +134,7 @@ void UsbCamNode::init()
   UsbCam::pixel_format pixel_format = UsbCam::pixel_format_from_string(pixel_format_name_);
   if (pixel_format == UsbCam::PIXEL_FORMAT_UNKNOWN)
   {
-    RCLCPP_ERROR(this->get_logger(), "Unknown pixel format '%s'", pixel_format_name_.c_str());
+    RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown pixel format '%s'", pixel_format_name_.c_str());
     rclcpp::shutdown();
     return;
   }
@@ -180,64 +212,38 @@ void UsbCamNode::init()
 
 void UsbCamNode::get_params()
 {
-  try {
-    video_device_name_ = declare_parameter("video_device").get<std::string>();
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The video device parameter provided was invalid");
-  }
-  try {
-    // possible values: mmap, read, userptr
-    io_method_name_ = declare_parameter("io_method").get<std::string>();
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The io method parameter provided was invalid");
-  }
+  bool found_params = false;
+  auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
   
-  try {
-    frame_id_ = declare_parameter("frame_id").get<std::string>();
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The frame_id parameter provided was invalid");
-  }
-  // possible values: yuyv, uyvy, mjpeg, yuvmono10, rgb24
-  get_parameter_or("pixel_format", pixel_format_name_, pixel_format_name_);
-  try {
-    pixel_format_name_ = declare_parameter("pixel_format").get<std::string>();
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The pixel_format_name parameter provided was invalid");
-  }
-  
-  try {
-    framerate_ = declare_parameter("framerate").get<double>();
-    if (framerate_ <= 0)
-    {
-      RCLCPP_ERROR(get_logger(), "bad framerate %d", framerate_);
-      return;
+  for (auto & parameter : parameters_client->get_parameters(
+    {"camera_name", "camera_info_url", "frame_id", "framerate", 
+     "image_height", "image_width",  "io_method", "pixel_format", "video_device"}))
+  {
+    if (parameter.get_name() == "camera_name") {
+      RCLCPP_INFO(this->get_logger(), "camera_name value: %s", parameter.value_to_string().c_str());
+      camera_name_ = parameter.value_to_string();
+    } else if (parameter.get_name() == "camera_info_url") {
+      camera_info_url_ = parameter.value_to_string();
+    } else if (parameter.get_name() == "frame_id") {
+      frame_id_ = parameter.value_to_string();
+    } else if (parameter.get_name() == "framerate") {
+      RCLCPP_WARN(this->get_logger(), "framerate: %f", parameter.as_double());
+      framerate_ = parameter.as_double();
+    } else if (parameter.get_name() == "image_height") {
+      image_height_ = parameter.as_int();
+    } else if (parameter.get_name() == "image_width") {
+      image_width_ = parameter.as_int();
+    } else if (parameter.get_name() == "io_method") {
+      io_method_name_ = parameter.value_to_string();
+    } else if (parameter.get_name() == "pixel_format") {
+      pixel_format_name_ = parameter.value_to_string();
+    } else if (parameter.get_name() == "video_device") {
+      video_device_name_ = parameter.value_to_string();
+    } else {
+      RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name());
     }
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The framerate parameter provided was invalid");
   }
-  
-  try {
-    image_width_ = declare_parameter("image_width").get<int>();
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The image_width parameter provided was invalid");
-  }
-  
-  try {
-    image_height_ = declare_parameter("image_height").get<int>();
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The image_height parameter provided was invalid");
-  }
-  try {
-    camera_name_ = declare_parameter("camera_name").get<std::string>();
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The camera_name parameter provided was invalid");
-  }
-  
-  try {
-    camera_info_url_ = declare_parameter("camera_info_url").get<std::string>();
-  } catch (rclcpp::ParameterTypeException & ex) {
-    RCLCPP_ERROR(get_logger(), "The camera_info_url parameter provided was invalid");
-  }
+
 #if 0
     node_.param("brightness", brightness_, -1);  // 0-255, -1 "leave alone"
     node_.param("contrast", contrast_, -1);  // 0-255, -1 "leave alone"
@@ -254,20 +260,6 @@ void UsbCamNode::get_params()
     node_.param("auto_white_balance", auto_white_balance_, true);
     node_.param("white_balance", white_balance_, 4000);
 #endif
-  // load the camera info
-  cinfo_.reset(new camera_info_manager::CameraInfoManager(this, camera_name_, camera_info_url_));
-  // create Services
-  // service_capture_ = this->create_service<std_srvs::srv::SetBool>("set_capture", &UsbCamNode::service_capture);
-  // check for default camera info
-  if (!cinfo_->isCalibrated())
-  {
-    cinfo_->setCameraName(video_device_name_);
-    sensor_msgs::msg::CameraInfo camera_info;
-    camera_info.header.frame_id = img_->header.frame_id;
-    camera_info.width = image_width_;
-    camera_info.height = image_height_;
-    cinfo_->setCameraInfo(camera_info);
-  }
 }
 
 bool UsbCamNode::take_and_send_image()
