@@ -2,7 +2,8 @@
 
 import argparse
 import launch
-import launch_ros.actions
+from launch_ros.actions import Node
+
 import os
 import sys
 import time
@@ -60,16 +61,16 @@ def generate_launch_description():
                 )
         yaml.dump(data, outfile, default_flow_style=False)
 
-    launches.append(launch_ros.actions.Node(
-            package='usb_cam', node_executable='usb_cam_node', output='screen',
-            node_name=node_name,
-            node_namespace=ns,
+    launches.append(Node(
+            package='usb_cam', executable='usb_cam_node', output='screen',
+            name=node_name,
+            namespace=ns,
             arguments=["__params:=" + params],
             # arguments=["__params:=" + usb_cam_dir + "/config/params.yaml"]
             ))
-    launches.append(launch_ros.actions.Node(
-            package='usb_cam', node_executable='show_image.py', output='screen',
-            node_namespace=ns,
+    launches.append(Node(
+            package='usb_cam', executable='show_image.py', output='screen',
+            namespace=ns,
             # arguments=[image_manip_dir + "/data/mosaic.jpg"])
             # remappings=[('image_in', 'image_raw')]
             ))

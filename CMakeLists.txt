@@ -38,6 +38,13 @@ target_link_libraries(${PROJECT_NAME}_node
   #avutil
 )
 
-install(PROGRAMS scripts/show_image.py DESTINATION lib/${PROJECT_NAME})
+install(
+  PROGRAMS scripts/show_image.py
+  DESTINATION lib/${PROJECT_NAME})
+
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 ament_auto_package()
