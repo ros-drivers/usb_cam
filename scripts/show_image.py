@@ -19,7 +19,6 @@ class ExamineImage(Node):
             'image_raw',
             self.image_callback,
             100)
-        # print("subscribed to " + self.sub.getTopic())
 
     def image_callback(self, msg):
         sz = (msg.height, msg.width)
@@ -54,12 +53,11 @@ def main(args=None):
     rclpy.init(args=args)
 
     examine_image = ExamineImage()
-    # TODO(lucasw) this is taking 100% cpu
-    # rclpy.spin(examine_image)
-    # this is also taking 100% cpu
-    while rclpy.ok():
-        rclpy.spin_once(examine_image)
-        time.sleep(0.1)
+
+    try:
+      rclpy.spin(examine_image)
+    except KeyboardInterrupt:
+        pass
 
     examine_image.destroy_node()
     rclpy.shutdown()
