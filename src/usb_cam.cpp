@@ -1,38 +1,32 @@
-/*********************************************************************
- *
- * Software License Agreement (BSD License)
- *
- *  Copyright (c) 2014, Robert Bosch LLC.
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of the Robert Bosch nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- *
- *********************************************************************/
+// Copyright 2014 Robert Bosch, LLC
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//    * Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//
+//    * Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in the
+//      documentation and/or other materials provided with the distribution.
+//
+//    * Neither the name of the Robert Bosch, LLC nor the names of its
+//      contributors may be used to endorse or promote products derived from
+//      this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+
 #define __STDC_CONSTANT_MACROS
 #include <usb_cam/usb_cam.h>
 
@@ -104,7 +98,7 @@ static int xioctl(int fd, int request, void * arg)
     r = ioctl(fd, request, arg);
     continue;
   } while (-1 == r && EINTR == errno);
-  
+
   return r;
 }
 
@@ -533,18 +527,29 @@ bool UsbCam::process_image(const void * src, int len, camera_image_t *dest)
     {
       // actually format V4L2_PIX_FMT_Y16, but xioctl gets unhappy
       // if you don't use the advertised type (yuyv)
-      mono102mono8(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
+      mono102mono8(
+        const_cast<char *>(
+          reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
     } else {
-      yuyv2rgb(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
+      yuyv2rgb(
+        const_cast<char *>(
+          reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
     }
   } else if (pixelformat_ == V4L2_PIX_FMT_UYVY) {
-    uyvy2rgb(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
+    uyvy2rgb(
+      const_cast<char *>(
+        reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
   } else if (pixelformat_ == V4L2_PIX_FMT_MJPEG) {
-    return mjpeg2rgb(const_cast<char *>(reinterpret_cast<const char *>(src)), len, dest->image, dest->width * dest->height);
+    return mjpeg2rgb(
+      const_cast<char *>(
+        reinterpret_cast<const char *>(src)), len, dest->image, dest->width * dest->height);
   } else if (pixelformat_ == V4L2_PIX_FMT_RGB24) {
-    rgb242rgb(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
+    rgb242rgb(
+      const_cast<char *>(
+      reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
   } else if (pixelformat_ == V4L2_PIX_FMT_GREY) {
-    memcpy(dest->image, const_cast<char *>(reinterpret_cast<const char *>(src)), dest->width * dest->height);
+    memcpy(dest->image,
+      const_cast<char *>(reinterpret_cast<const char *>(src)), dest->width * dest->height);
   }
 
   return true;;
