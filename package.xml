@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>usb_cam</name>
   <version>0.3.7</version>
   <description>A ROS2 Driver for V4L USB Cameras</description>
 
   <maintainer email="evanflynn.msu@gmail.com">Evan Flynn</maintainer>
-  
-  <author email="benjamin.pitzer@bosch.com">Benjamin Pitzer</author>
 
   <license>BSD</license>
 

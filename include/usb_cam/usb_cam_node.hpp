@@ -42,13 +42,15 @@
 #include "sensor_msgs/msg/image.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 
-std::ostream& operator<<(std::ostream& ostr, const rclcpp::Time& tm) {
+std::ostream & operator<<(std::ostream & ostr, const rclcpp::Time & tm)
+{
   ostr << tm.nanoseconds();
   return ostr;
 }
 
 
-namespace usb_cam {
+namespace usb_cam
+{
 
 
 class UsbCamNode : public rclcpp::Node
@@ -64,7 +66,7 @@ public:
 
   void service_capture(
     const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<std_srvs::srv::SetBool::Request>  request,
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
     std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   UsbCam cam_;

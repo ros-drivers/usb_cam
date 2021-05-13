@@ -32,7 +32,6 @@
 import cv2
 import numpy as np
 import rclpy
-import time
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -78,18 +77,20 @@ class ExamineImage(Node):
             cv2.imshow("image", self.mat)
             cv2.waitKey(5)
 
+
 def main(args=None):
     rclpy.init(args=args)
 
     examine_image = ExamineImage()
 
     try:
-      rclpy.spin(examine_image)
+        rclpy.spin(examine_image)
     except KeyboardInterrupt:
         pass
 
     examine_image.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

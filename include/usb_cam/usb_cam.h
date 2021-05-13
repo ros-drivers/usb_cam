@@ -54,25 +54,12 @@ extern "C"
 #include <vector>
 #include <sstream>
 
-#define ROS_INFO(msg, ...) printf(msg,  ##__VA_ARGS__)
-#define ROS_ERROR(msg, ...) printf(msg,  ##__VA_ARGS__)
-#define ROS_WARN(msg, ...) printf(msg,  ##__VA_ARGS__)
-#define ROS_DEBUG(msg, ...) printf(msg,  ##__VA_ARGS__)
-// #define ROS_DEBUG(msg, ...) // ##__VA_ARGS__
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+namespace usb_cam
+{
 
-#define INFO(msg) std::cout << "I [" << __FILENAME__ << ":" << __LINE__ \
-                            << " " << __FUNCTION__ << "] " << msg << "\n"
-#define WARN(msg) std::cout << "W [" << __FILENAME__ << ":" << __LINE__ \
-                            << " " << __FUNCTION__ << "] " << msg << "\n"
-#define ERROR(msg) std::cerr << "E [" << __FILENAME__ << ":" << __LINE__ \
-                             << " " << __FUNCTION__ << "] " << msg << std::endl
-#define ROS_ERROR_STREAM(msg) ERROR(msg)
-
-namespace usb_cam {
 
 class UsbCam {
- public:
+public:
   typedef enum
   {
     IO_METHOD_READ,
@@ -96,8 +83,9 @@ class UsbCam {
   ~UsbCam();
 
   // start camera
-  bool start(const std::string& dev, io_method io, pixel_format pf,
-              int image_width, int image_height, int framerate);
+  bool start(
+    const std::string& dev, io_method io, pixel_format pf,
+    int image_width, int image_height, int framerate);
   // shutdown camera
   bool shutdown(void);
 
@@ -123,7 +111,7 @@ class UsbCam {
   bool start_capturing(void);
   bool is_capturing();
 
- private:
+private:
   // TODO(lucasw) just store an Image shared_ptr here
   typedef struct
   {
@@ -180,4 +168,3 @@ class UsbCam {
 }  // namespace usb_cam
 
 #endif  // USB_CAM__USB_CAM_H_
-
