@@ -1,11 +1,11 @@
-usb_cam [![ROS2 CI](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml)
+# usb_cam [![ROS2 CI](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml)
 
-#### A ROS2 Driver for V4L USB Cameras
+## A ROS2 Driver for V4L USB Cameras
 This package is based off of V4L devices specifically instead of just UVC.
 
 For ros1 documentation, see [the ROS wiki](http://ros.org/wiki/usb_cam).
 
-#### Supported ROS2 Distros and Platforms
+## Supported ROS2 Distros and Platforms
 
 All Officially supported Linux Distros and corresponding ROS2 releases are supported. Please create an issue if you experience any problems on these platforms.
 
@@ -14,7 +14,7 @@ MacOS: TBD/Untested/Unproven
 
 For either MacOS or Windows - if you would like to try and get it working please create an issue to document your effort. If it works we can add it to the instructions here!
 
-#### Quickstart
+## Quickstart
 
 **This package is still not yet released for any ROS2 Distros yet!**
 
@@ -25,7 +25,7 @@ sudo apt get install ros-<ros2-distro>-usb-cam
 ```
 
 
-#### Building from Source
+## Building from Source
 
 Clone/Download the source code into your workspace:
 
@@ -47,10 +47,11 @@ source /path/to/colcon_ws/install/setup.bash
 Be sure to source the newly built packages after a successful build.
 Once sourced, you should be able to run the package in one of three ways, shown in the next section
 
-#### Running
+## Running
 
 The `usb_cam_node` can be ran with default settings, by setting specific parameters either via the command line or by loading in a file. We provide a "default" params file in the `usb_cam/config/params.yaml` directory to get you started. Also provided is a launch file that should launch the `usb_cam_node` Node along with a provided node that displays an image topic. The commands to run each of these different ways of starting the node are shown below:
 
+**NOTE: you only need to run ONE of the commands below to run the node**
 ```
 ros2 run usb_cam usb_cam_node # this will run the node with default settings (without params file)
 ros2 run usb_cam usb_cam_node --ros-args --params-file /path/to/colcon_ws/src/usb_cam/config/params.yaml   # with params file
