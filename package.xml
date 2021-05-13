@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>usb_cam</name>
   <version>0.3.7</version>
   <description>A ROS2 Driver for V4L USB Cameras</description>
 
   <maintainer email="evanflynn.msu@gmail.com">Evan Flynn</maintainer>
-  
-  <author email="benjamin.pitzer@bosch.com">Benjamin Pitzer</author>
 
   <license>BSD</license>
 
@@ -15,7 +13,7 @@
   <url type="bugtracker">https://github.com/ros-drivers/usb_cam/issues</url>
   <url type="repository">https://github.com/ros-drivers/usb_cam</url>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
