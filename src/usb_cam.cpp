@@ -39,7 +39,6 @@
 #include <sys/time.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
-#include <boost/lexical_cast.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1371,7 +1370,9 @@ bool UsbCam::set_auto_focus(int value)
 */
 bool UsbCam::set_v4l_parameter(const std::string & param, int value)
 {
-  return set_v4l_parameter(param, boost::lexical_cast<std::string>(value));
+  char buf[33];
+  snprintf(buf, sizeof(buf), "%i", value);
+  return set_v4l_parameter(param, buf);
 }
 
 /**
