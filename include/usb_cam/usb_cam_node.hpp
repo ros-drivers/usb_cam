@@ -29,7 +29,7 @@
 
 #ifndef USB_CAM__USB_CAM_NODE_HPP_
 #define USB_CAM__USB_CAM_NODE_HPP_
-#include "usb_cam/usb_cam.h"
+#include "usb_cam/usb_cam.hpp"
 
 
 #include <rclcpp/rclcpp.hpp>

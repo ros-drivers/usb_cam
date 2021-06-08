@@ -27,8 +27,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__USB_CAM_H_
-#define USB_CAM__USB_CAM_H_
+#ifndef USB_CAM__USB_CAM_HPP_
+#define USB_CAM__USB_CAM_HPP_
+#include "usb_cam/usb_cam_utils.hpp"
 
 #include <asm/types.h>          /* for videodev2.h */
 
@@ -58,7 +59,8 @@ namespace usb_cam
 {
 
 
-class UsbCam {
+class UsbCam
+{
 public:
   typedef enum
   {
@@ -84,16 +86,16 @@ public:
 
   // start camera
   bool start(
-    const std::string& dev, io_method io, pixel_format pf,
+    const std::string & dev, io_method io, pixel_format pf,
     int image_width, int image_height, int framerate);
   // shutdown camera
   bool shutdown(void);
 
   // grabs a new image from the camera
   // bool get_image(sensor_msgs::msg::Image:::SharedPtr image);
-  bool get_image(builtin_interfaces::msg::Time& stamp,
-      std::string& encoding, uint32_t& height, uint32_t& width,
-      uint32_t& step, std::vector<uint8_t>& data);
+  bool get_image(
+    builtin_interfaces::msg::Time & stamp, std::string & encoding,
+    uint32_t & height, uint32_t & width, uint32_t & step, std::vector<uint8_t> & data);
 
   void get_formats();  // std::vector<usb_cam::msg::Format>& formats);
 
@@ -101,11 +103,11 @@ public:
   bool set_auto_focus(int value);
 
   // Set video device parameters
-  bool set_v4l_parameter(const std::string& param, int value);
-  bool set_v4l_parameter(const std::string& param, const std::string& value);
+  bool set_v4l_parameter(const std::string & param, int value);
+  bool set_v4l_parameter(const std::string & param, const std::string & value);
 
-  static io_method io_method_from_string(const std::string& str);
-  static pixel_format pixel_format_from_string(const std::string& str);
+  static io_method io_method_from_string(const std::string & str);
+  static pixel_format pixel_format_from_string(const std::string & str);
 
   bool stop_capturing(void);
   bool start_capturing(void);
@@ -120,7 +122,7 @@ private:
     int bytes_per_pixel;
     int image_size;
     builtin_interfaces::msg::Time stamp;
-    char *image;
+    char * image;
     int is_new;
   } camera_image_t;
 
@@ -132,8 +134,8 @@ private:
 
 
   int init_mjpeg_decoder(int image_width, int image_height);
-  bool mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
-  bool process_image(const void * src, int len, camera_image_t *dest);
+  bool mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels);
+  bool process_image(const void * src, int len, camera_image_t * dest);
   bool read_frame();
   bool uninit_device(void);
   bool init_read(unsigned int buffer_size);
@@ -154,17 +156,17 @@ private:
   int fd_;
   buffer * buffers_;
   unsigned int n_buffers_;
-  AVFrame *avframe_camera_;
-  AVFrame *avframe_rgb_;
-  AVCodec *avcodec_;
-  AVDictionary *avoptions_;
-  AVCodecContext *avcodec_context_;
+  AVFrame * avframe_camera_;
+  AVFrame * avframe_rgb_;
+  AVCodec * avcodec_;
+  AVDictionary * avoptions_;
+  AVCodecContext * avcodec_context_;
   int avframe_camera_size_;
   int avframe_rgb_size_;
-  struct SwsContext *video_sws_;
-  camera_image_t *image_;
+  struct SwsContext * video_sws_;
+  camera_image_t * image_;
 };
 
 }  // namespace usb_cam
 
-#endif  // USB_CAM__USB_CAM_H_
+#endif  // USB_CAM__USB_CAM_HPP_
