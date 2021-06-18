@@ -8,3 +8,4 @@
       image_width: 640
       image_height: 480
       camera_name: "test_cam"
+      camera_info_url: "package://usb_cam/config/camera_info.yaml"
