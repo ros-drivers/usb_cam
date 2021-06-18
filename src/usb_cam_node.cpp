@@ -42,7 +42,8 @@ namespace usb_cam
 UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
 : Node("usb_cam", node_options),
   img_(new sensor_msgs::msg::Image()),
-  image_pub_(this->create_publisher<sensor_msgs::msg::Image>("image_raw", 100)),
+  image_pub_(std::make_shared<image_transport::CameraPublisher>(
+      image_transport::create_camera_publisher(this, "image_raw", rclcpp::QoS{100}.get_rmw_qos_profile()))),
   service_capture_(
     this->create_service<std_srvs::srv::SetBool>(
       "set_capture",
@@ -191,7 +192,9 @@ bool UsbCamNode::take_and_send_image()
   }
 
   // INFO(img_->data.size() << " " << img_->width << " " << img_->height << " " << img_->step);
-  image_pub_->publish(*img_);
+  auto ci = std::make_unique<sensor_msgs::msg::CameraInfo>(cinfo_->getCameraInfo());
+  ci->header = img_->header;
+  image_pub_->publish(*img_, *ci);
   return true;
 }
 
