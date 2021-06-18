@@ -39,8 +39,8 @@
 namespace usb_cam
 {
 
-UsbCamNode::UsbCamNode()
-: Node("usb_cam"),
+UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
+: Node("usb_cam", node_options),
   img_(new sensor_msgs::msg::Image()),
   image_pub_(this->create_publisher<sensor_msgs::msg::Image>("image_raw", 100)),
   service_capture_(
@@ -65,6 +65,7 @@ UsbCamNode::UsbCamNode()
   this->declare_parameter("video_device", "/dev/video0");
 
   get_params();
+  init();
 }
 
 UsbCamNode::~UsbCamNode()
@@ -209,18 +210,6 @@ void UsbCamNode::update()
 }
 }  // namespace usb_cam
 
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
 
-  // Force flush of the stdout buffer.
-  // This ensures a correct sync of all prints
-  // even when executed simultaneously within a launch file.
-  setvbuf(stdout, NULL, _IONBF, BUFSIZ);
-  auto usb_cam_node = std::make_shared<usb_cam::UsbCamNode>();
-  usb_cam_node->init();
-  rclcpp::spin(usb_cam_node);
-  RCLCPP_INFO(rclcpp::get_logger("usb_cam_node"), "node done");
-  rclcpp::shutdown();
-  return 0;
-}
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(usb_cam::UsbCamNode)

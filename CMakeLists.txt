@@ -29,7 +29,10 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 
 ## Declare a cpp executable
-ament_auto_add_executable(${PROJECT_NAME}_node src/usb_cam_node.cpp)
+ament_auto_add_library(${PROJECT_NAME}_node SHARED
+  src/usb_cam_node.cpp
+)
+
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
   ${avcodec_LIBRARIES}
@@ -38,18 +41,17 @@ target_link_libraries(${PROJECT_NAME}_node
   #avutil
 )
 
+rclcpp_components_register_node(${PROJECT_NAME}_node
+  PLUGIN "usb_cam::UsbCamNode"
+  EXECUTABLE ${PROJECT_NAME}_node_exe
+)
+
 install(
   PROGRAMS scripts/show_image.py
   DESTINATION lib/${PROJECT_NAME})
 
-install(
-  DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}
+ament_auto_package(
+  INSTALL_TO_SHARE
+    launch
+    config
 )
-
-install(
-  DIRECTORY config
-  DESTINATION share/${PROJECT_NAME}
-)
-
-ament_auto_package()
