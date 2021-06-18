@@ -56,7 +56,7 @@ namespace usb_cam
 class UsbCamNode : public rclcpp::Node
 {
 public:
-  UsbCamNode();
+  UsbCamNode(const rclcpp::NodeOptions & node_options);
   ~UsbCamNode();
 
   void init();
