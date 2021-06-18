@@ -37,8 +37,8 @@
 #include <memory>
 #include <string>
 
-// #include <image_transport/image_transport.h>
 #include "camera_info_manager/camera_info_manager.hpp"
+#include "image_transport/image_transport.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 
@@ -73,7 +73,7 @@ public:
 
   // shared image message
   sensor_msgs::msg::Image::UniquePtr img_;
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_pub_;
+  std::shared_ptr<image_transport::CameraPublisher> image_pub_;
   // parameters
   std::string video_device_name_;
   std::string frame_id_;
