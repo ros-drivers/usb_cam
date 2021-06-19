@@ -7,5 +7,5 @@
       pixel_format: "yuyv"
       image_width: 640
       image_height: 480
-      camera_name: "test_cam"
+      camera_name: "test_camera"
       camera_info_url: "package://usb_cam/config/camera_info.yaml"
