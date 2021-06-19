@@ -34,7 +34,11 @@ include_directories(include
 )
 
 ## Build the USB camera library
-add_library(${PROJECT_NAME} src/usb_cam.cpp)
+add_library(${PROJECT_NAME}
+  src/device_utils.cpp
+  src/usb_cam.cpp
+)
+
 target_link_libraries(${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${swscale_LIBRARIES}
