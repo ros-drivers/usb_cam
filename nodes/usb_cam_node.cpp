@@ -40,6 +40,7 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
 #include <std_srvs/Empty.h>
+#include <usb_cam/device_utils.h>
 
 namespace usb_cam {
 
@@ -56,6 +57,7 @@ public:
   // parameters
   std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_;
   //std::string start_service_name_, start_service_name_;
+  std::string serial_number_;
   bool streaming_status_;
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
       white_balance_, gain_;
@@ -89,6 +91,7 @@ public:
     image_pub_ = it.advertiseCamera("image_raw", 1);
 
     // grab the parameters
+    node_.param("serial_no", serial_number_, std::string(""));
     node_.param("video_device", video_device_name_, std::string("/dev/video0"));
     node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
     node_.param("contrast", contrast_, -1); //0-255, -1 "leave alone"
@@ -121,6 +124,22 @@ public:
     // create Services
     service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
     service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
+
+    if (!serial_number_.empty())
+    {
+      str_map map_serial_dev = get_serial_dev_info();
+      auto it = map_serial_dev.find(serial_number_);
+      if (it != map_serial_dev.cend())
+      {
+        video_device_name_ = it->second;
+      }
+      else
+      {
+        ROS_FATAL("USB camera with serial number '%s' cannot be found.", serial_number_.c_str());
+        node_.shutdown();
+        return;
+      }
+    }
 
     // check for default camera info
     if (!cinfo_->isCalibrated())
