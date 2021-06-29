@@ -1,5 +1,9 @@
+#include <boost/algorithm/string.hpp>
 #include <libudev.h>
+#include <string>
 #include <usb_cam/device_utils.h>
+#include <usb_cam/usb_cam.h>
+
 
 str_map get_serial_dev_info()
 {
@@ -35,7 +39,7 @@ str_map get_serial_dev_info()
       if (parent_dev)
       {
         std::string dev_serial = std::string(udev_device_get_sysattr_value(parent_dev, "serial"));
-        devices[dev_serial] = dev_file_name_path;
+        devices[dev_file_name_path] = dev_serial;
       }
 
       udev_device_unref(dev);
@@ -45,4 +49,22 @@ str_map get_serial_dev_info()
   }
 
   return devices;
+}
+
+void clear_unsupported_devices(str_map& maps, std::string pixel_format)
+{
+  std::string upper_str = boost::to_upper_copy<std::string>(pixel_format);
+
+  auto it = maps.cbegin();
+  while (it != maps.cend())
+  {
+    if (usb_cam::UsbCam::device_supports_pixel_format(it->first, upper_str))
+    {
+      ++it;
+    }
+    else
+    {
+      it = maps.erase(it);
+    }
+  }
 }

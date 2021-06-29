@@ -90,6 +90,8 @@ class UsbCam {
   void set_v4l_parameter(const std::string& param, int value);
   void set_v4l_parameter(const std::string& param, const std::string& value);
 
+  static bool device_supports_pixel_format(const std::string& device, const std::string& pixel_format);
+
   static io_method io_method_from_string(const std::string& str);
   static pixel_format pixel_format_from_string(const std::string& str);
 

@@ -127,13 +127,23 @@ public:
 
     if (!serial_number_.empty())
     {
-      str_map map_serial_dev = get_serial_dev_info();
-      auto it = map_serial_dev.find(serial_number_);
-      if (it != map_serial_dev.cend())
+      str_map map_dev_serial = get_serial_dev_info();
+      clear_unsupported_devices(map_dev_serial, pixel_format_name_);
+
+      bool found = false;
+      auto it = map_dev_serial.cbegin();
+      for (; it != map_dev_serial.cend(); ++it)
       {
-        video_device_name_ = it->second;
+        std::size_t found_pos = serial_number_.find(it->second);
+        if (found_pos != std::string::npos)
+        {
+          found = true;
+          video_device_name_ = it->first;
+          break;
+        }
       }
-      else
+
+      if (!found)
       {
         ROS_FATAL("USB camera with serial number '%s' cannot be found.", serial_number_.c_str());
         node_.shutdown();
