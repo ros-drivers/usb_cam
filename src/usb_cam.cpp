@@ -1251,4 +1251,41 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_UNKNOWN;
 }
 
+bool UsbCam::device_supports_pixel_format(const std::string& device, const std::string& pixel_format)
+{
+  bool result = false;
+  // build the command
+  std::stringstream ss;
+  ss << "v4l2-ctl --device=" << device << " --list-formats-ext | grep -i \"" << pixel_format << "\"";
+  std::string cmd = ss.str();
+
+  // capture the output
+  std::string output;
+  int buffer_size = 256;
+  char buffer[buffer_size];
+  FILE *stream = popen(cmd.c_str(), "r");
+  if (stream)
+  {
+    while (!feof(stream))
+    {
+      if (fgets(buffer, buffer_size, stream) != NULL)
+      {
+        output.append(buffer);
+      }
+    }
+    pclose(stream);
+
+    std::size_t found = output.find(pixel_format);
+    if (found != std::string::npos)
+    {
+      result = true;
+    }
+  }
+  else
+  {
+    result = false;
+  }
+  return result;
+}
+
 }
