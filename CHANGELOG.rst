@@ -2,9 +2,69 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.0 (2021-07-21)
+------------------
+* bump version for ros2 first release
+* add galactic to ci, closes `#157 <https://github.com/ros-drivers/usb_cam/issues/157>`_
+  update camera name
+* Merge pull request `#158 <https://github.com/ros-drivers/usb_cam/issues/158>`_ from wep21/feature/add_camera_info
+  Feature/add camera info
+* Add sample camera info yaml
+* Add camera info
+* Merge pull request `#156 <https://github.com/ros-drivers/usb_cam/issues/156>`_ from wep21/feature/composable_node
+* Make usb_cam_node composable
+* Merge pull request `#153 <https://github.com/ros-drivers/usb_cam/issues/153>`_ from flynneva/lint/make-utils-file
+* add utils file, fix lint errors
+* Merge pull request `#151 <https://github.com/ros-drivers/usb_cam/issues/151>`_ from flynneva/fix/remove-boost
+* replace boost lexical_cast with snprintf
+* Merge pull request `#149 <https://github.com/ros-drivers/usb_cam/issues/149>`_ from flynneva/fix/update-readme
+  fix readme headers
+* fix readme headers
+* Merge pull request `#148 <https://github.com/ros-drivers/usb_cam/issues/148>`_ from flynneva/update-ros2-readme-and-lint
+  Update ros2 readme and lint
+* fix most lint errors
+* update readme, fix linter errors
+* Merge pull request `#146 <https://github.com/ros-drivers/usb_cam/issues/146>`_ from flynneva/ros2-clean-up
+  Ros2 clean up
+* fix show_image script lag
+* run, launch and params file working
+* add service, install launch, separate header
+* Merge pull request `#139 <https://github.com/ros-drivers/usb_cam/issues/139>`_ from flynneva/cmake-cleanup
+  consolidate srcs, use ament_auto macros, closes `#138 <https://github.com/ros-drivers/usb_cam/issues/138>`_
+* consolidate srcs, use ament_auto macros, closes `#137 <https://github.com/ros-drivers/usb_cam/issues/137>`_ `#138 <https://github.com/ros-drivers/usb_cam/issues/138>`_
+* Merge pull request `#132 <https://github.com/ros-drivers/usb_cam/issues/132>`_ from flynneva/foxy
+  updates for foxy
+* add myself to authors
+* fixing lint errors
+* add ros2 github actions
+* minor updates to foxy
+* adding launch file
+  try to fix low framerate `#103 <https://github.com/ros-drivers/usb_cam/issues/103>`_
+  add ros parameters
+  loading more parameters from parameter server `#103 <https://github.com/ros-drivers/usb_cam/issues/103>`_
+  use argparse to get arguments from command line
+  untested correction to args
+  ignore unknown args
+  set proper default device and look for more bad return values
+  trying to find why framerate is limited to about 8 fps
+  framerate ok for low-exposure settings
+  print list of valid formats `#105 <https://github.com/ros-drivers/usb_cam/issues/105>`_
+* use the v4l2_buffer timestamp if available. `#75 <https://github.com/ros-drivers/usb_cam/issues/75>`_
+  usb_cam.cpp is building but untested `#103 <https://github.com/ros-drivers/usb_cam/issues/103>`_
+  Builds but crashes immediately after running
+  data is getting published, no image shown
+  image shown, frame rate is very slow `#103 <https://github.com/ros-drivers/usb_cam/issues/103>`_
+* move the timestamping closer to when the image was acquired. `#75 <https://github.com/ros-drivers/usb_cam/issues/75>`_
+* Merge pull request `#136 <https://github.com/ros-drivers/usb_cam/issues/136>`_ from flynneva/patch-1
+  add myself as a maintainer for ros2
+* add myself as a maintainer for ros2
+* Merge pull request `#124 <https://github.com/ros-drivers/usb_cam/issues/124>`_ from k-okada/add_noetic
+  add noetic .travis.yml
+* add noetic .travis.yml
+* Contributors: Evan Flynn, Kei Okada, Lucas Walter, flynneva, wep21
+
 0.3.7 (2018-10-29)
 ------------------
-
 * ROS2 version
 
 0.3.6 (2017-06-15)
