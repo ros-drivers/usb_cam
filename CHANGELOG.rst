@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+0.4.0 (2021-07-29)
+------------------
 * Merge pull request `#6 <https://github.com/MisoRobotics/usb_cam/issues/6>`_ from MisoRobotics/user/hruo/feature/usb-cam-serial-number
   SFS-408: Auto-Bin classification camera drivers
 * Fix serial number for usb cam
