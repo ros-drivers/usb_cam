@@ -356,7 +356,7 @@ void rgb242rgb(char *YUV, char *RGB, int NumPixels)
 UsbCam::UsbCam()
   : io_(IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0), avframe_camera_(NULL),
     avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL), avcodec_context_(NULL),
-    avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL) {
+    avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL), is_capturing_(false) {
 }
 UsbCam::~UsbCam()
 {
@@ -374,23 +374,30 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
     return 0;
   }
 
+  av_log_set_level(AV_LOG_ERROR);
+
   avcodec_context_ = avcodec_alloc_context3(avcodec_);
+#if LIBAVCODEC_VERSION_MAJOR < 55
   avframe_camera_ = avcodec_alloc_frame();
   avframe_rgb_ = avcodec_alloc_frame();
+#else
+  avframe_camera_ = av_frame_alloc();
+  avframe_rgb_ = av_frame_alloc();
+#endif
 
-  avpicture_alloc((AVPicture *)avframe_rgb_, PIX_FMT_RGB24, image_width, image_height);
+  avpicture_alloc((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, image_width, image_height);
 
   avcodec_context_->codec_id = AV_CODEC_ID_MJPEG;
   avcodec_context_->width = image_width;
   avcodec_context_->height = image_height;
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
-  avcodec_context_->pix_fmt = PIX_FMT_YUV422P;
+  avcodec_context_->pix_fmt = AV_PIX_FMT_YUV422P;
   avcodec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
 #endif
 
-  avframe_camera_size_ = avpicture_get_size(PIX_FMT_YUV422P, image_width, image_height);
-  avframe_rgb_size_ = avpicture_get_size(PIX_FMT_RGB24, image_width, image_height);
+  avframe_camera_size_ = avpicture_get_size(AV_PIX_FMT_YUV420P, image_width, image_height);
+  avframe_rgb_size_ = avpicture_get_size(AV_PIX_FMT_RGB24, image_width, image_height);
 
   /* open it */
   if (avcodec_open2(avcodec_context_, avcodec_, &avoptions_) < 0)
@@ -431,6 +438,11 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
     return;
   }
 
+  if (avcodec_context_->pix_fmt == AV_PIX_FMT_YUVJ420P)
+  {
+    avcodec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
+  }
+
   int xsize = avcodec_context_->width;
   int ysize = avcodec_context_->height;
   int pic_size = avpicture_get_size(avcodec_context_->pix_fmt, xsize, ysize);
@@ -440,13 +452,13 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
     return;
   }
 
-  video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize, PIX_FMT_RGB24, SWS_BILINEAR, NULL,
+  video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL,
 			      NULL,  NULL);
   sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize, 0, ysize, avframe_rgb_->data,
             avframe_rgb_->linesize);
   sws_freeContext(video_sws_);
 
-  int size = avpicture_layout((AVPicture *)avframe_rgb_, PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size_);
+  int size = avpicture_layout((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size_);
   if (size != avframe_rgb_size_)
   {
     ROS_ERROR("webcam: avpicture_layout error: %d", size);
@@ -473,6 +485,8 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
     mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_RGB24)
     rgb242rgb((char*)src, dest->image, dest->width * dest->height);
+  else if (pixelformat_ == V4L2_PIX_FMT_GREY)
+    memcpy(dest->image, (char*)src, dest->width * dest->height);
 }
 
 int UsbCam::read_frame()
@@ -578,8 +592,15 @@ int UsbCam::read_frame()
   return 1;
 }
 
+bool UsbCam::is_capturing() {
+  return is_capturing_;
+}
+
 void UsbCam::stop_capturing(void)
 {
+  if(!is_capturing_) return;
+
+  is_capturing_ = false;
   enum v4l2_buf_type type;
 
   switch (io_)
@@ -601,6 +622,9 @@ void UsbCam::stop_capturing(void)
 
 void UsbCam::start_capturing(void)
 {
+
+  if(is_capturing_) return;
+
   unsigned int i;
   enum v4l2_buf_type type;
 
@@ -656,6 +680,7 @@ void UsbCam::start_capturing(void)
 
       break;
   }
+  is_capturing_ = true;
 }
 
 void UsbCam::uninit_device(void)
@@ -1011,6 +1036,11 @@ void UsbCam::start(const std::string& dev, io_method io_method,
   {
     pixelformat_ = V4L2_PIX_FMT_RGB24;
   }
+  else if (pixel_format == PIXEL_FORMAT_GREY)
+  {
+    pixelformat_ = V4L2_PIX_FMT_GREY;
+    monochrome_ = true;
+  }
   else
   {
     ROS_ERROR("Unknown pixel format.");
@@ -1025,7 +1055,7 @@ void UsbCam::start(const std::string& dev, io_method io_method,
 
   image_->width = image_width;
   image_->height = image_height;
-  image_->bytes_per_pixel = 24;
+  image_->bytes_per_pixel = 3;      //corrected 11/10/15 (BYTES not BITS per pixel)
 
   image_->image_size = image_->width * image_->height * image_->bytes_per_pixel;
   image_->is_new = 0;
@@ -1215,8 +1245,47 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_YUVMONO10;
     else if (str == "rgb24")
       return PIXEL_FORMAT_RGB24;
+    else if (str == "grey")
+      return PIXEL_FORMAT_GREY;
     else
       return PIXEL_FORMAT_UNKNOWN;
+}
+
+bool UsbCam::device_supports_pixel_format(const std::string& device, const std::string& pixel_format)
+{
+  bool result = false;
+  // build the command
+  std::stringstream ss;
+  ss << "v4l2-ctl --device=" << device << " --list-formats-ext | grep -i \"" << pixel_format << "\"";
+  std::string cmd = ss.str();
+
+  // capture the output
+  std::string output;
+  int buffer_size = 256;
+  char buffer[buffer_size];
+  FILE *stream = popen(cmd.c_str(), "r");
+  if (stream)
+  {
+    while (!feof(stream))
+    {
+      if (fgets(buffer, buffer_size, stream) != NULL)
+      {
+        output.append(buffer);
+      }
+    }
+    pclose(stream);
+
+    std::size_t found = output.find(pixel_format);
+    if (found != std::string::npos)
+    {
+      result = true;
+    }
+  }
+  else
+  {
+    result = false;
+  }
+  return result;
 }
 
 }
