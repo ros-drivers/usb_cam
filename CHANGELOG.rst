@@ -23,6 +23,61 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+0.4.0 (2021-07-29)
+------------------
+* Merge pull request `#6 <https://github.com/MisoRobotics/usb_cam/issues/6>`_ from MisoRobotics/user/hruo/feature/usb-cam-serial-number
+  SFS-408: Auto-Bin classification camera drivers
+* Fix serial number for usb cam
+  This adds a verification to avoid the device file name that doesn't support
+  the expected pixel format to be used when more than one device file name have
+  the same serial number.
+* Add support to serial number for usb cam
+  This adds support to match the expected serial number
+  (from launch file) and start the node only if they
+  match using libudev.
+* Merge pull request `#5 <https://github.com/MisoRobotics/usb_cam/issues/5>`_ from MisoRobotics/user/rsinnet/feature/suppress-incompat-warnings
+  Suppress incompatibility warnings
+* Set log level to error
+  This suppresses warnings that blow up non-x86/PPC platforms.
+* Suppress warnings
+  Supress incompatibility/deprecation warnings.
+* Merge pull request `#4 <https://github.com/MisoRobotics/usb_cam/issues/4>`_ from MisoRobotics/user/rsinnet/fix-pixfmt-incompat
+  Fix issue with pixfmt compatibility
+* Fix issue with pixfmt compatibility
+  Change to a deprecated format to work with the buffer size of usb_cam.
+* Merge pull request `#1 <https://github.com/MisoRobotics/usb_cam/issues/1>`_ from ros-drivers/develop
+  Merge latest from upstream
+* Merge pull request `#124 <https://github.com/MisoRobotics/usb_cam/issues/124>`_ from k-okada/add_noetic
+  add noetic .travis.yml
+* add noetic .travis.yml
+* 0.3.6
+* update CHANGELOG
+* Merge pull request `#71 <https://github.com/MisoRobotics/usb_cam/issues/71>`_ from ros-drivers/fix_L
+  add AV\_ to PIX_FMT\_* for X,Y
+* .travis.yml: udpate to trusty
+* add AV\_ prefix to PIX_FMT\_* for X,Y
+* 0.3.5
+* update CHANGELOG
+* Merge pull request `#69 <https://github.com/MisoRobotics/usb_cam/issues/69>`_ from k-okada/add_ros_orphaned_packages_maintaneres_to_package_xml
+  add ROS Orphaned Package Maintainers to maintainer tag
+* add ROS Orphaned Package Maintainers to maintainer tag
+* Merge pull request `#58 <https://github.com/MisoRobotics/usb_cam/issues/58>`_ from AutonomosGmbH-DaS/kinetic
+  support for Kinetic / Ubuntu 16.04
+* replace use of deprecated functions in newer ffmpeg/libav versions
+  ffmpeg/libav 55.x (used in ROS Kinetic) deprecated the avcodec_alloc_frame.
+* Merge pull request `#45 <https://github.com/MisoRobotics/usb_cam/issues/45>`_ from groove-x/develop
+  Add "grey" pixel format.
+* Add grey scale pixel format.
+* Merge pull request `#44 <https://github.com/MisoRobotics/usb_cam/issues/44>`_ from ludusrusso/develop
+  add start/stop capture services
+* better management of start/stop
+* up package.xml
+* add capture service
+* Merge pull request `#40 <https://github.com/MisoRobotics/usb_cam/issues/40>`_ from ezavesky/develop
+  - fix bug for byte count in a pixel (3 bytes not 24 bytes)
+* - fix bug for byte count in a pixel (3 bytes not 24 bytes)
+* Contributors: Daniel Seifert, Eric Zavesky, Hung Ruo Han, Kei Okada, Ludovico Russo, Russell Toris, Ryan Sinnet, Zach Zweig Vinegar, honeytrap15
+
 0.3.4 (2015-08-18)
 ------------------
 * Installs launch files
