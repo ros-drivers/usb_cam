@@ -49,13 +49,25 @@ Once sourced, you should be able to run the package in one of three ways, shown 
 
 ## Running
 
-The `usb_cam_node` can be ran with default settings, by setting specific parameters either via the command line or by loading in a file. We provide a "default" params file in the `usb_cam/config/params.yaml` directory to get you started. Also provided is a launch file that should launch the `usb_cam_node` Node along with a provided node that displays an image topic. The commands to run each of these different ways of starting the node are shown below:
+The `usb_cam_node` can be ran with default settings, by setting specific parameters either via the command line or by loading in a parameters file.
+
+We provide a "default" params file in the `usb_cam/config/params.yaml` directory to get you started. Feel free to modify this file as you wish.
+
+Also provided is a launch file that should launch the `usb_cam_node_exe` executable along with an additional node that displays an image topic.
+
+The commands to run each of these different ways of starting the node are shown below:
 
 **NOTE: you only need to run ONE of the commands below to run the node**
 ```
-ros2 run usb_cam usb_cam_node_exe # this will run the node with default settings (without params file)
-ros2 run usb_cam usb_cam_node_exe --ros-args --params-file /path/to/colcon_ws/src/usb_cam/config/params.yaml   # with params file
-ros2 launch usb_cam demo_launch.py  # also runs the provided show_images.py script to display the image topic
+# run the executable with default settings (without params file)
+ros2 run usb_cam usb_cam_node_exe
+
+# run the executable while passing in parameters via a yaml file
+ros2 run usb_cam usb_cam_node_exe --ros-args --params-file /path/to/colcon_ws/src/usb_cam/config/params.yaml
+
+# launch the usb_cam executable that loads parameters from the same `usb_cam/config/params.yaml` file as above
+# along with an additional image viewer node
+ros2 launch usb_cam demo_launch.py
 ```
 
 #### Documentation
