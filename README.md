@@ -53,8 +53,8 @@ The `usb_cam_node` can be ran with default settings, by setting specific paramet
 
 **NOTE: you only need to run ONE of the commands below to run the node**
 ```
-ros2 run usb_cam usb_cam_node # this will run the node with default settings (without params file)
-ros2 run usb_cam usb_cam_node --ros-args --params-file /path/to/colcon_ws/src/usb_cam/config/params.yaml   # with params file
+ros2 run usb_cam usb_cam_node_exe # this will run the node with default settings (without params file)
+ros2 run usb_cam usb_cam_node_exe --ros-args --params-file /path/to/colcon_ws/src/usb_cam/config/params.yaml   # with params file
 ros2 launch usb_cam demo_launch.py  # also runs the provided show_images.py script to display the image topic
 ```
 
