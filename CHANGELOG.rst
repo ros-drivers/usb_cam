@@ -2,6 +2,14 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.1 (2021-08-08)
+------------------
+* update README, add compression section
+* update package.xml to include image_transport_plugins
+* clean up README instructions
+* update README ros2 run executable name
+* Contributors: Evan Flynn
+
 0.4.0 (2021-07-21)
 ------------------
 * bump version for ros2 first release
