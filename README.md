@@ -16,14 +16,15 @@ For either MacOS or Windows - if you would like to try and get it working please
 
 ## Quickstart
 
-**This package is still not yet released for any ROS2 Distros yet!**
-
 Assuming you have a supported ROS2 distro installed, run the following command to install the binary release:
 
 ```bash
 sudo apt get install ros-<ros2-distro>-usb-cam
 ```
 
+As of today this package should be available for binary installation on all active ROS2 distros.
+
+If for some reason you cannot install the binaries, follow the directions below to compile from source.
 
 ## Building from Source
 
@@ -36,7 +37,14 @@ git clone https://github.com/ros-drivers/usb_cam.git
 
 Or click on the green "Download zip" button on the repo's github webpage.
 
-Once downloaded and ensuring you have sourced your ROS2 underlay, go ahead and compile:
+Once downloaded and ensuring you have sourced your ROS2 underlay, go ahead and install the dependencies:
+
+```
+cd /path/to/colcon_ws
+rosdep install --from-paths src --ignore-src -y
+```
+
+From there you should have all the necessary dependencies installed to compile the `usb_cam` package:
 
 ```
 cd /path/to/colcon_ws
@@ -45,7 +53,8 @@ source /path/to/colcon_ws/install/setup.bash
 ```
 
 Be sure to source the newly built packages after a successful build.
-Once sourced, you should be able to run the package in one of three ways, shown in the next section
+
+Once sourced, you should be able to run the package in one of three ways, shown in the next section.
 
 ## Running
 
@@ -68,6 +77,18 @@ ros2 run usb_cam usb_cam_node_exe --ros-args --params-file /path/to/colcon_ws/sr
 # launch the usb_cam executable that loads parameters from the same `usb_cam/config/params.yaml` file as above
 # along with an additional image viewer node
 ros2 launch usb_cam demo_launch.py
+```
+
+## Compression
+
+Big thanks to [the `ros2_v4l2_camera` package](https://gitlab.com/boldhearts/ros2_v4l2_camera#usage-1) and their documentation on this topic.
+
+The `usb_cam` should support compression by default since it uses `image_transport` to publish its images as long as the `image_transport_plugins` package is installed on your system. With the plugins installed the `usb_cam` package should publish a `compressed` topic automatically.
+
+Unfortunately `rviz2` and `show_image.py` do not support visualizing the compressed images just yet so you will need to republish the compressed image downstream to uncompress it:
+
+```
+ros2 run image_transport republish compressed in/compressed:=image_raw/compressed raw out:=image_raw/uncompressed
 ```
 
 #### Documentation
