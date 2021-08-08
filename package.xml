@@ -23,6 +23,7 @@
   <depend>camera_info_manager</depend>
   <depend>builtin_interfaces</depend>
   <depend>image_transport</depend>
+  <depend>image_transport_plugins</depend>
   <depend>v4l-utils</depend>
 
   <depend>ffmpeg</depend>
