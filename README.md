@@ -78,6 +78,15 @@ ros2 run usb_cam usb_cam_node_exe --ros-args --params-file /path/to/colcon_ws/sr
 # along with an additional image viewer node
 ros2 launch usb_cam demo_launch.py
 ```
+## Launching Multiple usb_cam's
+
+To launch multiple nodes at once, simply remap the namespace of each one:
+
+```
+ros2 run usb_cam usb_cam_node_exe --remap __ns:=/usb_cam_0 --params-file /path/to/usb_cam/config/params_0.yaml
+ros2 run usb_cam usb_cam_node_exe --remap __ns:=/usb_cam_1 --params-file /path/to/usb_cam/config/params_1.yaml
+```
+
 
 ## Compression
 
