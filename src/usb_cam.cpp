@@ -363,7 +363,7 @@ UsbCam::~UsbCam()
   shutdown();
 }
 
-int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
+int UsbCam::init_mjpeg_decoder(int bits_per_pixel, int image_width, int image_height)
 {
   avcodec_register_all();
 
@@ -391,12 +391,13 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   avcodec_context_->width = image_width;
   avcodec_context_->height = image_height;
 
+  auto avcodec_pixel_format{ get_avcodec_pixel_format(bits_per_pixel) };
 #if LIBAVCODEC_VERSION_MAJOR > 52
-  avcodec_context_->pix_fmt = AV_PIX_FMT_YUV422P;
+  avcodec_context_->pix_fmt = avcodec_pixel_format;
   avcodec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
 #endif
 
-  avframe_camera_size_ = avpicture_get_size(AV_PIX_FMT_YUV420P, image_width, image_height);
+  avframe_camera_size_ = avpicture_get_size(avcodec_pixel_format, image_width, image_height);
   avframe_rgb_size_ = avpicture_get_size(AV_PIX_FMT_RGB24, image_width, image_height);
 
   /* open it */
@@ -1010,7 +1011,7 @@ void UsbCam::open_device(void)
 }
 
 void UsbCam::start(const std::string& dev, io_method io_method,
-		   pixel_format pixel_format, int image_width, int image_height,
+		   pixel_format pixel_format, int bits_per_pixel, int image_width, int image_height,
 		   int framerate)
 {
   camera_dev_ = dev;
@@ -1024,7 +1025,7 @@ void UsbCam::start(const std::string& dev, io_method io_method,
   else if (pixel_format == PIXEL_FORMAT_MJPEG)
   {
     pixelformat_ = V4L2_PIX_FMT_MJPEG;
-    init_mjpeg_decoder(image_width, image_height);
+    init_mjpeg_decoder(bits_per_pixel, image_width, image_height);
   }
   else if (pixel_format == PIXEL_FORMAT_YUVMONO10)
   {
@@ -1249,6 +1250,23 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_GREY;
     else
       return PIXEL_FORMAT_UNKNOWN;
+}
+
+AVPixelFormat UsbCam::get_avcodec_pixel_format(int bits_per_pixel)
+{
+  if (bits_per_pixel == 12)
+  {
+    return AV_PIX_FMT_YUV420P;
+  }
+  else if (bits_per_pixel == 16)
+  {
+    return AV_PIX_FMT_YUV422P;
+  }
+  else
+  {
+    ROS_ERROR("Unsupported bits per pixel for MJPEG pixel format.");
+    exit(EXIT_FAILURE);
+  }
 }
 
 bool UsbCam::device_supports_pixel_format(const std::string& device, const std::string& pixel_format)
