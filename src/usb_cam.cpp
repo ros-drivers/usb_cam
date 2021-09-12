@@ -735,7 +735,7 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
   RCLCPP_INFO_STREAM(
     rclcpp::get_logger("usb_cam"),
     "Capability flag: 0x" << std::hex << stream_params.parm.capture.capability << std::dec);
-  if (!stream_params.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) {
+  if (!(stream_params.parm.capture.capability & V4L2_CAP_TIMEPERFRAME)) {
     RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "V4L2_CAP_TIMEPERFRAME not supported");
   }
 
