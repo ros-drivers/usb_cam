@@ -175,7 +175,7 @@ void UsbCamNode::get_params()
     } else if (parameter.get_name() == "video_device") {
       video_device_name_ = parameter.value_to_string();
     } else {
-      RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name());
+      RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name().c_str());
     }
   }
 }
