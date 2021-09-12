@@ -1080,6 +1080,7 @@ bool UsbCam::set_v4l_parameter(const std::string & param, const std::string & va
   } else {
     RCLCPP_WARN(rclcpp::get_logger("usb_cam"), "usb_cam_node could not run '%s'", cmd.c_str());
   }
+  return true;
 }
 
 UsbCam::io_method UsbCam::io_method_from_string(const std::string & str)
