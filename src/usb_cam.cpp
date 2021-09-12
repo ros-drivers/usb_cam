@@ -119,7 +119,7 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   return 1;
 }
 
-bool UsbCam::mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels)
+bool UsbCam::mjpeg2rgb(char * MJPEG, int len, char * RGB, int /* NumPixels */)
 {
   // RCLCPP_INFO_STREAM(
   //   rclcpp::get_logger("usb_cam"),
