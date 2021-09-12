@@ -67,7 +67,7 @@ void monotonicToRealTime(const timespec & monotonic_time, timespec & real_time)
   }
 }
 
-static int xioctl(int fd, int request, void * arg)
+inline int xioctl(int fd, int request, void * arg)
 {
   int r;
 
@@ -245,7 +245,7 @@ const int clipping_table_offset = 128;
 /** Clip a value to the range 0<val<255. For speed this is done using an
  * array, so can only cope with numbers in the range -128<val<383.
  */
-static unsigned char CLIPVALUE(int val)
+inline unsigned char CLIPVALUE(int val)
 {
   // Old method (if)
   /*   val = val < 0 ? 0 : val; */
@@ -276,7 +276,7 @@ static unsigned char CLIPVALUE(int val)
  * [ B ]   [  1.0   2.041   0.002 ] [ V ]
  *
  */
-static bool YUV2RGB(
+inline bool YUV2RGB(
   const unsigned char y, const unsigned char u, const unsigned char v,
   unsigned char * r, unsigned char * g, unsigned char * b)
 {
@@ -326,7 +326,7 @@ bool uyvy2rgb(char * YUV, char * RGB, int NumPixels)
   return true;
 }
 
-static bool mono102mono8(char * RAW, char * MONO, int NumPixels)
+inline bool mono102mono8(char * RAW, char * MONO, int NumPixels)
 {
   int i, j;
   for (i = 0, j = 0; i < (NumPixels << 1); i += 2, j += 1) {
@@ -336,7 +336,7 @@ static bool mono102mono8(char * RAW, char * MONO, int NumPixels)
   return true;
 }
 
-static bool yuyv2rgb(char * YUV, char * RGB, int NumPixels)
+inline bool yuyv2rgb(char * YUV, char * RGB, int NumPixels)
 {
   int i, j;
   unsigned char y0, y1, u, v;
