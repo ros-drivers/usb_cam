@@ -123,7 +123,7 @@ bool UsbCam::mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels)
 {
   // RCLCPP_INFO_STREAM(
   //   rclcpp::get_logger("usb_cam"),
-  //     "mjpeg2rgb " << len << ", image 0x" << std::hex << (unsigned long int)RGB \
+  //     "mjpeg2rgb " << len << ", image 0x" << std::hex << (unsigned long int)RGB
   //     << std::dec << " " << NumPixels << ", avframe_rgb_size_ " << avframe_rgb_size_);
   int got_picture;
 
@@ -169,7 +169,7 @@ bool UsbCam::mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels)
 
   // TODO(lucasw) why does the image need to be scaled?  Does it also convert formats?
   // RCLCPP_INFO_STREAM(
-  //   rclcpp::get_logger("usb_cam"), "sw scaler " << xsize << " " << ysize << " " \
+  //   rclcpp::get_logger("usb_cam"), "sw scaler " << xsize << " " << ysize << " "
   //     << avcodec_context_->pix_fmt << ", linesize " << avframe_rgb_->linesize);
   #if 1
   avcodec_context_->pix_fmt = pix_fmt_backup;
