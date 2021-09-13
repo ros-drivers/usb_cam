@@ -145,8 +145,6 @@ private:
   bool close_device(void);
   bool open_device(void);
   bool grab_image();
-  bool is_capturing_;
-
 
   rclcpp::Clock::SharedPtr clock_;
   std::string camera_dev_;
@@ -165,6 +163,7 @@ private:
   int avframe_rgb_size_;
   struct SwsContext * video_sws_;
   camera_image_t * image_;
+  bool is_capturing_;
 };
 
 }  // namespace usb_cam

@@ -119,11 +119,11 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   return 1;
 }
 
-bool UsbCam::mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels)
+bool UsbCam::mjpeg2rgb(char * MJPEG, int len, char * RGB, int /* NumPixels */)
 {
   // RCLCPP_INFO_STREAM(
   //   rclcpp::get_logger("usb_cam"),
-  //     "mjpeg2rgb " << len << ", image 0x" << std::hex << (unsigned long int)RGB \
+  //     "mjpeg2rgb " << len << ", image 0x" << std::hex << (unsigned long int)RGB
   //     << std::dec << " " << NumPixels << ", avframe_rgb_size_ " << avframe_rgb_size_);
   int got_picture;
 
@@ -169,7 +169,7 @@ bool UsbCam::mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels)
 
   // TODO(lucasw) why does the image need to be scaled?  Does it also convert formats?
   // RCLCPP_INFO_STREAM(
-  //   rclcpp::get_logger("usb_cam"), "sw scaler " << xsize << " " << ysize << " " \
+  //   rclcpp::get_logger("usb_cam"), "sw scaler " << xsize << " " << ysize << " "
   //     << avcodec_context_->pix_fmt << ", linesize " << avframe_rgb_->linesize);
   #if 1
   avcodec_context_->pix_fmt = pix_fmt_backup;
@@ -735,7 +735,7 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
   RCLCPP_INFO_STREAM(
     rclcpp::get_logger("usb_cam"),
     "Capability flag: 0x" << std::hex << stream_params.parm.capture.capability << std::dec);
-  if (!stream_params.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) {
+  if (!(stream_params.parm.capture.capability & V4L2_CAP_TIMEPERFRAME)) {
     RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "V4L2_CAP_TIMEPERFRAME not supported");
   }
 
@@ -1080,6 +1080,7 @@ bool UsbCam::set_v4l_parameter(const std::string & param, const std::string & va
   } else {
     RCLCPP_WARN(rclcpp::get_logger("usb_cam"), "usb_cam_node could not run '%s'", cmd.c_str());
   }
+  return true;
 }
 
 UsbCam::io_method UsbCam::io_method_from_string(const std::string & str)
