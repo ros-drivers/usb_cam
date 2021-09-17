@@ -60,7 +60,7 @@ public:
   std::string serial_number_;
   bool streaming_status_;
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
-      white_balance_, gain_, power_line_frequency_;
+      white_balance_, gain_, power_line_frequency_, gamma_;
   bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
@@ -115,6 +115,7 @@ public:
     node_.param("auto_white_balance", auto_white_balance_, true);
     node_.param("white_balance", white_balance_, 4000);
     node_.param("power_line_frequency", power_line_frequency_, 1);
+    node_.param("gamma", gamma_, 50);
 
     // load the camera info
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
@@ -218,6 +219,11 @@ public:
     if (power_line_frequency_ >= 0)
     {
       cam_.set_v4l_parameter("power_line_frequency", power_line_frequency_);
+    }
+
+    if (gamma_ >= 0)
+    {
+      cam_.set_v4l_parameter("gamma", gamma_);
     }
 
     // check auto white balance
