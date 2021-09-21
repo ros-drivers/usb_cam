@@ -23,6 +23,20 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+0.5.0 (2021-09-20)
+------------------
+* Merge pull request `#12 <https://github.com/MisoRobotics/usb_cam/issues/12>`_ from MisoRobotics/user/hruo/feature/add-gamma-parameter-to-usb-camera
+  SFS-2431: Add gamma parameter to usb parameters
+* Add gamma paramater to usb paramaters
+  Add extra parameter to usb camera paramaters
+* Merge pull request `#11 <https://github.com/MisoRobotics/usb_cam/issues/11>`_ from MisoRobotics/user/hruo/feature/add-power-frequency-parameter-to-usb-camera-new
+  SFS-2413: Add power_line_frequency paramater to usb paramaters
+* Add power_line_frequency paramater to usb paramaters
+  Add extra parameter to usb camera paramaters
+* Merge pull request `#8 <https://github.com/MisoRobotics/usb_cam/issues/8>`_ from MisoRobotics/master
+  Merge master back into develop
+* Contributors: Hung Ruo Han, Ryan Sinnet, Zach Zweig Vinegar
+
 0.4.0 (2021-07-29)
 ------------------
 * Merge pull request `#6 <https://github.com/MisoRobotics/usb_cam/issues/6>`_ from MisoRobotics/user/hruo/feature/usb-cam-serial-number
