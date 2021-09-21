@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+0.5.0 (2021-09-20)
+------------------
 * Merge pull request `#12 <https://github.com/MisoRobotics/usb_cam/issues/12>`_ from MisoRobotics/user/hruo/feature/add-gamma-parameter-to-usb-camera
   SFS-2431: Add gamma parameter to usb parameters
 * Add gamma paramater to usb paramaters
