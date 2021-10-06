@@ -44,6 +44,8 @@
 
 namespace usb_cam {
 
+const int 
+
 class UsbCamNode
 {
 public:
@@ -60,7 +62,7 @@ public:
   bool streaming_status_;
   int image_width_, image_height_, framerate_, bits_per_pixel_, exposure_, brightness_, contrast_, saturation_,
       sharpness_, focus_, white_balance_, gain_, power_line_frequency_, gamma_, backlight_compensation_;
-  bool autofocus_, autoexposure_, auto_white_balance_;
+  bool autofocus_, autoexposure_, auto_white_balance_, auto_balance_exposure_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCam cam_;
@@ -109,6 +111,7 @@ public:
     node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
     // enable/disable autoexposure
     node_.param("autoexposure", autoexposure_, true);
+    node_.param("auto_balance_exposure", auto_balance_exposure_, false);
     node_.param("exposure", exposure_, 100);
     node_.param("gain", gain_, -1); //0-100?, -1 "leave alone"
     // enable/disable auto white balance temperature
@@ -245,12 +248,27 @@ public:
     }
 
     // check auto exposure
-    if (!autoexposure_)
+    if (auto_balance_exposure_)
     {
-      // turn down exposure control (from max of 3)
+      // turn on exposure auto control (from max of 3)
+      cam_.set_v4l_parameter("exposure_auto", 3);
       cam_.set_v4l_parameter("exposure_auto", 1);
-      // change the exposure level
       cam_.set_v4l_parameter("exposure_absolute", exposure_);
+    }
+    else
+    {
+      if (!autoexposure_)
+      {
+        // turn down exposure control (from max of 3)
+        cam_.set_v4l_parameter("exposure_auto", 1);
+        // change the exposure level
+        cam_.set_v4l_parameter("exposure_absolute", exposure_);
+      }
+      else
+      {
+        // turn on exposure auto control (from max of 3)
+        cam_.set_v4l_parameter("exposure_auto", 3);
+      }
     }
 
     // check auto focus
