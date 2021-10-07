@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+0.5.1 (2021-10-07)
+------------------
 * Merge pull request `#15 <https://github.com/MisoRobotics/usb_cam/issues/15>`_ from MisoRobotics/user/araj/feature/add-backlight-compensation
   SFS-2543: Add backlight_compensation parameter to usb parameters
 * SFS-2543: Add backlight_compensation parameter to usb parameters
