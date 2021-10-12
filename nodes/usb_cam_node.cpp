@@ -41,6 +41,10 @@
 #include <sstream>
 #include <std_srvs/Empty.h>
 
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/core/core.hpp>
+
 namespace usb_cam {
 
 class UsbCamNode
@@ -60,12 +64,16 @@ public:
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
       white_balance_, gain_;
   bool autofocus_, autoexposure_, auto_white_balance_;
+  bool img_flip_;
+  int img_flip_code_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCam cam_;
 
   ros::ServiceServer service_start_, service_stop_;
 
+  cv_bridge::CvImagePtr cv_ptr; // pointer for image
+  cv_bridge::CvImagePtr cv_ptr_flip; // pointer for image - another copy
 
 
   bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
@@ -116,6 +124,18 @@ public:
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
     node_.param("camera_name", camera_name_, std::string("head_camera"));
     node_.param("camera_info_url", camera_info_url_, std::string(""));
+
+    node_.param("image_flip", img_flip_, false);
+    node_.param("image_flip_code", img_flip_code_, 0);
+
+    // Protect user from themselves. Warns if you forgot one of the two tags.
+    if (node_.hasParam("image_flip") != node_.hasParam("image_flip_code"))
+    {
+      img_flip_ = false;
+      img_flip_code_ = 0;
+      ROS_ERROR("Both the \"image_flip\" and the \"image_flip_code\" parameters must be set to flip an image.");
+    }
+
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
 
     // create Services
@@ -224,12 +244,40 @@ public:
   virtual ~UsbCamNode()
   {
     cam_.shutdown();
+
+    // Reset/clear pointers for flipping image
+    cv_ptr.reset();
+    cv_ptr_flip.reset();
   }
 
   bool take_and_send_image()
   {
     // grab the image
     cam_.grab_image(&img_);
+
+    // Flip image internally, if needed.
+    // Adapted from: https://github.com/ros-drivers/usb_cam/issues/66
+    if(img_flip_)
+    {
+      // Set initial images
+      try
+      {
+        cv_ptr = cv_bridge::toCvCopy(img_, "bgr8");
+        cv_ptr_flip = cv_bridge::toCvCopy(img_, "bgr8");
+      }
+      catch (cv_bridge::Exception& e)
+      {
+        ROS_ERROR("cv_bridge exception: %s", e.what());
+        return false;
+      }
+
+      // Flip image
+//      cv::flip(cv_ptr->image, cv_ptr_flip->image, img_flip_code_);
+      cv::rotate(cv_ptr->image, cv_ptr_flip->image, cv::ROTATE_90_COUNTERCLOCKWISE);
+
+      // convert image back to ROS MSG
+      cv_ptr_flip->toImageMsg(img_);
+    }
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
