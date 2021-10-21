@@ -23,6 +23,14 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+0.5.2 (2021-10-21)
+------------------
+* Merge pull request `#16 <https://github.com/MisoRobotics/usb_cam/issues/16>`_ from MisoRobotics/user/hruo/fix/auto-exposure-balance-new
+  SFS-2789: Auto-bin exposure camera parametes are not being applied correctly on system startup
+* Fix set auto exposure parameter
+  Added parameter to auto balance the exposure values
+* Contributors: Hung Ruo Han, lpi2020
+
 0.5.1 (2021-10-07)
 ------------------
 * Merge pull request `#15 <https://github.com/MisoRobotics/usb_cam/issues/15>`_ from MisoRobotics/user/araj/feature/add-backlight-compensation
