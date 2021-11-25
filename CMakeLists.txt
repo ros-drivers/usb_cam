@@ -13,6 +13,8 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+find_package(OpenCV REQUIRED)
+
 ## pkg-config libraries
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(avcodec libavcodec REQUIRED)
@@ -37,6 +39,7 @@ target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${swscale_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   # TODO(lucasw) should this have been in libavcodec?
   #avutil
 )

@@ -225,6 +225,10 @@ bool UsbCam::process_image(const void * src, int len, camera_image_t * dest)
     memcpy(
       dest->image,
       const_cast<char *>(reinterpret_cast<const char *>(src)), dest->width * dest->height);
+  } else if (pixelformat_ == V4L2_PIX_FMT_YUV420) {
+    yuv4202rgb(
+        const_cast<char *>(
+          reinterpret_cast<const char *>(src)), dest->image, dest->width, dest->height);
   }
 
   return true;
@@ -828,6 +832,8 @@ bool UsbCam::start(
   } else if (pixel_format == PIXEL_FORMAT_GREY) {
     pixelformat_ = V4L2_PIX_FMT_GREY;
     monochrome_ = true;
+  } else if (pixel_format == PIXEL_FORMAT_YU12) {
+    pixelformat_ = V4L2_PIX_FMT_YUV420;
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Unknown pixel format.");
     return false;  // (EXIT_FAILURE);
@@ -1110,6 +1116,8 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string & str)
     return PIXEL_FORMAT_RGB24;
   } else if (str == "grey") {
     return PIXEL_FORMAT_GREY;
+  } else if (str == "yu12") {
+    return PIXEL_FORMAT_YU12;
   } else {
     return PIXEL_FORMAT_UNKNOWN;
   }
@@ -1130,6 +1138,8 @@ std::string UsbCam::pixel_format_to_string(__u32 pixelformat)
     return PIXEL_FORMAT_RGB24;
   } else if (str == "grey") {
     return PIXEL_FORMAT_GREY;
+  } else if (str == "yu12") {
+    return PIXEL_FORMAT_YU12;
   } else {
     return PIXEL_FORMAT_UNKNOWN;
   }
