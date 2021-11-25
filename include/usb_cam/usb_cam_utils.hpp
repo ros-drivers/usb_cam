@@ -363,5 +363,18 @@ void rgb242rgb(char * YUV, char * RGB, int NumPixels)
 {
   memcpy(RGB, YUV, NumPixels * 3);
 }
+
+std::string fcc2s(unsigned int val)
+{
+	std::string s;
+
+	s += val & 0x7f;
+	s += (val >> 8) & 0x7f;
+	s += (val >> 16) & 0x7f;
+	s += (val >> 24) & 0x7f;
+	if (val & (1 << 31))
+		s += "-BE";
+	return s;
+}
 }  // namespace usb_cam
 #endif  // USB_CAM__USB_CAM_UTILS_HPP_
