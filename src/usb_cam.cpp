@@ -696,12 +696,6 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
 
   CLEAR(fmt);
 
-//  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-//  fmt.fmt.pix.width = 640;
-//  fmt.fmt.pix.height = 480;
-//  fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-//  fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
-
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   fmt.fmt.pix.width = image_width;
   fmt.fmt.pix.height = image_height;
@@ -709,8 +703,34 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
   fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
 
   if (-1 == xioctl(fd_, VIDIOC_S_FMT, &fmt)) {
-    std::cerr << "error, quitting, TODO throw " << errno << std::endl;
-    return false;  // ("VIDIOC_S_FMT");
+    /* Check if selected format is already active - some hardware e.g. droidcam do not support setting values via VIDIOC_S_FMT*/
+    CLEAR(fmt);
+
+    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+    if (xioctl(fd_, VIDIOC_G_FMT, &fmt) >= 0) {
+      RCLCPP_ERROR_STREAM(
+          rclcpp::get_logger("usb_cam"),
+          camera_dev_ << " does not support setting format options.");
+      RCLCPP_ERROR_STREAM(
+          rclcpp::get_logger("usb_cam"),
+          camera_dev_ << " supports: \n \t Width/Height \t : "<<fmt.fmt.pix.width<<"/"<<fmt.fmt.pix.height<<"\n"
+                      <<"\t Pixel Format \t : "<<fcc2s(fmt.fmt.pix.pixelformat));
+
+      if(fmt.fmt.pix.pixelformat == pixelformat_ &&
+        fmt.fmt.pix.width == image_width &&
+        fmt.fmt.pix.height == image_height) {
+        RCLCPP_ERROR_STREAM(
+          rclcpp::get_logger("usb_cam"),
+          "Selected format '"<< fcc2s(fmt.fmt.pix.pixelformat) <<"' is the same as the camera supports. Starting node...");
+      } else {
+        std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+        return false; // ("VIDIOC_S_FMT");
+      }
+    } else {
+      std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+      return false;  // ("VIDIOC_S_FMT");
+    }
   }
 
   /* Note VIDIOC_S_FMT may change width and height. */

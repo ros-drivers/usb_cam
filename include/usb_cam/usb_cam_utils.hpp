@@ -372,7 +372,19 @@ inline void yuv4202rgb(char * YUV, char * RGB, int width, int height)
   cv::Mat cv_out(height, width, CV_8UC3, RGB);
 
   cvtColor(cv_img, cv_out, cv::COLOR_YUV420p2BGR);
+}
 
+std::string fcc2s(unsigned int val)
+{
+	std::string s;
+
+	s += val & 0x7f;
+	s += (val >> 8) & 0x7f;
+	s += (val >> 16) & 0x7f;
+	s += (val >> 24) & 0x7f;
+	if (val & (1 << 31))
+		s += "-BE";
+	return s;
 }
 }  // namespace usb_cam
 #endif  // USB_CAM__USB_CAM_UTILS_HPP_
