@@ -27,3 +27,12 @@ str_map get_serial_dev_info();
  * @param pixel_format  the selected pixel format.
  */
 void clear_unsupported_devices(str_map& maps, std::string pixel_format);
+
+/**
+ * @brief A function that get a pixel format name that works for V4L.
+ * 
+ * @param pixel_format  the pixel format name used at usb_cam.
+ * 
+ * @return std::string  the pixel format name used at V4L.
+ */
+std::string get_pixel_format_v4l(std::string pixel_format);
