@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+0.6.0 (2022-01-12)
+------------------
 * Merge pull request `#21 <https://github.com/MisoRobotics/usb_cam/issues/21>`_ from MisoRobotics/user/hruo/fix-mjpeg-pixel-format-new
   SFS-3375: Fix usb_cam loading serial number using MJPEG pixel format
 * Fix usb_cam using MJPEG pixel format
