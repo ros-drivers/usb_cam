@@ -76,7 +76,7 @@ class UsbCam {
 
   // start camera
   void start(const std::string& dev, io_method io, pixel_format pf,
-		    int image_width, int image_height, int framerate);
+		    int bits_per_pixel, int image_width, int image_height, int framerate);
   // shutdown camera
   void shutdown(void);
 
@@ -94,6 +94,8 @@ class UsbCam {
 
   static io_method io_method_from_string(const std::string& str);
   static pixel_format pixel_format_from_string(const std::string& str);
+  // Get the actual pixel format for MJPEG video from bits per pixels
+  static AVPixelFormat get_avcodec_pixel_format(int bits_per_pixel);
 
   void stop_capturing(void);
   void start_capturing(void);
@@ -117,7 +119,7 @@ class UsbCam {
   };
 
 
-  int init_mjpeg_decoder(int image_width, int image_height);
+  int init_mjpeg_decoder(int bits_per_pixel, int image_width, int image_height);
   void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
   void process_image(const void * src, int len, camera_image_t *dest);
   int read_frame();

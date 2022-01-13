@@ -51,9 +51,30 @@ str_map get_serial_dev_info()
   return devices;
 }
 
+std::string get_pixel_format_v4l(str_map& maps, std::string pixel_format)
+{
+  std::string result = pixel_format;
+  str_map::iterator it = maps.find(pixel_format);
+  if (it != maps.end())
+  {
+    result = it->second;
+  }
+  return result;
+}
+
+str_map get_pixel_format_map()
+{
+  str_map pixel_format_map;
+  // V4L uses MJPG and usb_cam uses MJPEG
+  pixel_format_map["MJPEG"] = "MJPG";
+  return pixel_format_map;
+}
+
 void clear_unsupported_devices(str_map& maps, std::string pixel_format)
 {
-  std::string upper_str = boost::to_upper_copy<std::string>(pixel_format);
+  str_map pixel_format_map = get_pixel_format_map();
+  std::string upper_str = get_pixel_format_v4l(pixel_format_map,
+    boost::to_upper_copy<std::string>(pixel_format));
 
   auto it = maps.cbegin();
   while (it != maps.cend())
