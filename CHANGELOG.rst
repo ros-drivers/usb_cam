@@ -23,6 +23,30 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+0.6.0 (2022-01-12)
+------------------
+* Merge pull request `#21 <https://github.com/MisoRobotics/usb_cam/issues/21>`_ from MisoRobotics/user/hruo/fix-mjpeg-pixel-format-new
+  SFS-3375: Fix usb_cam loading serial number using MJPEG pixel format
+* Fix usb_cam using MJPEG pixel format
+  This commits changes the pixel format names between usb_cam and V4L for MJPEG.
+* RAD-79: Migrate to Python 3
+  Update to work with Python 3 and Noetic.
+* Merge remote-tracking branch 'origin/master' into develop
+* Merge pull request `#18 <https://github.com/MisoRobotics/usb_cam/issues/18>`_ from MisoRobotics/master
+  Merge master back into develop
+* Merge pull request `#10 <https://github.com/MisoRobotics/usb_cam/issues/10>`_ from MisoRobotics/user/lrobles/feature/add-ros-parameter-for-tuning-mjpeg
+  CRS-782: Add ROS parameter for tuning MJPEG video streaming
+* Add ROS parameter for tuning MJPEG video streaming
+  MJPEG video frame format can have multiple pixel formats and we need to
+  provide a way to allow the user to set up the appropriate one for
+  establishing image buffers in the right way. The most common pixel
+  formats supported by ffmpeg codec are YUV420P, a 12 bits-per-pixel
+  encoding, and YUV422P, a 16 bits-per-pixel encoding. We are adding a
+  new integer ROS parameter to control the selection of the both most
+  used encodings for MJPEG: 'bits_per_pixel'. Only two values are valid as
+  today: 12 and 16; the former is the default.
+* Contributors: Hung Ruo Han, Luis Morales Robles, Ryan Sinnet
+
 0.5.2 (2021-10-21)
 ------------------
 * Merge pull request `#16 <https://github.com/MisoRobotics/usb_cam/issues/16>`_ from MisoRobotics/user/hruo/fix/auto-exposure-balance-new
