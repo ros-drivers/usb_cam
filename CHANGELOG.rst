@@ -23,6 +23,16 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+Forthcoming
+-----------
+* Merge pull request `#25 <https://github.com/MisoRobotics/usb_cam/issues/25>`_ from MisoRobotics/master
+  Backmerge master into develop for chippy-0.6.0
+* Merge pull request `#22 <https://github.com/MisoRobotics/usb_cam/issues/22>`_ from MisoRobotics/user/rsinnet/upgrade-catkin-package
+  RAD-99: Fix udev dependencies
+* Fix udev dependencies
+  Add missing dependencies to package.xml.
+* Contributors: Ryan Sinnet, Zach Zweig Vinegar
+
 0.6.0 (2022-01-12)
 ------------------
 * Merge pull request `#21 <https://github.com/MisoRobotics/usb_cam/issues/21>`_ from MisoRobotics/user/hruo/fix-mjpeg-pixel-format-new
