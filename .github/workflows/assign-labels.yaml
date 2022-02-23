@@ -1,0 +1,10 @@
+--- # Assign labels to pull requests.
+name: assign-labels
+on: [pull_request]
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v3
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
