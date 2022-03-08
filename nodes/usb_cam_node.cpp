@@ -38,6 +38,8 @@
 #include <usb_cam/usb_cam.h>
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
+#include <diagnostic_updater/diagnostic_updater.h>
+#include <diagnostic_updater/update_functions.h>
 #include <sstream>
 #include <std_srvs/Empty.h>
 #include <thread>
@@ -56,6 +58,9 @@ const int WAIT_CHANGING_AUTO_EXPOSURE_SEC = 2;
 
 class UsbCamNode
 {
+  // ROS diagnostic updater object.
+  diagnostic_updater::Updater diagnostic_updater_;
+
 public:
   // private ROS node handle
   ros::NodeHandle node_;
@@ -77,8 +82,6 @@ public:
 
   ros::ServiceServer service_start_, service_stop_;
 
-
-
   bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
     cam_.start_capturing();
@@ -95,6 +98,13 @@ public:
   UsbCamNode() :
       node_("~")
   {
+    // Set hardware ID for diagnostic updater.
+    diagnostic_updater_.setHardwareID("none");
+
+    // Heartbeat
+    diagnostic_updater::Heartbeat heartbeat;
+    diagnostic_updater_.add(heartbeat);
+
     // advertise the main image topic
     image_transport::ImageTransport it(node_);
     image_pub_ = it.advertiseCamera("image_raw", 1);
@@ -337,17 +347,12 @@ public:
         if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
       }
       ros::spinOnce();
+      diagnostic_updater_.update();
       loop_rate.sleep();
 
     }
     return true;
   }
-
-
-
-
-
-
 };
 
 }
