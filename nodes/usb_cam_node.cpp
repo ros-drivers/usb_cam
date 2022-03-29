@@ -60,6 +60,7 @@ class UsbCamNode
 {
   // ROS diagnostic updater object.
   diagnostic_updater::Updater diagnostic_updater_;
+  diagnostic_updater::Heartbeat heartbeat_;
 
 public:
   // private ROS node handle
@@ -102,8 +103,7 @@ public:
     diagnostic_updater_.setHardwareID("none");
 
     // Heartbeat
-    diagnostic_updater::Heartbeat heartbeat;
-    diagnostic_updater_.add(heartbeat);
+    diagnostic_updater_.add(heartbeat_);
 
     // advertise the main image topic
     image_transport::ImageTransport it(node_);
