@@ -356,6 +356,10 @@ bool UsbCam::read_frame()
 
       image_->stamp = stamp;
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
 
   return true;
@@ -388,6 +392,10 @@ bool UsbCam::stop_capturing(void)
       }
 
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
   return true;
 }
@@ -454,6 +462,10 @@ bool UsbCam::start_capturing(void)
       }
 
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
   is_capturing_ = true;
   return true;
@@ -482,6 +494,10 @@ bool UsbCam::uninit_device(void)
         free(buffers_[i].start);
       }
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
 
   free(buffers_);
@@ -664,6 +680,10 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
       }
 
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
 
   /* Select video input, video standard and tune here. */
@@ -781,6 +801,10 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
     case IO_METHOD_USERPTR:
       init_userp(fmt.fmt.pix.sizeimage);
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
   return true;
 }
