@@ -616,7 +616,7 @@ bool UsbCam::init_userp(unsigned int buffer_size)
   return true;
 }
 
-bool UsbCam::init_device(int image_width, int image_height, int framerate)
+bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framerate)
 {
   struct v4l2_capability cap;
   struct v4l2_cropcap cropcap;
@@ -825,7 +825,7 @@ bool UsbCam::open_device(void)
 
 bool UsbCam::start(
   const std::string & dev, io_method io_method, pixel_format pixel_format,
-  int image_width, int image_height, int framerate)
+  uint32_t image_width, uint32_t image_height, int framerate)
 {
   camera_dev_ = dev;
 
