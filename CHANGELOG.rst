@@ -23,6 +23,24 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+0.7.1 (2022-04-14)
+------------------
+* Merge pull request `#29 <https://github.com/MisoRobotics/usb_cam/issues/29>`_ from MisoRobotics/user/imjaya/feature/diagnostics-aggregator
+  SFS-4696: Add Heartbeat For Diagnostics Aggregation
+* Add Heartbeat for Autobin Camera Nodes
+  Add Heartbeat for Autobin Camera Nodes.
+* Add Heartbeat for Autobin Camera Nodes
+  Added Heartbeat for Autobin
+  cameras.
+  Add Heartbeat for Autobin Camera Nodes
+  Add Heartbeat for Autobin Camera Nodes.
+* Merge branch 'user/rsinnet/RAD-171' into develop
+* RAD-171: Add labeling workflow
+  Add a labeling workflow to apply the `flippy` label.
+* Merge pull request `#27 <https://github.com/MisoRobotics/usb_cam/issues/27>`_ from MisoRobotics/master
+  Backmerge master into develop for chippy-0.7.0
+* Contributors: Jayasurya Sevalur Mahendran, Junpyo Hong, Ryan Sinnet, Zach Zweig Vinegar
+
 0.7.0 (2022-02-14)
 ------------------
 * Merge pull request `#25 <https://github.com/MisoRobotics/usb_cam/issues/25>`_ from MisoRobotics/master
