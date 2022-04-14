@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+0.7.1 (2022-04-14)
+------------------
 * Merge pull request `#29 <https://github.com/MisoRobotics/usb_cam/issues/29>`_ from MisoRobotics/user/imjaya/feature/diagnostics-aggregator
   SFS-4696: Add Heartbeat For Diagnostics Aggregation
 * Add Heartbeat for Autobin Camera Nodes
