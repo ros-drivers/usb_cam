@@ -87,7 +87,7 @@ public:
   // start camera
   bool start(
     const std::string & dev, io_method io, pixel_format pf,
-    int image_width, int image_height, int framerate);
+    uint32_t image_width, uint32_t image_height, int framerate);
   // shutdown camera
   bool shutdown(void);
 
@@ -117,8 +117,8 @@ private:
   // TODO(lucasw) just store an Image shared_ptr here
   typedef struct
   {
-    int width;
-    int height;
+    uint32_t width;
+    uint32_t height;
     int bytes_per_pixel;
     int image_size;
     builtin_interfaces::msg::Time stamp;
@@ -141,7 +141,7 @@ private:
   bool init_read(unsigned int buffer_size);
   bool init_mmap(void);
   bool init_userp(unsigned int buffer_size);
-  bool init_device(int image_width, int image_height, int framerate);
+  bool init_device(uint32_t image_width, uint32_t image_height, int framerate);
   bool close_device(void);
   bool open_device(void);
   bool grab_image();

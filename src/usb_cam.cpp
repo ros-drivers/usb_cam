@@ -356,6 +356,10 @@ bool UsbCam::read_frame()
 
       image_->stamp = stamp;
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
 
   return true;
@@ -388,6 +392,10 @@ bool UsbCam::stop_capturing(void)
       }
 
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
   return true;
 }
@@ -454,6 +462,10 @@ bool UsbCam::start_capturing(void)
       }
 
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
   is_capturing_ = true;
   return true;
@@ -482,6 +494,10 @@ bool UsbCam::uninit_device(void)
         free(buffers_[i].start);
       }
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
 
   free(buffers_);
@@ -616,7 +632,7 @@ bool UsbCam::init_userp(unsigned int buffer_size)
   return true;
 }
 
-bool UsbCam::init_device(int image_width, int image_height, int framerate)
+bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framerate)
 {
   struct v4l2_capability cap;
   struct v4l2_cropcap cropcap;
@@ -664,6 +680,10 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
       }
 
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
 
   /* Select video input, video standard and tune here. */
@@ -781,6 +801,10 @@ bool UsbCam::init_device(int image_width, int image_height, int framerate)
     case IO_METHOD_USERPTR:
       init_userp(fmt.fmt.pix.sizeimage);
       break;
+
+    default:
+      std::cerr << "Unknown io type " << io_ << std::endl;
+      return false;
   }
   return true;
 }
@@ -825,7 +849,7 @@ bool UsbCam::open_device(void)
 
 bool UsbCam::start(
   const std::string & dev, io_method io_method, pixel_format pixel_format,
-  int image_width, int image_height, int framerate)
+  uint32_t image_width, uint32_t image_height, int framerate)
 {
   camera_dev_ = dev;
 
