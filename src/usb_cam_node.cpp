@@ -67,6 +67,10 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
 
   get_params();
   init();
+  parameters_callback_handle_ = add_on_set_parameters_callback(
+    std::bind(
+      &UsbCamNode::parametersCallback, this,
+      std::placeholders::_1));
 }
 
 UsbCamNode::~UsbCamNode()
@@ -149,11 +153,15 @@ void UsbCamNode::init()
 void UsbCamNode::get_params()
 {
   auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
+  auto parameters = parameters_client->get_parameters(
+    {"camera_name", "camera_info_url", "frame_id", "framerate",
+      "image_height", "image_width", "io_method", "pixel_format", "video_device"});
+  assign_params(parameters);
+}
 
-  for (auto & parameter : parameters_client->get_parameters(
-      {"camera_name", "camera_info_url", "frame_id", "framerate",
-        "image_height", "image_width", "io_method", "pixel_format", "video_device"}))
-  {
+void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters)
+{
+  for (auto & parameter : parameters) {
     if (parameter.get_name() == "camera_name") {
       RCLCPP_INFO(this->get_logger(), "camera_name value: %s", parameter.value_to_string().c_str());
       camera_name_ = parameter.value_to_string();
@@ -196,6 +204,20 @@ bool UsbCamNode::take_and_send_image()
   ci->header = img_->header;
   image_pub_->publish(*img_, *ci);
   return true;
+}
+
+rcl_interfaces::msg::SetParametersResult UsbCamNode::parametersCallback(
+  const std::vector<rclcpp::Parameter> & parameters)
+{
+  RCLCPP_INFO(get_logger(), "Callback called!");
+  timer_->reset();
+  cam_.shutdown();
+  assign_params(parameters);
+  init();
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+  result.reason = "success";
+  return result;
 }
 
 void UsbCamNode::update()

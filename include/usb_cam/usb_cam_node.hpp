@@ -61,8 +61,12 @@ public:
 
   void init();
   void get_params();
+  void assign_params(const std::vector<rclcpp::Parameter> & parameters);
   void update();
   bool take_and_send_image();
+
+  rcl_interfaces::msg::SetParametersResult parametersCallback(
+    const std::vector<rclcpp::Parameter> & parameters);
 
   void service_capture(
     const std::shared_ptr<rmw_request_id_t> request_header,
@@ -101,6 +105,7 @@ public:
   rclcpp::TimerBase::SharedPtr timer_;
 
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_capture_;
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameters_callback_handle_;
 };
 }  // namespace usb_cam
 #endif  // USB_CAM__USB_CAM_NODE_HPP_
