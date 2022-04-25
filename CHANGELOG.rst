@@ -2,6 +2,34 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.2 (2022-04-25)
+------------------
+* Minor bump for release
+* Merge pull request `#184 <https://github.com/ros-drivers/usb_cam/issues/184>`_ from clalancette/clalancette/cleanups
+* Switch the rolling docker image to use jammy.
+* Add default cases to switches.
+  This just quiets the compiler warnings.
+* Switch xioctl to take an unsigned long request.
+  This matches what ioctl actually takes, and gets rid of a sign
+  comparison warning.
+* Use uint32_t to store image sizes.
+  This matches the v4l2 structures, and ensures we don't get
+  sign warnings when compiling.
+* Merge pull request `#178 <https://github.com/ros-drivers/usb_cam/issues/178>`_ from benmaidel/feature/unsupported_set_format_options_ros2
+  [ros2] allow cameras that do not support setting format options via VIDIOC_S_FMT
+* allow cameras that do not support setting format options via VIDIOC_S_FMT
+* Merge pull request `#170 <https://github.com/ros-drivers/usb_cam/issues/170>`_ from kenji-miyake/fix-small-warnings
+  Fix small warnings
+* Fix -Wreturn-type
+* Fix -Wparentheses
+* Change static functions to inline to fix -Wunused-function
+* Fix -Wunused-parameter
+* Fix -Worder
+* Fix -Wcomment
+* Fix -Wformat
+* add instructions for multiple launches
+* Contributors: Benjamin Maidel, Chris Lalancette, Evan Flynn, Kenji Miyake
+
 0.4.1 (2021-08-08)
 ------------------
 * update README, add compression section
