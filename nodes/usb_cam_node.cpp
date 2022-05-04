@@ -40,6 +40,7 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/update_functions.h>
+#include <memory>
 #include <sstream>
 #include <std_srvs/Empty.h>
 #include <thread>
@@ -61,6 +62,9 @@ class UsbCamNode
   // ROS diagnostic updater object.
   diagnostic_updater::Updater diagnostic_updater_;
   diagnostic_updater::Heartbeat heartbeat_;
+  std::unique_ptr<diagnostic_updater::FrequencyStatusParam> frequency_status_param_;
+  std::unique_ptr<diagnostic_updater::FrequencyStatus> frequency_status_;
+  double expected_freq_;
 
 public:
   // private ROS node handle
@@ -99,12 +103,6 @@ public:
   UsbCamNode() :
       node_("~")
   {
-    // Set hardware ID for diagnostic updater.
-    diagnostic_updater_.setHardwareID("none");
-
-    // Heartbeat
-    diagnostic_updater_.add(heartbeat_);
-
     // advertise the main image topic
     image_transport::ImageTransport it(node_);
     image_pub_ = it.advertiseCamera("image_raw", 1);
@@ -315,6 +313,20 @@ public:
         cam_.set_v4l_parameter("focus_absolute", focus_);
       }
     }
+
+    // Set hardware ID for diagnostic updater.
+    diagnostic_updater_.setHardwareID("none");
+
+    // Heartbeat
+    diagnostic_updater_.add(heartbeat_);
+
+    // Frequency Status
+    expected_freq_ = static_cast<double>(framerate_);
+    frequency_status_param_ = std::make_unique<diagnostic_updater::FrequencyStatusParam>(&expected_freq_, &expected_freq_);
+    ROS_ASSERT(frequency_status_param_);
+    frequency_status_ = std::make_unique<diagnostic_updater::FrequencyStatus>(*frequency_status_param_, "FrequencyStatus");
+    ROS_ASSERT(frequency_status_);
+    diagnostic_updater_.add(*frequency_status_);
   }
 
   virtual ~UsbCamNode()
@@ -334,6 +346,7 @@ public:
 
     // publish the image
     image_pub_.publish(img_, *ci);
+    frequency_status_->tick();
 
     return true;
   }
