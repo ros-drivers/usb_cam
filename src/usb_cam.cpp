@@ -70,13 +70,13 @@ UsbCam::~UsbCam()
   shutdown();
 }
 
-int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
+int UsbCam::init_decoder(int image_width, int image_height, AVCodecID codec_id, const char *codec_name)
 {
   avcodec_register_all();
 
-  avcodec_ = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+  avcodec_ = avcodec_find_decoder(codec_id);
   if (!avcodec_) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Could not find MJPEG decoder");
+    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Could not find %s decoder", codec_name);
     return 0;
   }
 
@@ -92,7 +92,7 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   avpicture_alloc(
     reinterpret_cast<AVPicture *>(avframe_rgb_), AV_PIX_FMT_RGB24, image_width, image_height);
 
-  avcodec_context_->codec_id = AV_CODEC_ID_MJPEG;
+  avcodec_context_->codec_id = codec_id;
   avcodec_context_->width = image_width;
   avcodec_context_->height = image_height;
 
@@ -110,13 +110,21 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
 
   /* open it */
   if (avcodec_open2(avcodec_context_, avcodec_, &avoptions_) < 0) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Could not open MJPEG Decoder");
+    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Could not open %s Decoder", codec_name);
     return 0;
   }
   RCLCPP_INFO_STREAM(
     rclcpp::get_logger("usb_cam"),
     "pixel format " << AV_PIX_FMT_YUV422P << " " << avcodec_context_->pix_fmt);
   return 1;
+}
+
+int UsbCam::init_mjpeg_decoder(int image_width, int image_height) {
+  return init_decoder(image_width, image_height, AV_CODEC_ID_MJPEG, "MJPEG");
+}
+
+int UsbCam::init_h264_decoder(int image_width, int image_height) {
+  return init_decoder(image_width, image_height, AV_CODEC_ID_H264, "H264");
 }
 
 bool UsbCam::mjpeg2rgb(char * MJPEG, int len, char * RGB, int /* NumPixels */)
@@ -214,6 +222,11 @@ bool UsbCam::process_image(const void * src, int len, camera_image_t * dest)
       const_cast<char *>(
         reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
   } else if (pixelformat_ == V4L2_PIX_FMT_MJPEG) {
+    return mjpeg2rgb(
+      const_cast<char *>(
+        reinterpret_cast<const char *>(src)), len, dest->image, dest->width * dest->height);
+  } else if (pixelformat_ == V4L2_PIX_FMT_H264) {
+    // libav handles the decoding, so reusing the same function is fine
     return mjpeg2rgb(
       const_cast<char *>(
         reinterpret_cast<const char *>(src)), len, dest->image, dest->width * dest->height);
@@ -862,6 +875,9 @@ bool UsbCam::start(
   } else if (pixel_format == PIXEL_FORMAT_MJPEG) {
     pixelformat_ = V4L2_PIX_FMT_MJPEG;
     init_mjpeg_decoder(image_width, image_height);
+  } else if (pixel_format == PIXEL_FORMAT_H264) {
+    pixelformat_ = V4L2_PIX_FMT_H264;
+    init_h264_decoder(image_width, image_height);
   } else if (pixel_format == PIXEL_FORMAT_YUVMONO10) {
     // actually format V4L2_PIX_FMT_Y16 (10-bit mono expresed as 16-bit pixels)
     // but we need to use the advertised type (yuyv)
@@ -1148,6 +1164,8 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string & str)
     return PIXEL_FORMAT_UYVY;
   } else if (str == "mjpeg") {
     return PIXEL_FORMAT_MJPEG;
+  } else if (str == "h264") {
+    return PIXEL_FORMAT_H264;
   } else if (str == "yuvmono10") {
     return PIXEL_FORMAT_YUVMONO10;
   } else if (str == "rgb24") {
@@ -1168,6 +1186,8 @@ std::string UsbCam::pixel_format_to_string(__u32 pixelformat)
     return PIXEL_FORMAT_UYVY;
   } else if (str == "mjpeg") {
     return PIXEL_FORMAT_MJPEG;
+  } else if (str == "h264") {
+    return PIXEL_FORMAT_H264;
   } else if (str == "yuvmono10") {
     return PIXEL_FORMAT_YUVMONO10;
   } else if (str == "rgb24") {

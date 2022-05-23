@@ -78,6 +78,7 @@ public:
     PIXEL_FORMAT_YUVMONO10,
     PIXEL_FORMAT_RGB24,
     PIXEL_FORMAT_GREY,
+    PIXEL_FORMAT_H264,
     PIXEL_FORMAT_UNKNOWN
   } pixel_format;
 
@@ -133,6 +134,8 @@ private:
   };
 
 
+  int init_decoder(int image_width, int image_height, AVCodecID codec_id, const char *codec_name);
+  int init_h264_decoder(int image_width, int image_height);
   int init_mjpeg_decoder(int image_width, int image_height);
   bool mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels);
   bool process_image(const void * src, int len, camera_image_t * dest);
