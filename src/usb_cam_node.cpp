@@ -63,6 +63,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("image_width", 640);
   this->declare_parameter("io_method", "mmap");
   this->declare_parameter("pixel_format", "yuyv");
+  this->declare_parameter("color_format", "yuv422p");
   this->declare_parameter("video_device", "/dev/video0");
 
   get_params();
@@ -117,10 +118,10 @@ void UsbCamNode::init()
 
   img_->header.frame_id = frame_id_;
   RCLCPP_INFO(
-    this->get_logger(), "Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS",
+    this->get_logger(), "Starting '%s' (%s) at %dx%d via %s (%s, %s) at %i FPS",
     camera_name_.c_str(), video_device_name_.c_str(),
     image_width_, image_height_, io_method_name_.c_str(),
-    pixel_format_name_.c_str(), framerate_);
+    pixel_format_name_.c_str(), color_format_name_.c_str(), framerate_);
   // set the IO method
   UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
   if (io_method == UsbCam::IO_METHOD_UNKNOWN) {
@@ -135,9 +136,16 @@ void UsbCamNode::init()
     rclcpp::shutdown();
     return;
   }
+  // set the color format
+  UsbCam::color_format color_format = UsbCam::color_format_from_string(color_format_name_);
+  if (color_format == UsbCam::COLOR_FORMAT_UNKNOWN) {
+    RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown color format '%s'", color_format_name_.c_str());
+    rclcpp::shutdown();
+    return;
+  }
   // start the camera
   cam_.start(
-    video_device_name_.c_str(), io_method, pixel_format, image_width_,
+    video_device_name_.c_str(), io_method, pixel_format, color_format, image_width_,
     image_height_, framerate_);
   cam_.get_formats();
 
@@ -155,7 +163,7 @@ void UsbCamNode::get_params()
   auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
   auto parameters = parameters_client->get_parameters(
     {"camera_name", "camera_info_url", "frame_id", "framerate",
-      "image_height", "image_width", "io_method", "pixel_format", "video_device"});
+      "image_height", "image_width", "io_method", "pixel_format", "color_format", "video_device"});
   assign_params(parameters);
 }
 
@@ -180,6 +188,8 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       io_method_name_ = parameter.value_to_string();
     } else if (parameter.get_name() == "pixel_format") {
       pixel_format_name_ = parameter.value_to_string();
+    } else if (parameter.get_name() == "color_format") {
+      color_format_name_ = parameter.value_to_string();
     } else if (parameter.get_name() == "video_device") {
       video_device_name_ = parameter.value_to_string();
     } else {
