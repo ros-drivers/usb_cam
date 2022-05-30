@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+0.7.2 (2022-05-30)
+------------------
 * Merge pull request `#34 <https://github.com/MisoRobotics/usb_cam/issues/34>`_ from MisoRobotics/user/zzv/hotfix/null-serial
   SFS-7493: Fix not properly handling camera device with null serial
 * SFS-7493: Not properly handling camera device with null serial
