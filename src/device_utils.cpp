@@ -3,18 +3,19 @@
 #include <string>
 #include <usb_cam/device_utils.h>
 #include <usb_cam/usb_cam.h>
+#include <ros/ros.h>
 
 
 str_map get_serial_dev_info()
 {
   str_map devices;
 
-  struct udev *udev;
-  struct udev_device *dev;
-  struct udev_device *parent_dev;
-  struct udev_enumerate *enumerate;
-  struct udev_list_entry *list, *node;
-  const char *path;
+  struct udev *udev = nullptr;
+  struct udev_device *dev = nullptr;
+  struct udev_device *parent_dev = nullptr;
+  struct udev_enumerate *enumerate = nullptr;
+  struct udev_list_entry *list, *node = nullptr;
+  const char *path = nullptr;
 
   udev = udev_new();
   if (udev)
@@ -36,10 +37,16 @@ str_map get_serial_dev_info()
         "usb",
         "usb_device");
 
-      if (parent_dev)
+      if (parent_dev != nullptr)
       {
-        std::string dev_serial = std::string(udev_device_get_sysattr_value(parent_dev, "serial"));
-        devices[dev_file_name_path] = dev_serial;
+        const auto serial = udev_device_get_sysattr_value(parent_dev, "serial");
+        if (serial) {
+          std::string dev_serial = std::string(serial);
+          devices[dev_file_name_path] = dev_serial;
+        }
+        else {
+          ROS_WARN_STREAM("Found device with null serial: '" << dev_file_name_path << "'");
+        }
       }
 
       udev_device_unref(dev);
