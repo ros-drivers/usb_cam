@@ -23,6 +23,18 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+Forthcoming
+-----------
+* Merge pull request `#36 <https://github.com/MisoRobotics/usb_cam/issues/36>`_ from MisoRobotics/master
+  Backmerge master into develop for flippy-0.7.2
+* Merge pull request `#31 <https://github.com/MisoRobotics/usb_cam/issues/31>`_ from MisoRobotics/user/imjaya/feature/add-frequency-monitoring
+  SFS-3757: Add frequency monitoring for USB_Cam Node
+* SFS-3757: Add frequency monitoring for USB_Cam Node
+  Add frequency monitoring for USB_Cam Node.
+* Merge pull request `#33 <https://github.com/MisoRobotics/usb_cam/issues/33>`_ from MisoRobotics/master
+  Backmerge master into develop for flippy-0.7.1
+* Contributors: Junpyo Hong, Zach Zweig Vinegar
+
 0.7.2 (2022-05-30)
 ------------------
 * Merge pull request `#34 <https://github.com/MisoRobotics/usb_cam/issues/34>`_ from MisoRobotics/user/zzv/hotfix/null-serial
