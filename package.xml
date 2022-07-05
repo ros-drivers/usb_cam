@@ -26,6 +26,7 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>ffmpeg</build_depend>
   <build_depend>camera_info_manager</build_depend>
+  <build_depend>diagnostic_updater</build_depend>
 
   <exec_depend>image_transport</exec_depend>
   <exec_depend>roscpp</exec_depend>
@@ -36,4 +37,5 @@
   <exec_depend>ffmpeg</exec_depend>
   <exec_depend>camera_info_manager</exec_depend>
   <exec_depend>v4l-utils</exec_depend>
+  <exec_depend>diagnostic_updater</exec_depend>
 </package>
