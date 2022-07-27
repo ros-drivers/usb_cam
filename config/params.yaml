@@ -5,6 +5,7 @@
       io_method: "mmap"
       frame_id: "camera"
       pixel_format: "yuyv"
+      color_format: "yuv422p"
       image_width: 640
       image_height: 480
       camera_name: "test_camera"

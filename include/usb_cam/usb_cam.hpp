@@ -79,16 +79,24 @@ public:
     PIXEL_FORMAT_RGB24,
     PIXEL_FORMAT_GREY,
     PIXEL_FORMAT_YU12,
+    PIXEL_FORMAT_H264,
     PIXEL_FORMAT_UNKNOWN
   } pixel_format;
+
+  typedef enum
+  {
+    COLOR_FORMAT_YUV420P, 
+    COLOR_FORMAT_YUV422P, 
+    COLOR_FORMAT_UNKNOWN,
+  } color_format;
 
   UsbCam();
   ~UsbCam();
 
   // start camera
   bool start(
-    const std::string & dev, io_method io, pixel_format pf,
-    int image_width, int image_height, int framerate);
+    const std::string & dev, io_method io, pixel_format pf, color_format cf,
+    uint32_t image_width, uint32_t image_height, int framerate);
   // shutdown camera
   bool shutdown(void);
 
@@ -109,6 +117,7 @@ public:
 
   static io_method io_method_from_string(const std::string & str);
   static pixel_format pixel_format_from_string(const std::string & str);
+  static color_format color_format_from_string(const std::string& str);
 
   bool stop_capturing(void);
   bool start_capturing(void);
@@ -118,8 +127,8 @@ private:
   // TODO(lucasw) just store an Image shared_ptr here
   typedef struct
   {
-    int width;
-    int height;
+    uint32_t width;
+    uint32_t height;
     int bytes_per_pixel;
     int image_size;
     builtin_interfaces::msg::Time stamp;
@@ -134,7 +143,10 @@ private:
   };
 
 
-  int init_mjpeg_decoder(int image_width, int image_height);
+  int init_decoder(int image_width, int image_height, color_format color_format, 
+    AVCodecID codec_id, const char *codec_name);
+  int init_h264_decoder(int image_width, int image_height, color_format cf);
+  int init_mjpeg_decoder(int image_width, int image_height, color_format cf);
   bool mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels);
   bool process_image(const void * src, int len, camera_image_t * dest);
   bool read_frame();
@@ -142,7 +154,7 @@ private:
   bool init_read(unsigned int buffer_size);
   bool init_mmap(void);
   bool init_userp(unsigned int buffer_size);
-  bool init_device(int image_width, int image_height, int framerate);
+  bool init_device(uint32_t image_width, uint32_t image_height, int framerate);
   bool close_device(void);
   bool open_device(void);
   bool grab_image();

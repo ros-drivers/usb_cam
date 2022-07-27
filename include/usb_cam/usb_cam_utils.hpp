@@ -68,7 +68,7 @@ void monotonicToRealTime(const timespec & monotonic_time, timespec & real_time)
   }
 }
 
-inline int xioctl(int fd, int request, void * arg)
+inline int xioctl(int fd, unsigned long request, void * arg)
 {
   int r;
 
