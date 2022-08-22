@@ -23,6 +23,16 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+Forthcoming
+-----------
+* Merge pull request `#39 <https://github.com/MisoRobotics/usb_cam/issues/39>`_ from MisoRobotics/user/jhong/bugfix/add_dependency
+  Add diagnostic_updater dependency
+* Add build/exec dependencies.
+  Added build/exec dependencies.
+* Merge pull request `#38 <https://github.com/MisoRobotics/usb_cam/issues/38>`_ from MisoRobotics/master
+  Backmerge master into develop for flippy-0.8.0
+* Contributors: Junpyo Hong, Zach Zweig Vinegar
+
 0.8.0 (2022-06-20)
 ------------------
 * Merge pull request `#36 <https://github.com/MisoRobotics/usb_cam/issues/36>`_ from MisoRobotics/master
