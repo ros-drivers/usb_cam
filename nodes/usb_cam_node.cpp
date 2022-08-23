@@ -58,7 +58,7 @@ public:
   //std::string start_service_name_, start_service_name_;
   bool streaming_status_;
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
-      white_balance_, gain_;
+      white_balance_, gain_, time_calibration_offset_;
   bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
@@ -111,6 +111,8 @@ public:
     // enable/disable auto white balance temperature
     node_.param("auto_white_balance", auto_white_balance_, true);
     node_.param("white_balance", white_balance_, 4000);
+    // grab the time offset to correct image timestamp
+    node_.param("time_calibration_offset", time_calibration_offset_, 0);
 
     // load the camera info
     node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
@@ -230,6 +232,9 @@ public:
   {
     // grab the image
     cam_.grab_image(&img_);
+
+    // correct the timestamp
+    img_.header.stamp += ros::Duration(time_calibration_offset_);
 
     // grab the camera info
     sensor_msgs::CameraInfoPtr ci(new sensor_msgs::CameraInfo(cinfo_->getCameraInfo()));
