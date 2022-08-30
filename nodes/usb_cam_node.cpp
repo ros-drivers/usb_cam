@@ -38,13 +38,12 @@
 #include <usb_cam/usb_cam.h>
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
-#include <diagnostic_updater/diagnostic_updater.h>
-#include <diagnostic_updater/update_functions.h>
 #include <memory>
 #include <sstream>
 #include <std_srvs/Empty.h>
 #include <thread>
 #include <usb_cam/device_utils.h>
+#include <usb_cam/diagnostic_updater_wrapper.h>
 
 namespace usb_cam {
 
@@ -59,11 +58,8 @@ const int WAIT_CHANGING_AUTO_EXPOSURE_SEC = 2;
 
 class UsbCamNode
 {
-  // ROS diagnostic updater object.
-  diagnostic_updater::Updater diagnostic_updater_;
-  diagnostic_updater::Heartbeat heartbeat_;
-  std::unique_ptr<diagnostic_updater::FrequencyStatusParam> frequency_status_param_;
-  std::unique_ptr<diagnostic_updater::FrequencyStatus> frequency_status_;
+  misocpp::DiagnosticHeartbeat heartbeat_;
+  std::unique_ptr<misocpp::DiagnosticFrequency> diag_freq_image_raw_{ nullptr };
   double expected_freq_;
 
 public:
@@ -314,19 +310,9 @@ public:
       }
     }
 
-    // Set hardware ID for diagnostic updater.
-    diagnostic_updater_.setHardwareID("none");
-
-    // Heartbeat
-    diagnostic_updater_.add(heartbeat_);
-
-    // Frequency Status
-    expected_freq_ = static_cast<double>(framerate_);
-    frequency_status_param_ = std::make_unique<diagnostic_updater::FrequencyStatusParam>(&expected_freq_, &expected_freq_);
-    ROS_ASSERT(frequency_status_param_);
-    frequency_status_ = std::make_unique<diagnostic_updater::FrequencyStatus>(*frequency_status_param_, "FrequencyStatus");
-    ROS_ASSERT(frequency_status_);
-    diagnostic_updater_.add(*frequency_status_);
+    diag_freq_image_raw_ =
+        std::make_unique<misocpp::DiagnosticFrequency>("PUB_image_raw", expected_freq_, expected_freq_);
+    ROS_ASSERT(diag_freq_image_raw_);
   }
 
   virtual ~UsbCamNode()
@@ -346,7 +332,7 @@ public:
 
     // publish the image
     image_pub_.publish(img_, *ci);
-    frequency_status_->tick();
+    diag_freq_image_raw_->tick();
 
     return true;
   }
@@ -360,7 +346,7 @@ public:
         if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
       }
       ros::spinOnce();
-      diagnostic_updater_.update();
+      heartbeat_.update();
       loop_rate.sleep();
 
     }
