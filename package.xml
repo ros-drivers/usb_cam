@@ -17,6 +17,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>misocpp</depend>
+
   <build_depend>image_transport</build_depend>
   <build_depend>libudev-dev</build_depend>
   <build_depend>udev</build_depend>
