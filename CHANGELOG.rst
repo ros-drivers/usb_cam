@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+0.8.2 (2022-10-04)
+------------------
 * Merge pull request `#43 <https://github.com/MisoRobotics/usb_cam/issues/43>`_ from MisoRobotics/user/hjoe72/feature/shutdown-unresponsive-node
   FSIT-3352: Shutdown stopped node
 * Shutdown stopped node
