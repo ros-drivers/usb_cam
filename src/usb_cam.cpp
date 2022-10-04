@@ -1087,10 +1087,10 @@ void UsbCam::shutdown(void)
   image_ = NULL;
 }
 
-void UsbCam::grab_image(sensor_msgs::Image* msg)
+bool UsbCam::grab_image(sensor_msgs::Image* msg)
 {
   // grab the image
-  grab_image();
+  if (!grab_image()) return false;
   // stamp the image
   msg->header.stamp = ros::Time::now();
   // fill the info
@@ -1104,9 +1104,10 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
     fillImage(*msg, "rgb8", image_->height, image_->width, 3 * image_->width,
         image_->image);
   }
+  return true;
 }
 
-void UsbCam::grab_image()
+bool UsbCam::grab_image()
 {
   fd_set fds;
   struct timeval tv;
@@ -1124,19 +1125,20 @@ void UsbCam::grab_image()
   if (-1 == r)
   {
     if (EINTR == errno)
-      return;
+      return true;
 
-    errno_exit("select");
+    return false;
   }
 
   if (0 == r)
   {
     ROS_ERROR("select timeout");
-    exit(EXIT_FAILURE);
+    return false;
   }
 
   read_frame();
   image_->is_new = 1;
+  return true;
 }
 
 // enables/disables auto focus
