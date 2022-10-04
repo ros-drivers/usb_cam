@@ -23,6 +23,18 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+Forthcoming
+-----------
+* Merge pull request `#43 <https://github.com/MisoRobotics/usb_cam/issues/43>`_ from MisoRobotics/user/hjoe72/feature/shutdown-unresponsive-node
+  FSIT-3352: Shutdown stopped node
+* Shutdown stopped node
+  Instead of stopping the program, properly
+  shutdown the node when error occurs. This is useful
+  for automatically respawning the node.
+* Merge pull request `#41 <https://github.com/MisoRobotics/usb_cam/issues/41>`_ from MisoRobotics/master
+  Backmerge master into develop for flippy-0.8.1
+* Contributors: Hendry Joe, Zach Zweig Vinegar
+
 0.8.1 (2022-08-22)
 ------------------
 * Merge pull request `#39 <https://github.com/MisoRobotics/usb_cam/issues/39>`_ from MisoRobotics/user/jhong/bugfix/add_dependency
