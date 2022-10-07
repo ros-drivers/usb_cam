@@ -43,6 +43,7 @@
 #include <memory>
 #include <sstream>
 #include <std_srvs/Empty.h>
+#include <std_srvs/SetBool.h>
 #include <thread>
 #include <usb_cam/device_utils.h>
 
@@ -57,6 +58,9 @@ const int AUTO_EXPOSURE_APERTURE_PRIORITY_MODE = 3;
 //! \brief Delay time in seconds to wait before set auto_exposure setting
 const int WAIT_CHANGING_AUTO_EXPOSURE_SEC = 2;
 
+//! \brief Timer period in seconds between calls to reset camera exposure setting
+const double AUTO_RESET_EXPOSURE_PERIOD = 60.0;
+
 class UsbCamNode
 {
   // ROS diagnostic updater object.
@@ -64,7 +68,10 @@ class UsbCamNode
   diagnostic_updater::Heartbeat heartbeat_;
   std::unique_ptr<diagnostic_updater::FrequencyStatusParam> frequency_status_param_;
   std::unique_ptr<diagnostic_updater::FrequencyStatus> frequency_status_;
-  double expected_freq_;
+  double expected_freq_, auto_reset_exposure_period_;
+
+  ros::Timer auto_reset_exposure_timer_;
+  bool enable_auto_reset_exposure_;
 
 public:
   // private ROS node handle
@@ -80,12 +87,12 @@ public:
   bool streaming_status_;
   int image_width_, image_height_, framerate_, bits_per_pixel_, exposure_, brightness_, contrast_, saturation_,
       sharpness_, focus_, white_balance_, gain_, power_line_frequency_, gamma_, backlight_compensation_;
-  bool autofocus_, autoexposure_, auto_white_balance_, reset_exposure_;
+  bool autofocus_, autoexposure_, auto_white_balance_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCam cam_;
 
-  ros::ServiceServer service_start_, service_stop_;
+  ros::ServiceServer service_start_, service_stop_, service_auto_reset_exposure_;
 
   bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
@@ -99,6 +106,15 @@ public:
     cam_.stop_capturing();
     return true;
   }
+
+  bool service_auto_reset_exposure( std_srvs::SetBool::Request  &req, std_srvs::SetBool::Response &res )
+  {
+    enable_auto_reset_exposure_ = req.data;
+    res.success = true;
+    res.message = "";
+    return true;
+  }
+  
 
   UsbCamNode() :
       node_("~")
@@ -127,7 +143,7 @@ public:
     node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
     // enable/disable autoexposure
     node_.param("autoexposure", autoexposure_, true);
-    node_.param("reset_exposure", reset_exposure_, false);
+    node_.param("auto_reset_exposure_period", auto_reset_exposure_period_, AUTO_RESET_EXPOSURE_PERIOD);
     node_.param("exposure", exposure_, 100);
     node_.param("gain", gain_, -1); //0-100?, -1 "leave alone"
     // enable/disable auto white balance temperature
@@ -146,6 +162,7 @@ public:
     // create Services
     service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
     service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
+    service_auto_reset_exposure_ = node_.advertiseService("reset_exposure", &UsbCamNode::service_auto_reset_exposure, this);
 
     if (!serial_number_.empty())
     {
@@ -263,40 +280,21 @@ public:
       cam_.set_v4l_parameter("white_balance_temperature", white_balance_);
     }
 
-    // check reset exposure
-    if (reset_exposure_ && !autoexposure_)
+    // Just loading the file configuration without reset exposure routine.
+    if (!autoexposure_)
     {
-      // Executing the reset exposure routine automatically. Some cameras are
-      // over exposed using the exposure_auto as manual_mode directly (without
-      // setting to aperture priority mode before).
-      cam_.set_v4l_parameter(
-        "exposure_auto",
-        AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
-      );
-      std::this_thread::sleep_for(
-        std::chrono::seconds{ WAIT_CHANGING_AUTO_EXPOSURE_SEC }
-      );
+      // turn off exposure control
       cam_.set_v4l_parameter("exposure_auto", AUTO_EXPOSURE_MANUAL_MODE);
+      // change the exposure level
       cam_.set_v4l_parameter("exposure_absolute", exposure_);
     }
     else
     {
-      // Just loading the file configuration without reset exposure routine.
-      if (!autoexposure_)
-      {
-        // turn off exposure control
-        cam_.set_v4l_parameter("exposure_auto", AUTO_EXPOSURE_MANUAL_MODE);
-        // change the exposure level
-        cam_.set_v4l_parameter("exposure_absolute", exposure_);
-      }
-      else
-      {
-        // turn on exposure auto control
-        cam_.set_v4l_parameter(
-          "exposure_auto",
-          AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
-        );
-      }
+      // turn on exposure auto control
+      cam_.set_v4l_parameter(
+        "exposure_auto",
+        AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
+      );
     }
 
     // check auto focus
@@ -327,6 +325,12 @@ public:
     frequency_status_ = std::make_unique<diagnostic_updater::FrequencyStatus>(*frequency_status_param_, "FrequencyStatus");
     ROS_ASSERT(frequency_status_);
     diagnostic_updater_.add(*frequency_status_);
+
+    enable_auto_reset_exposure_ = true;
+    auto_reset_exposure_timer_ = node_.createTimer(
+      ros::Duration(auto_reset_exposure_period_),
+      boost::bind(&UsbCamNode::checkAutoResetExposure, this, _1)
+    );
   }
 
   virtual ~UsbCamNode()
@@ -348,6 +352,29 @@ public:
     frequency_status_->tick();
 
     return true;
+  }
+
+  void resetExposureSettings()
+  {
+    cam_.stop_capturing();
+    cam_.set_v4l_parameter(
+      "exposure_auto",
+      AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
+    );
+    std::this_thread::sleep_for(
+      std::chrono::seconds{ WAIT_CHANGING_AUTO_EXPOSURE_SEC }
+    );
+    cam_.set_v4l_parameter("exposure_auto", AUTO_EXPOSURE_MANUAL_MODE);
+    cam_.set_v4l_parameter("exposure_absolute", exposure_);
+    cam_.start_capturing();
+  }
+
+  void checkAutoResetExposure(const ros::TimerEvent&)
+  {
+    if (enable_auto_reset_exposure_)
+    {
+      resetExposureSettings();
+    }
   }
 
   bool spin()
