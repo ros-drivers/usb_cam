@@ -44,6 +44,7 @@ extern "C"
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
 #include <libavutil/mem.h>
+#include <libavutil/imgutils.h>
 }
 
 // legacy reasons
