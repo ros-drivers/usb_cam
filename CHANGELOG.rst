@@ -23,6 +23,17 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+0.8.3 (2022-10-17)
+------------------
+* Merge pull request `#46 <https://github.com/MisoRobotics/usb_cam/issues/46>`_ from MisoRobotics/user/hungrh/feature/auto-reset-exposure-setting
+  FSIT-3393: Add auto reset exposure setting
+* Add auto reset exposure setting
+  This commit adds a feature to auto reset the camera
+  exposure setting every 1 minute when it is enabled.
+* Merge pull request `#48 <https://github.com/MisoRobotics/usb_cam/issues/48>`_ from MisoRobotics/master
+  Backmerge master into develop for flippy-0.8.2
+* Contributors: Hung Ruo Han, Zach Zweig Vinegar
+
 0.8.2 (2022-10-04)
 ------------------
 * Merge pull request `#43 <https://github.com/MisoRobotics/usb_cam/issues/43>`_ from MisoRobotics/user/hjoe72/feature/shutdown-unresponsive-node
