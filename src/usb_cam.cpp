@@ -365,9 +365,11 @@ UsbCam::~UsbCam()
 
 int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
 {
-  avcodec_register_all();
+  #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
+     avcodec_register_all();
+  #endif
 
-  avcodec_ = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+  avcodec_ = const_cast<AVCodec*>(avcodec_find_decoder(AV_CODEC_ID_MJPEG));
   if (!avcodec_)
   {
     ROS_ERROR("Could not find MJPEG decoder");
@@ -383,7 +385,12 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   avframe_rgb_ = av_frame_alloc();
 #endif
 
-  avpicture_alloc((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, image_width, image_height);
+  avframe_rgb_ = av_frame_alloc();
+  avframe_rgb_->format = AV_PIX_FMT_RGB24;
+  avframe_rgb_->width = image_width;
+  avframe_rgb_->height = image_height;
+  av_frame_get_buffer(avframe_rgb_, 32);
+  //avpicture_alloc(avframe_rgb_, AV_PIX_FMT_RGB24, image_width, image_height);
 
   avcodec_context_->codec_id = AV_CODEC_ID_MJPEG;
   avcodec_context_->width = image_width;
@@ -394,8 +401,8 @@ int UsbCam::init_mjpeg_decoder(int image_width, int image_height)
   avcodec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
 #endif
 
-  avframe_camera_size_ = avpicture_get_size(AV_PIX_FMT_YUV422P, image_width, image_height);
-  avframe_rgb_size_ = avpicture_get_size(AV_PIX_FMT_RGB24, image_width, image_height);
+  avframe_camera_size_ = av_image_get_buffer_size(AV_PIX_FMT_YUV422P, image_width, image_height, 32);
+  avframe_rgb_size_ = av_image_get_buffer_size(AV_PIX_FMT_RGB24, image_width, image_height, 32);
 
   /* open it */
   if (avcodec_open2(avcodec_context_, avcodec_, &avoptions_) < 0)
@@ -417,10 +424,11 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   AVPacket avpkt;
   av_init_packet(&avpkt);
 
-  avpkt.size = len;
-  avpkt.data = (unsigned char*)MJPEG;
-  decoded_len = avcodec_decode_video2(avcodec_context_, avframe_camera_, &got_picture, &avpkt);
-
+  //avpkt.size = len;
+  //avpkt.data = (unsigned char*)MJPEG;
+  av_packet_from_data (&avpkt, (unsigned char*)MJPEG, len);
+  decoded_len = avcodec_send_packet(avcodec_context_, &avpkt);
+  //decoded_len = avcodec_decode_video2(avcodec_context_, avframe_camera_, &got_picture, &avpkt);
   if (decoded_len < 0)
   {
     ROS_ERROR("Error while decoding frame.");
@@ -428,30 +436,37 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   }
 #else
   avcodec_decode_video(avcodec_context_, avframe_camera_, &got_picture, (uint8_t *) MJPEG, len);
-#endif
-
   if (!got_picture)
   {
     ROS_ERROR("Webcam: expected picture but didn't get it...");
     return;
   }
+#endif
+  
+  if (avcodec_receive_frame(avcodec_context_, avframe_camera_) < 0)
+  {
+    ROS_ERROR("Error while returning frame.");
+    return;
+  }
 
   int xsize = avcodec_context_->width;
   int ysize = avcodec_context_->height;
-  int pic_size = avpicture_get_size(avcodec_context_->pix_fmt, xsize, ysize);
+  int pic_size = av_image_get_buffer_size(avcodec_context_->pix_fmt, xsize, ysize, 32);
   if (pic_size != avframe_camera_size_)
   {
     ROS_ERROR("outbuf size mismatch.  pic_size: %d bufsize: %d", pic_size, avframe_camera_size_);
     return;
   }
+  //avframe_rgb_size_ = av_image_get_buffer_size(AV_PIX_FMT_RGB24, avcodec_context_->width, avcodec_context_->height, 32);
+  //unsigned char* frame_buffer = (uint8_t*)av_malloc(avframe_rgb_size_);
+  //av_image_fill_arrays(avframe_rgb_->data, avframe_rgb_->linesize, frame_buffer, AV_PIX_FMT_RGB24, avframe_rgb_->width, avframe_rgb_->height, 32);         
 
-  video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize, AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL,
-			      NULL,  NULL);
-  sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize, 0, ysize, avframe_rgb_->data,
-            avframe_rgb_->linesize);
+  video_sws_ = sws_getContext(xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize, AV_PIX_FMT_RGB24, SWS_FAST_BILINEAR, NULL, NULL,  NULL);
+  sws_scale(video_sws_, avframe_camera_->data, avframe_camera_->linesize, 0, ysize, avframe_rgb_->data, avframe_rgb_->linesize);
   sws_freeContext(video_sws_);
-
-  int size = avpicture_layout((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size_);
+  
+  //int size = avpicture_layout((AVPicture *)avframe_rgb_, AV_PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size_);
+  int size = av_image_copy_to_buffer((uint8_t *)RGB, avframe_rgb_size_, avframe_rgb_->data, avframe_rgb_->linesize, AV_PIX_FMT_RGB24, xsize, ysize, 32);
   if (size != avframe_rgb_size_)
   {
     ROS_ERROR("webcam: avpicture_layout error: %d", size);
