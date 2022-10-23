@@ -33,6 +33,7 @@
 
 #include <cstring>
 #include <sstream>
+#include <opencv2/opencv.hpp>
 
 
 namespace usb_cam
@@ -362,6 +363,15 @@ inline bool yuyv2rgb(char * YUV, char * RGB, int NumPixels)
 void rgb242rgb(char * YUV, char * RGB, int NumPixels)
 {
   memcpy(RGB, YUV, NumPixels * 3);
+}
+
+inline void yuv4202rgb(char * YUV, char * RGB, int width, int height)
+{
+  cv::Size size(height, width);
+  cv::Mat cv_img(height * 1.5, width, CV_8UC1, YUV);
+  cv::Mat cv_out(height, width, CV_8UC3, RGB);
+
+  cvtColor(cv_img, cv_out, cv::COLOR_YUV420p2BGR);
 }
 
 std::string fcc2s(unsigned int val)
