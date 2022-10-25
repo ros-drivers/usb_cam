@@ -51,6 +51,7 @@
 #include <ros/ros.h>
 #include <boost/lexical_cast.hpp>
 #include <sensor_msgs/fill_image.h>
+#include <opencv2/opencv.hpp>
 
 #include <usb_cam/usb_cam.h>
 
@@ -352,6 +353,15 @@ void rgb242rgb(char *YUV, char *RGB, int NumPixels)
   memcpy(RGB, YUV, NumPixels * 3);
 }
 
+void yuv4202rgb(char *YUV, char *RGB, int width, int height)
+{
+  cv::Size size(height, width);
+  cv::Mat cv_img(height * 1.5, width, CV_8UC1, YUV);
+  cv::Mat cv_out(height, width, CV_8UC3, RGB);
+
+  cvtColor(cv_img, cv_out, cv::COLOR_YUV420p2BGR);
+
+}
 
 UsbCam::UsbCam()
   : io_(IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0), avframe_camera_(NULL),
@@ -493,6 +503,8 @@ void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
     mjpeg2rgb((char*)src, len, dest->image, dest->width * dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_RGB24)
     rgb242rgb((char*)src, dest->image, dest->width * dest->height);
+  else if (pixelformat_ == V4L2_PIX_FMT_YUV420)
+    yuv4202rgb((char*)src, dest->image, dest->width, dest->height);
   else if (pixelformat_ == V4L2_PIX_FMT_GREY)
     memcpy(dest->image, (char*)src, dest->width * dest->height);
 }
@@ -1049,6 +1061,10 @@ void UsbCam::start(const std::string& dev, io_method io_method,
     pixelformat_ = V4L2_PIX_FMT_GREY;
     monochrome_ = true;
   }
+  else if (pixel_format == PIXEL_FORMAT_YU12)
+  {
+    pixelformat_ = V4L2_PIX_FMT_YUV420;
+  }
   else
   {
     ROS_ERROR("Unknown pixel format.");
@@ -1255,6 +1271,8 @@ UsbCam::pixel_format UsbCam::pixel_format_from_string(const std::string& str)
       return PIXEL_FORMAT_RGB24;
     else if (str == "grey")
       return PIXEL_FORMAT_GREY;
+    else if (str == "yu12")
+      return PIXEL_FORMAT_YU12;
     else
       return PIXEL_FORMAT_UNKNOWN;
 }
