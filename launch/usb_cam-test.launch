@@ -7,8 +7,8 @@
     <param name="camera_frame_id" value="usb_cam" />
     <param name="io_method" value="mmap"/>
   </node>
-  <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
+  <!-- <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
     <remap from="image" to="/usb_cam/image_raw"/>
     <param name="autosize" value="true" />
-  </node>
+  </node> -->
 </launch>
