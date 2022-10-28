@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS cv_bridge image_transport roscpp std_msg
 
 ## pkg-config libraries
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(avcodec libavcodec REQUIRED)
+pkg_check_modules(avcodec libavcodec libavutil REQUIRED)
 pkg_check_modules(swscale libswscale REQUIRED)
 
 ###################################################
