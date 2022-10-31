@@ -370,6 +370,8 @@ UsbCam::UsbCam()
 }
 UsbCam::~UsbCam()
 {
+  av_parser_close(avparser_context_);
+  avcodec_free_context(&avcodec_context_);
   shutdown();
 }
 
@@ -387,6 +389,13 @@ int UsbCam::init_decoder(int image_width, int image_height,
     ROS_ERROR("Could not find %s decoder", codec_name);
     return 0;
   }
+  
+  avparser_context_ = av_parser_init(avcodec_->id);
+  if(!avparser_context_)
+  {
+    ROS_ERROR("Could not find %s frameparser", codec_name);
+    return 0;
+  }
 
   avcodec_context_ = avcodec_alloc_context3(avcodec_);
 
@@ -399,7 +408,7 @@ int UsbCam::init_decoder(int image_width, int image_height,
   // [mjpeg @ 0x############] overread 4
   // [mjpeg @ 0x############] No JPEG data found in image
   // [ERROR] [##########.##########]: Error while decoding frame.
-  av_log_set_level(AV_LOG_ERROR);
+  //av_log_set_level(AV_LOG_ERROR);
 	
 #if LIBAVCODEC_VERSION_MAJOR < 55
   avframe_camera_ = avcodec_alloc_frame();
@@ -435,7 +444,7 @@ int UsbCam::init_decoder(int image_width, int image_height,
   {
     avframe_camera_size_ = av_image_get_buffer_size(AV_PIX_FMT_YUV420P, image_width, image_height, 32);
     // libav warns when YUV420P is chosen, supress the warnings
-    av_log_set_level(AV_LOG_ERROR);
+    // av_log_set_level(AV_LOG_ERROR);
   }
 
   avframe_rgb_size_ = av_image_get_buffer_size(AV_PIX_FMT_RGB24, image_width, image_height, 32);
@@ -446,6 +455,10 @@ int UsbCam::init_decoder(int image_width, int image_height,
     ROS_ERROR("Could not open %s Decoder", codec_name);
     return 0;
   }
+  /* Temporary workaround for keyframe handler when native H.264 encoded frame is received */
+  if(avcodec_context_->codec_id == AV_CODEC_ID_H264)
+    av_log_set_level(AV_LOG_ERROR); // TODO: Find a workaround to start decoding from the keyframe (av_parser_parse2 ?? )
+    
   return 1;
 }
 
@@ -468,10 +481,11 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 #if LIBAVCODEC_VERSION_MAJOR > 52
   int decoded_len;
   AVPacket avpkt;
-  av_init_packet(&avpkt);
+  //av_init_packet(&avpkt);
 
   //avpkt.size = len;
   //avpkt.data = (unsigned char*)MJPEG;
+  av_new_packet(&avpkt, len);
   av_packet_from_data (&avpkt, (unsigned char*)MJPEG, len);
   decoded_len = avcodec_send_packet(avcodec_context_, &avpkt);
   //decoded_len = avcodec_decode_video2(avcodec_context_, avframe_camera_, &got_picture, &avpkt);
@@ -488,11 +502,33 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
     return;
   }
 #endif
-  
-  if (avcodec_receive_frame(avcodec_context_, avframe_camera_) < 0)
+  int error_code = avcodec_receive_frame(avcodec_context_, avframe_camera_);
+  if (error_code < 0)
   {
     ROS_ERROR("Error while returning frame.");
     return;
+  }
+  
+  
+  if(avcodec_context_->codec_id == AV_CODEC_ID_MJPEG)
+  {
+    switch(avcodec_context_->pix_fmt)
+    {
+    case AV_PIX_FMT_YUVJ420P:
+      avcodec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
+      avcodec_context_->color_range = AVCOL_RANGE_JPEG;
+      break;
+    case AV_PIX_FMT_YUVJ422P:
+      avcodec_context_->pix_fmt = AV_PIX_FMT_YUV422P;
+      avcodec_context_->color_range = AVCOL_RANGE_JPEG;
+      break;
+    case AV_PIX_FMT_YUVJ444P:
+      avcodec_context_->pix_fmt = AV_PIX_FMT_YUV444P;
+      avcodec_context_->color_range = AVCOL_RANGE_JPEG;
+      break;
+    default:
+      break;
+    }
   }
 
   int xsize = avcodec_context_->width;

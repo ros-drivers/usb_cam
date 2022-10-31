@@ -152,6 +152,7 @@ class UsbCam {
   AVCodec *avcodec_;
   AVDictionary *avoptions_;
   AVCodecContext *avcodec_context_;
+  AVCodecParserContext *avparser_context_;
   int avframe_camera_size_;
   int avframe_rgb_size_;
   struct SwsContext *video_sws_;
