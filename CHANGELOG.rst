@@ -23,6 +23,21 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+Forthcoming
+-----------
+* Merge pull request `#51 <https://github.com/MisoRobotics/usb_cam/issues/51>`_ from MisoRobotics/user/hungrh/fix/autobin-auto-reset-exposure-setting
+  FSIT-3680: Fix autobin auto reset exposure setting
+* Fix autobin auto reset exposure setting
+  This commit fixes to reset the exposure setting
+  without stopping the capture of the V4L2 buffer.
+* Merge pull request `#45 <https://github.com/MisoRobotics/usb_cam/issues/45>`_ from MisoRobotics/user/jhong/feature/add_freq_monitoring
+  SFS-8564, SFS-10034: Add new freq monitoring and diagnostic launch files
+* SFS-8564: Diag 4 - Add frequency monitoring
+  Add frequency monitoring.
+* Merge pull request `#50 <https://github.com/MisoRobotics/usb_cam/issues/50>`_ from MisoRobotics/master
+  Backmerge master into develop for flippy-0.8.3
+* Contributors: Hung Ruo Han, Junpyo Hong, Zach Zweig Vinegar
+
 0.8.3 (2022-10-17)
 ------------------
 * Merge pull request `#46 <https://github.com/MisoRobotics/usb_cam/issues/46>`_ from MisoRobotics/user/hungrh/feature/auto-reset-exposure-setting
