@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+0.8.4 (2022-10-31)
+------------------
 * Merge pull request `#51 <https://github.com/MisoRobotics/usb_cam/issues/51>`_ from MisoRobotics/user/hungrh/fix/autobin-auto-reset-exposure-setting
   FSIT-3680: Fix autobin auto reset exposure setting
 * Fix autobin auto reset exposure setting
