@@ -356,7 +356,7 @@ public:
 
   void resetExposureSettings()
   {
-    cam_.stop_capturing();
+    cam_.is_changing_config(true);
     cam_.set_v4l_parameter(
       "exposure_auto",
       AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
@@ -366,7 +366,7 @@ public:
     );
     cam_.set_v4l_parameter("exposure_auto", AUTO_EXPOSURE_MANUAL_MODE);
     cam_.set_v4l_parameter("exposure_absolute", exposure_);
-    cam_.start_capturing();
+    cam_.is_changing_config(false);
   }
 
   void checkAutoResetExposure(const ros::TimerEvent&)
@@ -382,7 +382,7 @@ public:
     ros::Rate loop_rate(this->framerate_);
     while (node_.ok())
     {
-      if (cam_.is_capturing()) {
+      if (cam_.is_capturing() && !cam_.is_changing_config()) {
         if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
       }
       ros::spinOnce();
