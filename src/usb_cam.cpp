@@ -356,7 +356,8 @@ void rgb242rgb(char *YUV, char *RGB, int NumPixels)
 UsbCam::UsbCam()
   : io_(IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0), avframe_camera_(NULL),
     avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL), avcodec_context_(NULL),
-    avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL), is_capturing_(false) {
+    avframe_camera_size_(0), avframe_rgb_size_(0), video_sws_(NULL), image_(NULL),
+    is_capturing_(false), is_changing_config_(false) {
 }
 UsbCam::~UsbCam()
 {
@@ -595,6 +596,14 @@ int UsbCam::read_frame()
 
 bool UsbCam::is_capturing() {
   return is_capturing_;
+}
+
+bool UsbCam::is_changing_config() {
+  return is_changing_config_;
+}
+
+void UsbCam::is_changing_config(bool is_changing) {
+  is_changing_config_ = is_changing;
 }
 
 void UsbCam::stop_capturing(void)

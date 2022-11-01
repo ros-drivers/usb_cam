@@ -34,18 +34,19 @@
 *
 *********************************************************************/
 
+#include <filesystem>
+
 #include <ros/ros.h>
 #include <usb_cam/usb_cam.h>
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
-#include <diagnostic_updater/diagnostic_updater.h>
-#include <diagnostic_updater/update_functions.h>
 #include <memory>
 #include <sstream>
 #include <std_srvs/Empty.h>
 #include <std_srvs/SetBool.h>
 #include <thread>
 #include <usb_cam/device_utils.h>
+#include <misocpp/diagnostic_updater_wrapper.h>
 
 namespace usb_cam {
 
@@ -63,13 +64,10 @@ const double AUTO_RESET_EXPOSURE_PERIOD = 60.0;
 
 class UsbCamNode
 {
-  // ROS diagnostic updater object.
-  diagnostic_updater::Updater diagnostic_updater_;
-  diagnostic_updater::Heartbeat heartbeat_;
-  std::unique_ptr<diagnostic_updater::FrequencyStatusParam> frequency_status_param_;
-  std::unique_ptr<diagnostic_updater::FrequencyStatus> frequency_status_;
+  misocpp::DiagnosticHeartbeat heartbeat_;
+  std::unique_ptr<misocpp::DiagnosticFrequency> diag_freq_image_raw_{ nullptr };
+  std::unique_ptr<misocpp::DiagnosticFrequency> diag_freq_camera_info_{ nullptr };
   double expected_freq_, auto_reset_exposure_period_;
-
   ros::Timer auto_reset_exposure_timer_;
   bool enable_auto_reset_exposure_;
 
@@ -312,19 +310,20 @@ public:
       }
     }
 
-    // Set hardware ID for diagnostic updater.
-    diagnostic_updater_.setHardwareID("none");
-
-    // Heartbeat
-    diagnostic_updater_.add(heartbeat_);
-
-    // Frequency Status
+    std::string ns = ros::this_node::getNamespace();
     expected_freq_ = static_cast<double>(framerate_);
-    frequency_status_param_ = std::make_unique<diagnostic_updater::FrequencyStatusParam>(&expected_freq_, &expected_freq_);
-    ROS_ASSERT(frequency_status_param_);
-    frequency_status_ = std::make_unique<diagnostic_updater::FrequencyStatus>(*frequency_status_param_, "FrequencyStatus");
-    ROS_ASSERT(frequency_status_);
-    diagnostic_updater_.add(*frequency_status_);
+    std::filesystem::path topic = ns;
+    topic /= image_pub_.getTopic();
+    diag_freq_image_raw_ =
+        std::make_unique<misocpp::DiagnosticFrequency>(topic.c_str(), expected_freq_, expected_freq_);
+    ROS_ASSERT(diag_freq_image_raw_);
+    std::string s(topic);
+    s = s.erase(s.rfind('/'), std::string::npos);
+    topic = s;
+    topic /= "camera_info";
+    diag_freq_camera_info_ =
+        std::make_unique<misocpp::DiagnosticFrequency>(topic.c_str(), expected_freq_, expected_freq_);
+    ROS_ASSERT(diag_freq_camera_info_);
 
     enable_auto_reset_exposure_ = true;
     auto_reset_exposure_timer_ = node_.createTimer(
@@ -349,14 +348,15 @@ public:
 
     // publish the image
     image_pub_.publish(img_, *ci);
-    frequency_status_->tick();
+    diag_freq_camera_info_->tick();
+    diag_freq_image_raw_->tick();
 
     return true;
   }
 
   void resetExposureSettings()
   {
-    cam_.stop_capturing();
+    cam_.is_changing_config(true);
     cam_.set_v4l_parameter(
       "exposure_auto",
       AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
@@ -366,7 +366,7 @@ public:
     );
     cam_.set_v4l_parameter("exposure_auto", AUTO_EXPOSURE_MANUAL_MODE);
     cam_.set_v4l_parameter("exposure_absolute", exposure_);
-    cam_.start_capturing();
+    cam_.is_changing_config(false);
   }
 
   void checkAutoResetExposure(const ros::TimerEvent&)
@@ -382,11 +382,11 @@ public:
     ros::Rate loop_rate(this->framerate_);
     while (node_.ok())
     {
-      if (cam_.is_capturing()) {
+      if (cam_.is_capturing() && !cam_.is_changing_config()) {
         if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
       }
       ros::spinOnce();
-      diagnostic_updater_.update();
+      heartbeat_.update();
       loop_rate.sleep();
 
     }

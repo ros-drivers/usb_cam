@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>usb_cam</name>
-  <version>0.8.3</version>
+  <version>0.8.4</version>
   <description>A ROS Driver for V4L USB Cameras</description>
 
   <maintainer email="rctoris@wpi.edu">Russell Toris</maintainer>
@@ -16,6 +16,8 @@
   <url type="repository">https://github.com/bosch-ros-pkg/usb_cam</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>misocpp</depend>
 
   <build_depend>image_transport</build_depend>
   <build_depend>libudev-dev</build_depend>

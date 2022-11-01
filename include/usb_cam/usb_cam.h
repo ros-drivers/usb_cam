@@ -101,6 +101,9 @@ class UsbCam {
   void start_capturing(void);
   bool is_capturing();
 
+  bool is_changing_config();
+  void is_changing_config(bool is_changing);
+
  private:
   typedef struct
   {
@@ -132,6 +135,7 @@ class UsbCam {
   void open_device(void);
   bool grab_image();
   bool is_capturing_;
+  bool is_changing_config_;
 
 
   std::string camera_dev_;
