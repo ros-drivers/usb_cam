@@ -363,6 +363,19 @@ void yuv4202rgb(char *YUV, char *RGB, int width, int height)
 
 }
 
+std::string fcc2s(unsigned int val)
+{
+	std::string s;
+
+	s += val & 0x7f;
+	s += (val >> 8) & 0x7f;
+	s += (val >> 16) & 0x7f;
+	s += (val >> 24) & 0x7f;
+	if (val & (1 << 31))
+		s += "-BE";
+	return s;
+}
+
 UsbCam::UsbCam()
   : io_(IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0), avframe_camera_(NULL),
     avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL), avcodec_context_(NULL),
@@ -1015,12 +1028,6 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
 
   CLEAR(fmt);
 
-//  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-//  fmt.fmt.pix.width = 640;
-//  fmt.fmt.pix.height = 480;
-//  fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-//  fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
-
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   fmt.fmt.pix.width = image_width;
   fmt.fmt.pix.height = image_height;
@@ -1028,7 +1035,34 @@ void UsbCam::init_device(int image_width, int image_height, int framerate)
   fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
 
   if (-1 == xioctl(fd_, VIDIOC_S_FMT, &fmt))
-    errno_exit("VIDIOC_S_FMT");
+  {
+    /* Check if selected format is already active - some hardware e.g. droidcam do not support setting values via VIDIOC_S_FMT*/
+    CLEAR(fmt);
+
+    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+    if(xioctl(fd_, VIDIOC_G_FMT, &fmt) >= 0)
+    {
+      ROS_WARN_STREAM(camera_dev_ << " does not support setting format options.");
+      ROS_WARN_STREAM(camera_dev_ << " supports: \n \t Width/Height \t : "<<fmt.fmt.pix.width<<"/"<<fmt.fmt.pix.height<<"\n"
+                      <<"\t Pixel Format \t : "<<fcc2s(fmt.fmt.pix.pixelformat));
+
+      if(fmt.fmt.pix.pixelformat == pixelformat_ &&
+        fmt.fmt.pix.width == image_width &&
+        fmt.fmt.pix.height == image_height)
+      {
+        ROS_WARN("Selected format '%s' is the same as the camera supports. Starting node...",
+                fcc2s(fmt.fmt.pix.pixelformat).c_str());
+      }
+      else
+        errno_exit("VIDIOC_S_FMT");
+    }
+    else
+    {
+      errno_exit("VIDIOC_G_FMT");
+    }
+
+  }
 
   /* Note VIDIOC_S_FMT may change width and height. */
 
