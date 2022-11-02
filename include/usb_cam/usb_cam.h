@@ -44,6 +44,7 @@ extern "C"
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
 #include <libavutil/mem.h>
+#include <libavutil/imgutils.h>
 }
 
 // legacy reasons
@@ -68,14 +69,19 @@ class UsbCam {
 
   typedef enum
   {
-    PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24, PIXEL_FORMAT_GREY, PIXEL_FORMAT_UNKNOWN
+    PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24, PIXEL_FORMAT_BGR24, PIXEL_FORMAT_GREY, PIXEL_FORMAT_YU12, PIXEL_FORMAT_H264, PIXEL_FORMAT_UNKNOWN,
   } pixel_format;
+
+  typedef enum
+  {
+    COLOR_FORMAT_YUV420P, COLOR_FORMAT_YUV422P, COLOR_FORMAT_UNKNOWN,
+  } color_format;
 
   UsbCam();
   ~UsbCam();
 
   // start camera
-  void start(const std::string& dev, io_method io, pixel_format pf,
+  void start(const std::string& dev, io_method io, pixel_format pf, color_format cf,
 		    int image_width, int image_height, int framerate);
   // shutdown camera
   void shutdown(void);
@@ -92,6 +98,7 @@ class UsbCam {
 
   static io_method io_method_from_string(const std::string& str);
   static pixel_format pixel_format_from_string(const std::string& str);
+  static color_format color_format_from_string(const std::string& str);
 
   void stop_capturing(void);
   void start_capturing(void);
@@ -115,7 +122,10 @@ class UsbCam {
   };
 
 
-  int init_mjpeg_decoder(int image_width, int image_height);
+  int init_decoder(int image_width, int image_height,
+      color_format color_format, AVCodecID codec_id, const char *codec_name);
+  int init_mjpeg_decoder(int image_width, int image_height, color_format color_format);
+  int init_h264_decoder(int image_width, int image_height, color_format color_format);
   void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
   void process_image(const void * src, int len, camera_image_t *dest);
   int read_frame();
@@ -142,6 +152,7 @@ class UsbCam {
   AVCodec *avcodec_;
   AVDictionary *avoptions_;
   AVCodecContext *avcodec_context_;
+  AVCodecParserContext *avparser_context_;
   int avframe_camera_size_;
   int avframe_rgb_size_;
   struct SwsContext *video_sws_;
