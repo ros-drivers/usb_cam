@@ -11,7 +11,8 @@ find_package(OpenCV REQUIRED)
 
 ## pkg-config libraries
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(avcodec libavcodec libavutil REQUIRED)
+pkg_check_modules(avcodec libavcodec REQUIRED)
+pkg_check_modules(avutil libavutil REQUIRED)
 pkg_check_modules(swscale libswscale REQUIRED)
 
 ###################################################
@@ -34,6 +35,7 @@ include_directories(include
   ${catkin_INCLUDE_DIRS}
   ${avcodec_INCLUDE_DIRS}
   ${swscale_INCLUDE_DIRS}
+  ${avutil_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
 
@@ -41,6 +43,7 @@ include_directories(include
 add_library(${PROJECT_NAME} src/usb_cam.cpp)
 target_link_libraries(${PROJECT_NAME}
   ${avcodec_LINK_LIBRARIES}
+  ${avutil_LINK_LIBRARIES}
   ${swscale_LINK_LIBRARIES}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
@@ -51,6 +54,7 @@ add_executable(${PROJECT_NAME}_node nodes/usb_cam_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
   ${avcodec_LINK_LIBRARIES}
+  ${avutil_LINK_LIBRARIES}
   ${swscale_LINK_LIBRARIES}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
