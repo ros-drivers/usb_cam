@@ -31,16 +31,16 @@
 #define USB_CAM__USB_CAM_NODE_HPP_
 #include "usb_cam/usb_cam.hpp"
 
-
-#include <rclcpp/rclcpp.hpp>
-
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "image_transport/image_transport.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_srvs/srv/set_bool.hpp"
+
 
 std::ostream & operator<<(std::ostream & ostr, const rclcpp::Time & tm)
 {
@@ -56,7 +56,7 @@ namespace usb_cam
 class UsbCamNode : public rclcpp::Node
 {
 public:
-  UsbCamNode(const rclcpp::NodeOptions & node_options);
+  explicit UsbCamNode(const rclcpp::NodeOptions & node_options);
   ~UsbCamNode();
 
   void init();

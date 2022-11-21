@@ -49,6 +49,13 @@ rclcpp_components_register_node(${PROJECT_NAME}_node
   EXECUTABLE ${PROJECT_NAME}_node_exe
 )
 
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  # TODO(flynneva): add some unit and integration tests
+endif()
+
 install(
   PROGRAMS scripts/show_image.py
   DESTINATION lib/${PROJECT_NAME})

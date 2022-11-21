@@ -31,13 +31,14 @@
 
 import cv2
 import numpy as np
-import rclpy
 
+import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 
 
 class ExamineImage(Node):
+
     def __init__(self):
         super().__init__('examine_image')
 
@@ -52,14 +53,14 @@ class ExamineImage(Node):
         sz = (msg.height, msg.width)
         # print(msg.header.stamp)
         if False:
-            print("{encoding} {width} {height} {step} {data_size}".format(
+            print('{encoding} {width} {height} {step} {data_size}'.format(
                 encoding=msg.encoding, width=msg.width, height=msg.height,
                 step=msg.step, data_size=len(msg.data)))
         if msg.step * msg.height != len(msg.data):
-            print("bad step/height/data size")
+            print('bad step/height/data size')
             return
 
-        if msg.encoding == "rgb8":
+        if msg.encoding == 'rgb8':
             dirty = (self.mat is None or msg.width != self.mat.shape[1] or
                      msg.height != self.mat.shape[0] or len(self.mat.shape) < 2 or
                      self.mat.shape[2] != 3)
@@ -68,13 +69,13 @@ class ExamineImage(Node):
             self.mat[:, :, 2] = np.array(msg.data[0::3]).reshape(sz)
             self.mat[:, :, 1] = np.array(msg.data[1::3]).reshape(sz)
             self.mat[:, :, 0] = np.array(msg.data[2::3]).reshape(sz)
-        elif msg.encoding == "mono8":
+        elif msg.encoding == 'mono8':
             self.mat = np.array(msg.data).reshape(sz)
         else:
-            print("unsupported encoding {}".format(msg.encoding))
+            print('unsupported encoding {}'.format(msg.encoding))
             return
         if self.mat is not None:
-            cv2.imshow("image", self.mat)
+            cv2.imshow('image', self.mat)
             cv2.waitKey(5)
 
 

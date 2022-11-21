@@ -47,13 +47,15 @@ extern "C"
 #define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
 #endif
 
-#include <builtin_interfaces/msg/time.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp/time.hpp>
-// #include <sensor_msgs/msg/image.h>
 #include <string>
 #include <vector>
 #include <sstream>
+
+#include "builtin_interfaces/msg/time.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/time.hpp"
+// #include "sensor_msgs/msg/image.hpp"
+
 
 namespace usb_cam
 {
@@ -85,8 +87,8 @@ public:
 
   typedef enum
   {
-    COLOR_FORMAT_YUV420P, 
-    COLOR_FORMAT_YUV422P, 
+    COLOR_FORMAT_YUV420P,
+    COLOR_FORMAT_YUV422P,
     COLOR_FORMAT_UNKNOWN,
   } color_format;
 
@@ -117,7 +119,7 @@ public:
 
   static io_method io_method_from_string(const std::string & str);
   static pixel_format pixel_format_from_string(const std::string & str);
-  static color_format color_format_from_string(const std::string& str);
+  static color_format color_format_from_string(const std::string & str);
 
   bool stop_capturing(void);
   bool start_capturing(void);
@@ -143,8 +145,9 @@ private:
   };
 
 
-  int init_decoder(int image_width, int image_height, color_format color_format, 
-    AVCodecID codec_id, const char *codec_name);
+  int init_decoder(
+    int image_width, int image_height, color_format color_format,
+    AVCodecID codec_id, const char * codec_name);
   int init_h264_decoder(int image_width, int image_height, color_format cf);
   int init_mjpeg_decoder(int image_width, int image_height, color_format cf);
   bool mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels);
