@@ -60,12 +60,16 @@ target_link_libraries(${PROJECT_NAME}_node
   ${OpenCV_LIBS}
 )
 
+## Declare a c executable
+add_executable(streamcat src/streamcat.c)
+# only std libraries needed
+
 #############
 ## Install ##
 #############
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}_node ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME}_node ${PROJECT_NAME} streamcat
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
