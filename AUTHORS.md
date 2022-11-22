@@ -1,6 +1,6 @@
 Original Authors
 ----------------
- * [Benjamin Pitzer] (benjamin.pitzer@bosch.com)
+ * Benjamin Pitzer (benjamin.pitzer@bosch.com)
 
 Maintainers
 ------------
