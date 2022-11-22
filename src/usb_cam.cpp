@@ -573,6 +573,19 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
 void UsbCam::process_image(const void * src, int len, camera_image_t *dest)
 {
+  struct frame_header header_ {
+      .length=len,
+      .sec=image_->sec,
+      .nsec=image_->nsec,
+      .pixelformat=pixelformat_,
+      .width=image_->width,
+      .height=image_->height,
+  };
+  if (streamdump_fd_!=-1 && is_recording_) {
+    write(streamdump_fd_, (const void * )&header_, sizeof(header_));
+    write(streamdump_fd_, src, len);
+  }
+
   if (pixelformat_ == V4L2_PIX_FMT_YUYV)
   {
     if (monochrome_)
@@ -701,6 +714,10 @@ int UsbCam::read_frame()
   }
 
   return 1;
+}
+
+void UsbCam::set_recording(bool rec) {
+    is_recording_=rec;
 }
 
 bool UsbCam::is_capturing() {
@@ -1144,12 +1161,13 @@ void UsbCam::open_device(void)
 void UsbCam::start(const std::string& dev, io_method io_method,
 		   pixel_format pixel_format, color_format color_format,
        int image_width, int image_height,
-		   int framerate)
+		   int framerate, const std::string& streamdump_file_name)
 {
   camera_dev_ = dev;
 
   io_ = io_method;
   monochrome_ = false;
+  is_recording_ = false;
   if (pixel_format == PIXEL_FORMAT_YUYV)
     pixelformat_ = V4L2_PIX_FMT_YUYV;
   else if (pixel_format == PIXEL_FORMAT_UYVY)
@@ -1195,6 +1213,13 @@ void UsbCam::start(const std::string& dev, io_method io_method,
 
   open_device();
   init_device(image_width, image_height, framerate);
+
+  if (streamdump_file_name.compare("")!=0) {
+      streamdump_fd_=open(streamdump_file_name.c_str(), (O_WRONLY|O_CREAT|O_TRUNC|O_DSYNC),0666);
+  } else {
+      streamdump_fd_=-1;
+  }
+
   start_capturing();
 
   image_ = (camera_image_t *)calloc(1, sizeof(camera_image_t));
@@ -1214,6 +1239,9 @@ void UsbCam::shutdown(void)
   stop_capturing();
   uninit_device();
   close_device();
+  if (streamdump_fd_!=-1) {
+      close(streamdump_fd_);
+  }
 
   if (avcodec_context_)
   {
@@ -1235,29 +1263,7 @@ void UsbCam::shutdown(void)
 void UsbCam::grab_image(sensor_msgs::Image* msg)
 {
   // grab the image
-  grab_image();
-  // stamp the image
-  msg->header.stamp = ros::Time::now();
-  // fill the info
-  if (monochrome_)
   {
-    fillImage(*msg, "mono8", image_->height, image_->width, image_->width,
-        image_->image);
-  }
-  else if(pixelformat_ == V4L2_PIX_FMT_BGR24)
-  {
-      fillImage(*msg, "bgr8", image_->height, image_->width, 3 * image_->width,
-          image_->image);
-  }
-  else
-  {
-    fillImage(*msg, "rgb8", image_->height, image_->width, 3 * image_->width,
-        image_->image);
-  }
-}
-
-void UsbCam::grab_image()
-{
   fd_set fds;
   struct timeval tv;
   int r;
@@ -1285,8 +1291,29 @@ void UsbCam::grab_image()
     exit(EXIT_FAILURE);
   }
 
+  // stamp the image
+  msg->header.stamp = ros::Time::now();
+  image_->nsec=msg->header.stamp.nsec;
+  image_->sec=msg->header.stamp.sec;
   read_frame();
   image_->is_new = 1;
+  }
+  // fill the info
+  if (monochrome_)
+  {
+    fillImage(*msg, "mono8", image_->height, image_->width, image_->width,
+        image_->image);
+  }
+  else if(pixelformat_ == V4L2_PIX_FMT_BGR24)
+  {
+      fillImage(*msg, "bgr8", image_->height, image_->width, 3 * image_->width,
+          image_->image);
+  }
+  else
+  {
+    fillImage(*msg, "rgb8", image_->height, image_->width, 3 * image_->width,
+        image_->image);
+  }
 }
 
 // enables/disables auto focus

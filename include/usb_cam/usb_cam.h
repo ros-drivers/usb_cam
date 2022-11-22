@@ -82,7 +82,7 @@ class UsbCam {
 
   // start camera
   void start(const std::string& dev, io_method io, pixel_format pf, color_format cf,
-		    int image_width, int image_height, int framerate);
+		    int image_width, int image_height, int framerate, const std::string& streamdump_file_name);
   // shutdown camera
   void shutdown(void);
 
@@ -102,6 +102,7 @@ class UsbCam {
 
   void stop_capturing(void);
   void start_capturing(void);
+  void set_recording(bool rec);
   bool is_capturing();
 
  private:
@@ -113,6 +114,8 @@ class UsbCam {
     int image_size;
     char *image;
     int is_new;
+    uint32_t sec;
+    uint32_t nsec;
   } camera_image_t;
 
   struct buffer
@@ -120,8 +123,17 @@ class UsbCam {
     void * start;
     size_t length;
   };
+  struct frame_header
+  {
+    size_t length;
+    uint32_t sec;
+    uint32_t nsec;
+    unsigned int pixelformat;
+    int width;
+    int height;
+  };
 
-
+   
   int init_decoder(int image_width, int image_height,
       color_format color_format, AVCodecID codec_id, const char *codec_name);
   int init_mjpeg_decoder(int image_width, int image_height, color_format color_format);
@@ -138,6 +150,7 @@ class UsbCam {
   void open_device(void);
   void grab_image();
   bool is_capturing_;
+  bool is_recording_;
 
 
   std::string camera_dev_;
@@ -145,6 +158,7 @@ class UsbCam {
   bool monochrome_;
   io_method io_;
   int fd_;
+  int streamdump_fd_;
   buffer * buffers_;
   unsigned int n_buffers_;
   AVFrame *avframe_camera_;

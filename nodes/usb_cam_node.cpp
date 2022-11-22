@@ -36,6 +36,7 @@
 
 #include <ros/ros.h>
 #include <usb_cam/usb_cam.h>
+#include <std_msgs/UInt8.h>
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
 #include <sstream>
@@ -54,7 +55,7 @@ public:
   image_transport::CameraPublisher image_pub_;
 
   // parameters
-  std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_, color_format_name_ ;
+  std::string video_device_name_, io_method_name_, pixel_format_name_, camera_name_, camera_info_url_, color_format_name_ , streamdump_file_name_;
   //std::string start_service_name_, start_service_name_;
   bool streaming_status_;
   int image_width_, image_height_, framerate_, exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
@@ -66,7 +67,17 @@ public:
 
   ros::ServiceServer service_start_, service_stop_;
 
+  ros::Subscriber recording_subscriber_;
 
+  void recordCallback(const std_msgs::UInt8::ConstPtr & msg)
+  {
+    cam_.set_recording(msg->data!=0);
+    if (msg->data!=0) {
+        ROS_INFO("Starting recording");
+    } else {
+        ROS_INFO("Stopping recording");
+    }
+  }
 
   bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
@@ -89,6 +100,7 @@ public:
     image_pub_ = it.advertiseCamera("image_raw", 1);
 
     // grab the parameters
+    node_.param("streamdump_file_name", streamdump_file_name_, std::string(""));
     node_.param("video_device", video_device_name_, std::string("/dev/video0"));
     node_.param("brightness", brightness_, -1); //0-255, -1 "leave alone"
     node_.param("contrast", contrast_, -1); //0-255, -1 "leave alone"
@@ -120,6 +132,9 @@ public:
     node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
 
+    // create Subscriber
+    recording_subscriber_ = node_.subscribe("/global/record",10, &UsbCamNode::recordCallback, this);
+
     // create Services
     service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
     service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
@@ -136,8 +151,8 @@ public:
     }
 
 
-    ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS", camera_name_.c_str(), video_device_name_.c_str(),
-        image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_);
+    ROS_INFO("Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS, logging to `%s`", camera_name_.c_str(), video_device_name_.c_str(),
+        image_width_, image_height_, io_method_name_.c_str(), pixel_format_name_.c_str(), framerate_, streamdump_file_name_.c_str());
 
     // set the IO method
     UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
@@ -168,7 +183,7 @@ public:
 
     // start the camera
     cam_.start(video_device_name_.c_str(), io_method, pixel_format, color_format, image_width_,
-		     image_height_, framerate_);
+		     image_height_, framerate_, streamdump_file_name_);
 
     // set camera parameters
     if (brightness_ >= 0)
