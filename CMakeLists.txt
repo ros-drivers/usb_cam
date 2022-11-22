@@ -42,9 +42,9 @@ include_directories(include
 ## Build the USB camera library
 add_library(${PROJECT_NAME} src/usb_cam.cpp)
 target_link_libraries(${PROJECT_NAME}
-  ${avcodec_LINK_LIBRARIES}
-  ${avutil_LINK_LIBRARIES}
-  ${swscale_LINK_LIBRARIES}
+  ${avcodec_LIBRARIES}
+  ${avutil_LIBRARIES}
+  ${swscale_LIBRARIES}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
@@ -53,9 +53,9 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(${PROJECT_NAME}_node nodes/usb_cam_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME}
-  ${avcodec_LINK_LIBRARIES}
-  ${avutil_LINK_LIBRARIES}
-  ${swscale_LINK_LIBRARIES}
+  ${avcodec_LIBRARIES}
+  ${avutil_LIBRARIES}
+  ${swscale_LIBRARIES}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
