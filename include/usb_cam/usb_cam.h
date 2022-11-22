@@ -156,6 +156,7 @@ class UsbCam {
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;
+  bool camera_is_stream_dump_;
   io_method io_;
   int fd_;
   int streamdump_fd_;

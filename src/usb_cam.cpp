@@ -622,7 +622,36 @@ int UsbCam::read_frame()
   switch (io_)
   {
     case IO_METHOD_READ:
-      len = read(fd_, buffers_[0].start, buffers_[0].length);
+      if (camera_is_stream_dump_) {
+        struct frame_header header_;
+        len = read(fd_, (void *)&header_, sizeof(header_));
+        if (len!=sizeof(header_)) {
+          ROS_ERROR("End of Stream File");
+          exit(EXIT_FAILURE);
+        }
+        if (header_.pixelformat!=pixelformat_) {
+          ROS_ERROR_STREAM("stream file pixel format does not match!");
+          ROS_ERROR_STREAM("Expecting: "<<fcc2s(pixelformat_));
+          ROS_ERROR_STREAM("Stream has: "<<fcc2s(header_.pixelformat));
+          exit(EXIT_FAILURE);
+        }
+        if (header_.width!=image_->width ||header_.height!=image_->height) {
+          ROS_ERROR_STREAM("stream file resolution does not match!");
+          ROS_ERROR_STREAM("Expecting: "<<image_->width<<":"<<image_->height);
+          ROS_ERROR_STREAM("Stream has: "<<header_.width<<":"<<header_.height);
+          exit(EXIT_FAILURE);
+        }
+        if (header_.length>buffers_[0].length) {
+          ROS_ERROR_STREAM("stream file frame does not fit in buffer!");
+          exit(EXIT_FAILURE);
+        }
+        // retrieve timing info
+        image_->nsec=header_.nsec;
+        image_->sec=header_.sec;
+        len = read(fd_, buffers_[0].start, header_.length);
+      } else {
+        len = read(fd_, buffers_[0].start, buffers_[0].length);
+      }
       if (len == -1)
       {
         switch (errno)
@@ -1143,10 +1172,10 @@ void UsbCam::open_device(void)
     exit(EXIT_FAILURE);
   }
 
+  camera_is_stream_dump_ = false;
   if (!S_ISCHR(st.st_mode))
   {
-    ROS_ERROR_STREAM(camera_dev_ << " is no device");
-    exit(EXIT_FAILURE);
+    camera_is_stream_dump_ = true;
   }
 
   fd_ = open(camera_dev_.c_str(), O_RDWR /* required */| O_NONBLOCK, 0);
@@ -1212,7 +1241,12 @@ void UsbCam::start(const std::string& dev, io_method io_method,
   }
 
   open_device();
-  init_device(image_width, image_height, framerate);
+  if (camera_is_stream_dump_) {
+    io_=IO_METHOD_READ;
+    init_read(image_width*image_height*3);
+  } else {
+    init_device(image_width, image_height, framerate);
+  }
 
   if (streamdump_file_name.compare("")!=0) {
       streamdump_fd_=open(streamdump_file_name.c_str(), (O_WRONLY|O_CREAT|O_TRUNC|O_DSYNC),0666);
@@ -1296,6 +1330,8 @@ void UsbCam::grab_image(sensor_msgs::Image* msg)
   image_->nsec=msg->header.stamp.nsec;
   image_->sec=msg->header.stamp.sec;
   read_frame();
+  msg->header.stamp.nsec=image_->nsec;
+  msg->header.stamp.sec=image_->sec;
   image_->is_new = 1;
   }
   // fill the info
@@ -1321,6 +1357,8 @@ void UsbCam::set_auto_focus(int value)
 {
   struct v4l2_queryctrl queryctrl;
   struct v4l2_ext_control control;
+
+  if (camera_is_stream_dump_) return;
 
   memset(&queryctrl, 0, sizeof(queryctrl));
   queryctrl.id = V4L2_CID_FOCUS_AUTO;
@@ -1375,6 +1413,8 @@ void UsbCam::set_v4l_parameter(const std::string& param, int value)
 */
 void UsbCam::set_v4l_parameter(const std::string& param, const std::string& value)
 {
+  if (camera_is_stream_dump_) return;
+
   // build the command
   std::stringstream ss;
   ss << "v4l2-ctl --device=" << camera_dev_ << " -c " << param << "=" << value << " 2>&1";
