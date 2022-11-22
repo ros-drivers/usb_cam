@@ -17,4 +17,5 @@ Maintainers
   * [FriedCircuits](https://github.com/FriedCircuits)
   * [Ludovico Russo](https://github.com/ludusrusso)
   * [Benjamin Maidel](https://github.com/benmaidel)
+  * [Eric Price](https://github.com/corvuscorax)
 
