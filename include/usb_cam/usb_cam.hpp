@@ -29,7 +29,7 @@
 
 #ifndef USB_CAM__USB_CAM_HPP_
 #define USB_CAM__USB_CAM_HPP_
-#include "usb_cam/usb_cam_utils.hpp"
+#include "usb_cam/utils.hpp"
 
 #include <asm/types.h>          /* for videodev2.h */
 
@@ -60,38 +60,26 @@ extern "C"
 namespace usb_cam
 {
 
+using utils::io_method;
+using utils::pixel_format;
+using utils::color_format;
+
+// TODO(lucasw) just store an Image shared_ptr here
+typedef struct
+{
+  uint32_t width;
+  uint32_t height;
+  int bytes_per_pixel;
+  int image_size;
+  builtin_interfaces::msg::Time stamp;
+  char * image;
+  int is_new;
+} camera_image_t;
+
 
 class UsbCam
 {
 public:
-  typedef enum
-  {
-    IO_METHOD_READ,
-    IO_METHOD_MMAP,
-    IO_METHOD_USERPTR,
-    IO_METHOD_UNKNOWN,
-  } io_method;
-
-  typedef enum
-  {
-    PIXEL_FORMAT_YUYV,
-    PIXEL_FORMAT_UYVY,
-    PIXEL_FORMAT_MJPEG,
-    PIXEL_FORMAT_YUVMONO10,
-    PIXEL_FORMAT_RGB24,
-    PIXEL_FORMAT_GREY,
-    PIXEL_FORMAT_YU12,
-    PIXEL_FORMAT_H264,
-    PIXEL_FORMAT_UNKNOWN
-  } pixel_format;
-
-  typedef enum
-  {
-    COLOR_FORMAT_YUV420P,
-    COLOR_FORMAT_YUV422P,
-    COLOR_FORMAT_UNKNOWN,
-  } color_format;
-
   UsbCam();
   ~UsbCam();
 
@@ -117,34 +105,11 @@ public:
   bool set_v4l_parameter(const std::string & param, int value);
   bool set_v4l_parameter(const std::string & param, const std::string & value);
 
-  static io_method io_method_from_string(const std::string & str);
-  static pixel_format pixel_format_from_string(const std::string & str);
-  static color_format color_format_from_string(const std::string & str);
-
   bool stop_capturing(void);
   bool start_capturing(void);
   bool is_capturing();
 
 private:
-  // TODO(lucasw) just store an Image shared_ptr here
-  typedef struct
-  {
-    uint32_t width;
-    uint32_t height;
-    int bytes_per_pixel;
-    int image_size;
-    builtin_interfaces::msg::Time stamp;
-    char * image;
-    int is_new;
-  } camera_image_t;
-
-  struct buffer
-  {
-    void * start;
-    size_t length;
-  };
-
-
   int init_decoder(
     int image_width, int image_height, color_format color_format,
     AVCodecID codec_id, const char * codec_name);
@@ -166,9 +131,9 @@ private:
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;
-  io_method io_;
+  usb_cam::utils::io_method io_;
   int fd_;
-  buffer * buffers_;
+  usb_cam::utils::buffer * buffers_;
   unsigned int n_buffers_;
   AVFrame * avframe_camera_;
   AVFrame * avframe_rgb_;
