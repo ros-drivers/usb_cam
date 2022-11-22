@@ -203,14 +203,20 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
 
 bool UsbCamNode::take_and_send_image()
 {
+  // TODO(flynneva): this is disgusting. We should find a better way
+  //  to get the timestamp of the image during capture and put it into
+  // whatever format we want (not ROS specific like  ROS-message)
+  std::chrono::time_point<std::chrono::system_clock> image_time;
   // grab the image
   if (!cam_.get_image(
-      img_->header.stamp, img_->encoding, img_->height, img_->width,
+      image_time, img_->encoding, img_->height, img_->width,
       img_->step, img_->data))
   {
     RCLCPP_ERROR(this->get_logger(), "grab failed");
     return false;
   }
+
+  img_->header.stamp.sec = std::chrono::system_clock::to_time_t(image_time);
 
   // INFO(img_->data.size() << " " << img_->width << " " << img_->height << " " << img_->step);
   auto ci = std::make_unique<sensor_msgs::msg::CameraInfo>(cinfo_->getCameraInfo());

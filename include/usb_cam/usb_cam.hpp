@@ -47,14 +47,10 @@ extern "C"
 #define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
 #endif
 
+#include <chrono>
 #include <string>
 #include <vector>
 #include <sstream>
-
-#include "builtin_interfaces/msg/time.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/time.hpp"
-// #include "sensor_msgs/msg/image.hpp"
 
 
 namespace usb_cam
@@ -65,13 +61,18 @@ using utils::pixel_format;
 using utils::color_format;
 
 // TODO(lucasw) just store an Image shared_ptr here
+// TOOD(flynnev) can new Image shared_ptr be used for both ROS 1 and ROS 2?
+//   we should try and eliminate all ROS-specific code from this `usb_cam` lib
+//   so we can reuse it for all ROS distros. I think this clock is the only thing
+//   left...other than the loggers.
 typedef struct
 {
   uint32_t width;
   uint32_t height;
   int bytes_per_pixel;
   int image_size;
-  builtin_interfaces::msg::Time stamp;
+  // TODO(flynneva)
+  std::chrono::time_point<std::chrono::system_clock> stamp;
   char * image;
   int is_new;
 } camera_image_t;
@@ -93,7 +94,7 @@ public:
   // grabs a new image from the camera
   // bool get_image(sensor_msgs::msg::Image:::SharedPtr image);
   bool get_image(
-    builtin_interfaces::msg::Time & stamp, std::string & encoding,
+    std::chrono::time_point<std::chrono::system_clock> & stamp, std::string & encoding,
     uint32_t & height, uint32_t & width, uint32_t & step, std::vector<uint8_t> & data);
 
   void get_formats();  // std::vector<usb_cam::msg::Format>& formats);
@@ -127,7 +128,7 @@ private:
   bool open_device(void);
   bool grab_image();
 
-  rclcpp::Clock::SharedPtr clock_;
+  std::shared_ptr<std::chrono::system_clock> clock_;
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;

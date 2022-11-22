@@ -53,6 +53,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -73,7 +74,7 @@ UsbCam::UsbCam()
   avcodec_context_(NULL), avframe_camera_size_(0), avframe_rgb_size_(0),
   video_sws_(NULL), image_(NULL), is_capturing_(false)
 {
-  clock_ = std::make_shared<rclcpp::Clock>(RCL_SYSTEM_TIME);
+  clock_ = std::make_shared<std::chrono::system_clock>();
 }
 
 UsbCam::~UsbCam()
@@ -210,7 +211,7 @@ bool UsbCam::read_frame()
   struct v4l2_buffer buf;
   unsigned int i;
   int len;
-  builtin_interfaces::msg::Time stamp;
+  std::chrono::time_point<std::chrono::system_clock> stamp;
   timespec buf_time;
   timespec real_time;
 
@@ -265,8 +266,7 @@ bool UsbCam::read_frame()
       // need to get buf time here otherwise process_image will zero it
       TIMEVAL_TO_TIMESPEC(&buf.timestamp, &buf_time);
       usb_cam::utils::monotonicToRealTime(buf_time, real_time);
-      stamp.sec = real_time.tv_sec;
-      stamp.nanosec = real_time.tv_nsec;
+      stamp = clock_->from_time_t(real_time.tv_sec);
 
       assert(buf.index < n_buffers_);
       len = buf.bytesused;
@@ -307,8 +307,7 @@ bool UsbCam::read_frame()
 
       TIMEVAL_TO_TIMESPEC(&buf.timestamp, &buf_time);
       usb_cam::utils::monotonicToRealTime(buf_time, real_time);
-      stamp.sec = real_time.tv_sec;
-      stamp.nanosec = real_time.tv_nsec;
+      stamp = clock_->from_time_t(real_time.tv_sec);
 
       for (i = 0; i < n_buffers_; ++i) {
         if (buf.m.userptr == reinterpret_cast<uint64_t>(buffers_[i].start) && \
@@ -876,7 +875,7 @@ bool UsbCam::shutdown(void)
 }
 
 bool UsbCam::get_image(
-  builtin_interfaces::msg::Time & stamp,
+  std::chrono::time_point<std::chrono::system_clock> & stamp,
   std::string & encoding, uint32_t & height, uint32_t & width,
   uint32_t & step, std::vector<uint8_t> & data)
 {
@@ -975,6 +974,7 @@ bool UsbCam::grab_image()
   r = select(fd_ + 1, &fds, NULL, NULL, &tv);
   // if the v4l2_buffer timestamp isn't available use this time, though
   // it may be 10s of milliseconds after the frame acquisition.
+  // image_->stamp = clock_->now();
   image_->stamp = clock_->now();
 
   if (-1 == r) {
