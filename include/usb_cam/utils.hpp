@@ -119,7 +119,7 @@ inline int xioctl(int fd, int request, void * arg)
 }
 
 /** Clip a value to the range 0<val<255. For speed this is done using an
- * array, so can only cope with numbers in the range -128<val<383.
+ * array, so can only cope with numbers in the range -128<=val<=383.
  */
 inline unsigned char CLIPVALUE(const int & val)
 {
@@ -127,8 +127,15 @@ inline unsigned char CLIPVALUE(const int & val)
   /*   val = val < 0 ? 0 : val; */
   /*   return val > 255 ? 255 : val; */
 
-  // New method (array)
-  return usb_cam::constants::uchar_clipping_table[val + usb_cam::constants::clipping_table_offset];
+  try {
+    // New method array
+    return usb_cam::constants::uchar_clipping_table.at(
+      val + usb_cam::constants::clipping_table_offset);
+  } catch (std::out_of_range const &) {
+    // fall back to old method
+    unsigned char clipped_val = val < 0 ? 0 : static_cast<unsigned char>(val);
+    return val > 255 ? 255 : clipped_val;
+  }
 }
 
 
