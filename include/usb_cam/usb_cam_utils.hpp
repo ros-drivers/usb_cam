@@ -33,7 +33,9 @@
 
 #include <cstring>
 #include <sstream>
-#include <opencv2/opencv.hpp>
+#include <string>
+
+#include "opencv2/opencv.hpp"
 
 
 namespace usb_cam
@@ -68,7 +70,7 @@ void monotonicToRealTime(const timespec & monotonic_time, timespec & real_time)
   }
 }
 
-inline int xioctl(int fd, unsigned long request, void * arg)
+inline int xioctl(int fd, int request, void * arg)
 {
   int r;
 
@@ -376,15 +378,16 @@ inline void yuv4202rgb(char * YUV, char * RGB, int width, int height)
 
 std::string fcc2s(unsigned int val)
 {
-	std::string s;
+  std::string s;
 
-	s += val & 0x7f;
-	s += (val >> 8) & 0x7f;
-	s += (val >> 16) & 0x7f;
-	s += (val >> 24) & 0x7f;
-	if (val & (1 << 31))
-		s += "-BE";
-	return s;
+  s += val & 0x7f;
+  s += (val >> 8) & 0x7f;
+  s += (val >> 16) & 0x7f;
+  s += (val >> 24) & 0x7f;
+  if (val & (1 << 31)) {
+    s += "-BE";
+  }
+  return s;
 }
 }  // namespace usb_cam
 #endif  // USB_CAM__USB_CAM_UTILS_HPP_
