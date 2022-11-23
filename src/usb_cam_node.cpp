@@ -57,7 +57,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   // declare params
   this->declare_parameter("camera_name", "default_cam");
   this->declare_parameter("camera_info_url", "");
-  this->declare_parameter("framerate", 10.0);
+  this->declare_parameter("framerate", 30.0);
   this->declare_parameter("frame_id", "default_cam");
   this->declare_parameter("image_height", 480);
   this->declare_parameter("image_width", 640);
