@@ -26,16 +26,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "usb_cam/usb_cam_node.hpp"
 #include "usb_cam/utils.hpp"
-
-#include <sstream>
-// #include <std_srvs/srv/Empty.h>
-
-#include <string>
-#include <memory>
-#include <vector>
 
 
 namespace usb_cam
@@ -206,7 +203,7 @@ bool UsbCamNode::take_and_send_image()
   // TODO(flynneva): this is disgusting. We should find a better way
   //  to get the timestamp of the image during capture and put it into
   // whatever format we want (not ROS specific like  ROS-message)
-  std::chrono::time_point<std::chrono::system_clock> image_time;
+  struct timespec image_time;
   // grab the image
   if (!cam_.get_image(
       image_time, img_->encoding, img_->height, img_->width,
@@ -216,7 +213,8 @@ bool UsbCamNode::take_and_send_image()
     return false;
   }
 
-  img_->header.stamp.sec = std::chrono::system_clock::to_time_t(image_time);
+  img_->header.stamp.sec = image_time.tv_sec;
+  img_->header.stamp.nanosec = image_time.tv_nsec;
 
   // INFO(img_->data.size() << " " << img_->width << " " << img_->height << " " << img_->step);
   auto ci = std::make_unique<sensor_msgs::msg::CameraInfo>(cinfo_->getCameraInfo());

@@ -28,9 +28,6 @@
 
 
 #define __STDC_CONSTANT_MACROS
-#include "usb_cam/usb_cam.hpp"
-#include "usb_cam/conversions.hpp"
-#include "usb_cam/utils.hpp"
 
 #include <unistd.h>
 #include <errno.h>
@@ -57,6 +54,11 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "usb_cam/usb_cam.hpp"
+#include "usb_cam/conversions.hpp"
+#include "usb_cam/utils.hpp"
+
+
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
 
 
@@ -72,10 +74,9 @@ UsbCam::UsbCam()
 : io_(io_method::IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0),
   avframe_camera_(NULL), avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL),
   avcodec_context_(NULL), avframe_camera_size_(0), avframe_rgb_size_(0),
-  video_sws_(NULL), image_(NULL), is_capturing_(false)
-{
-  clock_ = std::make_shared<std::chrono::system_clock>();
-}
+  video_sws_(NULL), image_(NULL), is_capturing_(false),
+  epoch_time_shift_(usb_cam::utils::get_epoch_time_shift())
+{}
 
 UsbCam::~UsbCam()
 {
@@ -211,9 +212,8 @@ bool UsbCam::read_frame()
   struct v4l2_buffer buf;
   unsigned int i;
   int len;
-  std::chrono::time_point<std::chrono::system_clock> stamp;
-  timespec buf_time;
-  timespec real_time;
+  struct timespec stamp;
+  int64_t buffer_time_s;
 
   switch (io_) {
     case io_method::IO_METHOD_READ:
@@ -263,10 +263,11 @@ bool UsbCam::read_frame()
         }
       }
 
-      // need to get buf time here otherwise process_image will zero it
-      TIMEVAL_TO_TIMESPEC(&buf.timestamp, &buf_time);
-      usb_cam::utils::monotonicToRealTime(buf_time, real_time);
-      stamp = clock_->from_time_t(real_time.tv_sec);
+      buffer_time_s =
+        buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
+
+      stamp.tv_sec = static_cast<time_t>(round(buffer_time_s)) + epoch_time_shift_;
+      stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec * 1000.0);
 
       assert(buf.index < n_buffers_);
       len = buf.bytesused;
@@ -305,9 +306,11 @@ bool UsbCam::read_frame()
         }
       }
 
-      TIMEVAL_TO_TIMESPEC(&buf.timestamp, &buf_time);
-      usb_cam::utils::monotonicToRealTime(buf_time, real_time);
-      stamp = clock_->from_time_t(real_time.tv_sec);
+      buffer_time_s =
+        buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
+
+      stamp.tv_sec = static_cast<time_t>(round(buffer_time_s)) + epoch_time_shift_;
+      stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec / 1000.0);
 
       for (i = 0; i < n_buffers_; ++i) {
         if (buf.m.userptr == reinterpret_cast<uint64_t>(buffers_[i].start) && \
@@ -875,7 +878,7 @@ bool UsbCam::shutdown(void)
 }
 
 bool UsbCam::get_image(
-  std::chrono::time_point<std::chrono::system_clock> & stamp,
+  struct timespec & stamp,
   std::string & encoding, uint32_t & height, uint32_t & width,
   uint32_t & step, std::vector<uint8_t> & data)
 {
@@ -886,11 +889,7 @@ bool UsbCam::get_image(
   if (!grab_image()) {
     return false;
   }
-  // TODO(lucasw) check if stamp is valid)
-  // RCLCPP_INFO_STREAM(
-  //  rclcpp::get_logger("usb_cam"),
-  //  "stamp " << image_->stamp.sec << " " << image_->stamp.nanosec
-  //   << " to " << stamp.sec << " " << stamp.nanosec);
+
   // stamp the image
   stamp = image_->stamp;
   // fill in the info
@@ -975,7 +974,7 @@ bool UsbCam::grab_image()
   // if the v4l2_buffer timestamp isn't available use this time, though
   // it may be 10s of milliseconds after the frame acquisition.
   // image_->stamp = clock_->now();
-  image_->stamp = clock_->now();
+  timespec_get(&image_->stamp, TIME_UTC);
 
   if (-1 == r) {
     if (EINTR == errno) {

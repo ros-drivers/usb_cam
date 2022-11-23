@@ -29,9 +29,9 @@
 
 #ifndef USB_CAM__USB_CAM_HPP_
 #define USB_CAM__USB_CAM_HPP_
-#include "usb_cam/utils.hpp"
 
 #include <asm/types.h>          /* for videodev2.h */
+#include <time.h>
 
 extern "C"
 {
@@ -48,9 +48,12 @@ extern "C"
 #endif
 
 #include <chrono>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
+
+#include "usb_cam/utils.hpp"
 
 
 namespace usb_cam
@@ -71,8 +74,7 @@ typedef struct
   uint32_t height;
   int bytes_per_pixel;
   int image_size;
-  // TODO(flynneva)
-  std::chrono::time_point<std::chrono::system_clock> stamp;
+  struct timespec stamp;
   char * image;
   int is_new;
 } camera_image_t;
@@ -94,7 +96,7 @@ public:
   // grabs a new image from the camera
   // bool get_image(sensor_msgs::msg::Image:::SharedPtr image);
   bool get_image(
-    std::chrono::time_point<std::chrono::system_clock> & stamp, std::string & encoding,
+    struct timespec & stamp, std::string & encoding,
     uint32_t & height, uint32_t & width, uint32_t & step, std::vector<uint8_t> & data);
 
   void get_formats();  // std::vector<usb_cam::msg::Format>& formats);
@@ -128,7 +130,6 @@ private:
   bool open_device(void);
   bool grab_image();
 
-  std::shared_ptr<std::chrono::system_clock> clock_;
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;
@@ -146,6 +147,7 @@ private:
   struct SwsContext * video_sws_;
   camera_image_t * image_;
   bool is_capturing_;
+  const time_t epoch_time_shift_;
 };
 
 }  // namespace usb_cam

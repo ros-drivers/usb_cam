@@ -53,7 +53,12 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  # TODO(flynneva): add some unit and integration tests
+  find_package(ament_cmake_gtest)
+
+  # unit tests
+  ament_add_gtest(test_usb_cam_utils
+    test/test_usb_cam_utils.cpp)
+  target_link_libraries(test_usb_cam_utils ${PROJECT_NAME})
 endif()
 
 install(

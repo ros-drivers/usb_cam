@@ -29,7 +29,6 @@
 
 #ifndef USB_CAM__USB_CAM_NODE_HPP_
 #define USB_CAM__USB_CAM_NODE_HPP_
-#include "usb_cam/usb_cam.hpp"
 
 #include <memory>
 #include <string>
@@ -40,6 +39,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "std_srvs/srv/set_bool.hpp"
+
+#include "usb_cam/usb_cam.hpp"
 
 
 std::ostream & operator<<(std::ostream & ostr, const rclcpp::Time & tm)
