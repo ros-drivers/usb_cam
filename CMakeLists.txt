@@ -13,6 +13,8 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+find_package(OpenCV REQUIRED)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(avcodec REQUIRED libavcodec)
 pkg_check_modules(avutil REQUIRED libavutil)

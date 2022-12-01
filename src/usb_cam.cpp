@@ -36,6 +36,7 @@ extern "C" {
 #define __STDC_CONSTANT_MACROS  // Required for libavutil
 #include <libavutil/imgutils.h>
 #include <fcntl.h>  // for O_* constants
+#include <unistd.h>  // for getpagesize()
 }
 
 #include <chrono>
