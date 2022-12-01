@@ -30,22 +30,10 @@
 #ifndef USB_CAM__USB_CAM_HPP_
 #define USB_CAM__USB_CAM_HPP_
 
-#include <asm/types.h>          /* for videodev2.h */
-#include <time.h>
-
-extern "C"
-{
-#include <linux/videodev2.h>
+extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
-#include <libavutil/mem.h>
 }
-
-// legacy reasons
-#include <libavcodec/version.h>
-#if LIBAVCODEC_VERSION_MAJOR < 55
-#define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
-#endif
 
 #include <chrono>
 #include <memory>

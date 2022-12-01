@@ -32,6 +32,8 @@
 
 #include <string>
 
+#include <opencv2/imgproc.hpp>
+
 #include "usb_cam/constants.hpp"
 #include "usb_cam/utils.hpp"
 

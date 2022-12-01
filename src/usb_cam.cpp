@@ -26,40 +26,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#define CLEAR(x) memset(&(x), 0, sizeof(x))
 
-#define __STDC_CONSTANT_MACROS
-
-#include <unistd.h>
-#include <errno.h>
-#include <malloc.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/mman.h>
-#include <sys/ioctl.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <fcntl.h>              /* low-level i/o */
-
+extern "C" {
+#include <linux/videodev2.h>  // Defines V4L2 format constants
+#include <malloc.h>  // for memalign
+#include <sys/mman.h>  // for mmap
+#include <sys/stat.h>  // for stat
+#define __STDC_CONSTANT_MACROS  // Required for libavutil
 #include <libavutil/imgutils.h>
+#include <fcntl.h>  // for O_* constants
+}
 
+#include <chrono>
+#include <ctime>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include <chrono>
 
-#include "rclcpp/rclcpp.hpp"
+#include "opencv4/opencv2/imgproc.hpp"
 
 #include "usb_cam/usb_cam.hpp"
 #include "usb_cam/conversions.hpp"
 #include "usb_cam/utils.hpp"
-
-
-#define CLEAR(x) memset(&(x), 0, sizeof(x))
 
 
 namespace usb_cam
@@ -89,7 +79,7 @@ int UsbCam::init_decoder(
 {
   avcodec_ = avcodec_find_decoder(codec_id);
   if (!avcodec_) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Could not find %s decoder", codec_name);
+    std::cout << "Could not find " << codec_name << " decoder";
     return 0;
   }
 
@@ -129,14 +119,12 @@ int UsbCam::init_decoder(
   // TODO(lucasw) it gets set correctly here, but then changed later to deprecated J422P format
   if (color_format == color_format::COLOR_FORMAT_YUV420P) {
     avcodec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
-    RCLCPP_INFO_STREAM(
-      rclcpp::get_logger("usb_cam"),
-      "using YUV420P " << AV_PIX_FMT_YUV420P << " " << avcodec_context_->pix_fmt);
+    std::cout << "using YUV420P " << AV_PIX_FMT_YUV420P << " ";
+    std::cout << avcodec_context_->pix_fmt << std::endl;
   } else {
     avcodec_context_->pix_fmt = AV_PIX_FMT_YUV422P;
-    RCLCPP_INFO_STREAM(
-      rclcpp::get_logger("usb_cam"),
-      "using YUV422P " << AV_PIX_FMT_YUV422P << " " << avcodec_context_->pix_fmt);
+    std::cout << "using YUV422P " << AV_PIX_FMT_YUV422P << " ";
+    std::cout << avcodec_context_->pix_fmt << std::endl;
   }
 
   avcodec_context_->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -146,18 +134,19 @@ int UsbCam::init_decoder(
   avframe_camera_size_ = avpicture_get_size(AV_PIX_FMT_YUV422P, image_width, image_height);
   avframe_rgb_size_ = avpicture_get_size(AV_PIX_FMT_RGB24, image_width, image_height);
 #else
-  avframe_camera_size_ = av_image_get_buffer_size(AV_PIX_FMT_YUV422P, image_width, image_height, 1);
-  avframe_rgb_size_ = av_image_get_buffer_size(AV_PIX_FMT_RGB24, image_width, image_height, 1);
+  avframe_camera_size_ =
+    av_image_get_buffer_size(AV_PIX_FMT_YUV422P, image_width, image_height, 1);
+  avframe_rgb_size_ =
+    av_image_get_buffer_size(AV_PIX_FMT_RGB24, image_width, image_height, 1);
 #endif
 
   /* open it */
   if (avcodec_open2(avcodec_context_, avcodec_, &avoptions_) < 0) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Could not open %s Decoder", codec_name);
+    std::cout << "Could not open " << codec_name << " decoder" << std::endl;
     return 0;
   }
-  RCLCPP_INFO_STREAM(
-    rclcpp::get_logger("usb_cam"),
-    "pixel format " << AV_PIX_FMT_YUV422P << " " << avcodec_context_->pix_fmt);
+  std::cout << "pixel format " << AV_PIX_FMT_YUV422P << " ";
+  std::cout << avcodec_context_->pix_fmt << std::endl;
   return 1;
 }
 
@@ -482,7 +471,7 @@ bool UsbCam::init_read(unsigned int buffer_size)
   buffers_ = reinterpret_cast<usb_cam::utils::buffer *>(calloc(1, sizeof(*buffers_)));
 
   if (!buffers_) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Out of memory");
+    std::cerr << "Out of memory" << std::endl;
     return false;
   }
 
@@ -490,7 +479,7 @@ bool UsbCam::init_read(unsigned int buffer_size)
   buffers_[0].start = malloc(buffer_size);
 
   if (!buffers_[0].start) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Out of memory");
+    std::cerr << "Out of memory" << std::endl;
     return false;
   }
   return true;
@@ -508,9 +497,7 @@ bool UsbCam::init_mmap(void)
 
   if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_REQBUFS), &req)) {
     if (EINVAL == errno) {
-      RCLCPP_ERROR_STREAM(
-        rclcpp::get_logger("usb_cam"),
-        camera_dev_ << " does not support memory mapping");
+      std::cerr << camera_dev_ << " does not support memory mapping" << std::endl;
       return false;
     } else {
       std::cerr << "error, quitting, TODO throw " << errno << std::endl;
@@ -519,16 +506,14 @@ bool UsbCam::init_mmap(void)
   }
 
   if (req.count < 2) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("usb_cam"),
-      "Insufficient buffer memory on " << camera_dev_);
+    std::cerr << "Insufficient buffer memory on " << camera_dev_ << std::endl;
     return false;
   }
 
   buffers_ = reinterpret_cast<usb_cam::utils::buffer *>(calloc(req.count, sizeof(*buffers_)));
 
   if (!buffers_) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Out of memory");
+    std::cerr << "Out of memory" << std::endl;
     return false;
   }
 
@@ -576,9 +561,7 @@ bool UsbCam::init_userp(unsigned int buffer_size)
 
   if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_REQBUFS), &req)) {
     if (EINVAL == errno) {
-      RCLCPP_ERROR_STREAM(
-        rclcpp::get_logger("usb_cam"),
-        camera_dev_ << " does not support user pointer i/o");
+      std::cerr << camera_dev_ << " does not support user pointer i/o" << std::endl;
       return false;  // (EXIT_FAILURE);
     } else {
       std::cerr << "error, quitting, TODO throw " << errno << std::endl;
@@ -589,7 +572,7 @@ bool UsbCam::init_userp(unsigned int buffer_size)
   buffers_ = reinterpret_cast<usb_cam::utils::buffer *>(calloc(4, sizeof(*buffers_)));
 
   if (!buffers_) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Out of memory");
+    std::cerr << "Out of memory" << std::endl;
     return false;  // (EXIT_FAILURE);
   }
 
@@ -598,7 +581,7 @@ bool UsbCam::init_userp(unsigned int buffer_size)
     buffers_[n_buffers_].start = memalign(/* boundary */ page_size, buffer_size);
 
     if (!buffers_[n_buffers_].start) {
-      RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Out of memory");
+      std::cerr << "Out of memory" << std::endl;
       return false;
     }
   }
@@ -615,9 +598,7 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
 
   if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_QUERYCAP), &cap)) {
     if (EINVAL == errno) {
-      RCLCPP_ERROR_STREAM(
-        rclcpp::get_logger("usb_cam"),
-        camera_dev_ << " is no V4L2 device");
+      std::cerr << camera_dev_ << " is no V4L2 device" << std::endl;
       return false;  // (EXIT_FAILURE);
     } else {
       std::cerr << "error, quitting, TODO throw " << errno << std::endl;
@@ -626,18 +607,14 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
   }
 
   if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("usb_cam"),
-      camera_dev_ << " is no video capture device");
+    std::cerr << camera_dev_ << " is no video capture device" << std::endl;
     return false;  // (EXIT_FAILURE);
   }
 
   switch (io_) {
     case io_method::IO_METHOD_READ:
       if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
-        RCLCPP_ERROR_STREAM(
-          rclcpp::get_logger("usb_cam"),
-          camera_dev_ << " does not support read i/o");
+        std::cerr << camera_dev_ << " does not support read i/o" << std::endl;
         return false;  // (EXIT_FAILURE);
       }
 
@@ -646,9 +623,7 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
     case io_method::IO_METHOD_MMAP:
     case io_method::IO_METHOD_USERPTR:
       if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
-        RCLCPP_ERROR_STREAM(
-          rclcpp::get_logger("usb_cam"),
-          camera_dev_ << " does not support streaming i/o");
+        std::cout << camera_dev_ << " does not support streaming i/o" << std::endl;
         return false;  // (EXIT_FAILURE);
       }
 
@@ -715,14 +690,12 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
   memset(&stream_params, 0, sizeof(stream_params));
   stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_G_PARM), &stream_params) < 0) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("usb_cam"), "can't set stream params " << errno);
+    std::cerr << "can't set stream params " << errno << std::endl;
     return false;  // ("Couldn't query v4l fps!");
   }
-  RCLCPP_INFO_STREAM(
-    rclcpp::get_logger("usb_cam"),
-    "Capability flag: 0x" << std::hex << stream_params.parm.capture.capability << std::dec);
+
   if (!stream_params.parm.capture.capability && V4L2_CAP_TIMEPERFRAME) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "V4L2_CAP_TIMEPERFRAME not supported");
+    std::cerr << "V4L2_CAP_TIMEPERFRAME not supported" << std::endl;
   }
 
   // TODO(lucasw) need to get list of valid numerator/denominator pairs
@@ -730,9 +703,7 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
   stream_params.parm.capture.timeperframe.numerator = 1;
   stream_params.parm.capture.timeperframe.denominator = framerate;
   if (usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_S_PARM), &stream_params) < 0) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Couldn't set camera framerate");
-  } else {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("usb_cam"), "Set framerate to be " << framerate);
+    std::cerr << "Couldn't set camera framerate" << std::endl;
   }
 
   switch (io_) {
@@ -770,23 +741,21 @@ bool UsbCam::open_device(void)
   struct stat st;
 
   if (-1 == stat(camera_dev_.c_str(), &st)) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("usb_cam"),
-      "Cannot identify '" << camera_dev_ << "': " << errno << ", " << strerror(errno));
+    std::cerr << "Cannot identify '" << camera_dev_ << "': " << errno << ", ";
+    std::cerr << strerror(errno) << std::endl;
     return false;  // (EXIT_FAILURE);
   }
 
   if (!S_ISCHR(st.st_mode)) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("usb_cam"), camera_dev_ << " is no device");
+    std::cerr << camera_dev_ << " is no device" << std::endl;
     return false;  // (EXIT_FAILURE);
   }
 
   fd_ = open(camera_dev_.c_str(), O_RDWR /* required */ | O_NONBLOCK, 0);
 
   if (-1 == fd_) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("usb_cam"),
-      "Cannot open '" << camera_dev_ << "': " << errno << ", " << strerror(errno));
+    std::cerr << "Cannot open '" << camera_dev_ << "': " << errno << ", ";
+    std::cerr << strerror(errno) << std::endl;
     return false;  // (EXIT_FAILURE);
   }
   return true;
@@ -823,7 +792,7 @@ bool UsbCam::start(
   } else if (pixel_format == pixel_format::PIXEL_FORMAT_YU12) {
     pixelformat_ = V4L2_PIX_FMT_YUV420;
   } else {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "Unknown pixel format.");
+    std::cerr << "Unknown pixel format" << std::endl;
     return false;  // (EXIT_FAILURE);
   }
 
@@ -981,14 +950,12 @@ bool UsbCam::grab_image()
       return false;
     }
 
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("usb_cam"),
-      "Something went wrong, exiting..." << errno);
+    std::cerr << "Something went wrong, exiting..." << errno << std::endl;
     return false;  // ("select");
   }
 
   if (0 == r) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "select timeout");
+    std::cerr << "Select timeout, exiting..." << std::endl;
     return false;
   }
 
@@ -1010,14 +977,14 @@ bool UsbCam::set_auto_focus(int value)
 
   if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_QUERYCTRL), &queryctrl)) {
     if (errno != EINVAL) {
-      RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "VIDIOC_QUERYCTRL");
+      std::cerr << "VIDIOC_QUERYCTRL" << std::endl;
       return false;
     } else {
-      RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "V4L2_CID_FOCUS_AUTO is not supported");
+      std::cerr << "V4L2_CID_FOCUS_AUTO is not supported" << std::endl;
       return false;
     }
   } else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
-    RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "V4L2_CID_FOCUS_AUTO is not supported");
+    std::cerr << "V4L2_CID_FOCUS_AUTO is not supported" << std::endl;
     return false;
   } else {
     memset(&control, 0, sizeof(control));
@@ -1025,7 +992,7 @@ bool UsbCam::set_auto_focus(int value)
     control.value = value;
 
     if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_S_CTRL), &control)) {
-      RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "VIDIOC_S_CTRL");
+      std::cerr << "VIDIOC_S_CTRL" << std::endl;
       return false;
     }
   }
@@ -1073,11 +1040,11 @@ bool UsbCam::set_v4l_parameter(const std::string & param, const std::string & va
     pclose(stream);
     // any output should be an error
     if (output.length() > 0) {
-      RCLCPP_WARN(rclcpp::get_logger("usb_cam"), "%s", output.c_str());
+      std::cout << output.c_str() << std::endl;
       retcode = 1;
     }
   } else {
-    RCLCPP_WARN(rclcpp::get_logger("usb_cam"), "usb_cam_node could not run '%s'", cmd.c_str());
+    std::cerr << "usb_cam_node could not run '" << cmd.c_str() << "'" << std::endl;
     retcode = 1;
   }
   return retcode;

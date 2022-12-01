@@ -31,13 +31,11 @@
 
 #include <sys/ioctl.h>
 #include <sys/time.h>
-#include <math.h>
-
+#include <cmath>
+#include <ctime>
 #include <cstring>
 #include <sstream>
 #include <string>
-
-#include "opencv2/opencv.hpp"
 
 #include "usb_cam/constants.hpp"
 
@@ -89,7 +87,7 @@ struct buffer
 /// @brief Get epoch time shift
 /// @details Run this at start of process to calculate epoch time shift
 /// @ref https://stackoverflow.com/questions/10266451/where-does-v4l2-buffer-timestamp-value-starts-counting
-time_t get_epoch_time_shift()
+inline time_t get_epoch_time_shift()
 {
   struct timeval epoch_time;
   struct timespec monotonic_time;
@@ -98,9 +96,11 @@ time_t get_epoch_time_shift()
   clock_gettime(CLOCK_MONOTONIC, &monotonic_time);
 
   const int64_t uptime_ms =
-    monotonic_time.tv_sec * 1000 + static_cast<int64_t>(round(monotonic_time.tv_nsec / 1000000.0));
+    monotonic_time.tv_sec * 1000 + static_cast<int64_t>(
+    std::round(monotonic_time.tv_nsec / 1000000.0));
   const int64_t epoch_ms =
-    epoch_time.tv_sec * 1000 + static_cast<int64_t>(round(epoch_time.tv_usec / 1000.0));
+    epoch_time.tv_sec * 1000 + static_cast<int64_t>(
+    std::round(epoch_time.tv_usec / 1000.0));
 
   return static_cast<time_t>((epoch_ms - uptime_ms) / 1000);
 }
@@ -203,7 +203,7 @@ inline std::string pixel_format_to_string(const uint32_t & pixelformat)
 }
 
 
-color_format color_format_from_string(const std::string & str)
+inline color_format color_format_from_string(const std::string & str)
 {
   if (str == "yuv420p") {
     return COLOR_FORMAT_YUV420P;
