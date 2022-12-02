@@ -44,8 +44,28 @@ jobs:
         with:
           path: ros_ws/src
       - name: build and test
+        id: build_and_test_step
         uses: ros-tooling/action-ros-ci@master
         with:
           package-name: usb_cam
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ""
+          colcon-defaults: |
+            {
+              "build": {
+                "mixin": ["coverage-gcc"]
+              }
+            }
+          # If possible, pin the repository in the workflow to a specific commit to avoid
+          # changes in colcon-mixin-repository from breaking your tests.
+          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
+      - uses: actions/upload-artifact@v1
+        with:
+          name: colcon-logs-${{ matrix.ros_distribution }}
+          path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/log
+        if: always()
+      - uses: actions/upload-artifact@v1
+        with:
+          name: lcov-logs-${{ matrix.ros_distribution }}
+          path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/lcov
+        if: always()
