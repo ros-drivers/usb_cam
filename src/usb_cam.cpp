@@ -332,11 +332,6 @@ bool UsbCam::read_frame()
   return true;
 }
 
-bool UsbCam::is_capturing()
-{
-  return is_capturing_;
-}
-
 bool UsbCam::stop_capturing(void)
 {
   if (!is_capturing_) {return false;}
@@ -881,51 +876,48 @@ bool UsbCam::get_image(
   return true;
 }
 
-void UsbCam::get_formats()  // std::vector<usb_cam::msg::Format>& formats)
+std::vector<capture_format_t> UsbCam::get_supported_formats()
 {
-  RCLCPP_INFO(rclcpp::get_logger("usb_cam"), "This Cameras Supported Formats:");
-  struct v4l2_fmtdesc fmt;
-  fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  fmt.index = 0;
-  for (fmt.index = 0; usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_ENUM_FMT), &fmt) == 0;
-    ++fmt.index)
+  std::vector<capture_format_t> supported_formats;
+  struct v4l2_fmtdesc current_format;
+  current_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  current_format.index = 0;
+  for (current_format.index = 0;
+    usb_cam::utils::xioctl(
+      fd_, static_cast<int>(VIDIOC_ENUM_FMT), &current_format) == 0;
+    ++current_format.index)
   {
-    RCLCPP_INFO_STREAM(
-      rclcpp::get_logger("usb_cam"),
-      "  " << fmt.description << "[Index: " << fmt.index << ", Type: " << fmt.type <<
-        ", Flags: " << fmt.flags << ", PixelFormat: " << std::hex << fmt.pixelformat << "]");
+    struct v4l2_frmsizeenum current_size;
+    current_size.index = 0;
+    current_size.pixel_format = current_format.pixelformat;
 
-    struct v4l2_frmsizeenum size;
-    size.index = 0;
-    size.pixel_format = fmt.pixelformat;
-
-    for (size.index = 0;
-      usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_ENUM_FRAMESIZES), &size) == 0;
-      ++size.index)
+    for (current_size.index = 0;
+      usb_cam::utils::xioctl(
+        fd_, static_cast<int>(VIDIOC_ENUM_FRAMESIZES), &current_size) == 0;
+      ++current_size.index)
     {
-      RCLCPP_INFO_STREAM(
-        rclcpp::get_logger("usb_cam"),
-        "  width: " << size.discrete.width << " x height: " << size.discrete.height);
-      struct v4l2_frmivalenum interval;
-      interval.index = 0;
-      interval.pixel_format = size.pixel_format;
-      interval.width = size.discrete.width;
-      interval.height = size.discrete.height;
-      for (interval.index = 0;
-        usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_ENUM_FRAMEINTERVALS), &interval) == 0;
-        ++interval.index)
+      struct v4l2_frmivalenum current_interval;
+      current_interval.index = 0;
+      current_interval.pixel_format = current_size.pixel_format;
+      current_interval.width = current_size.discrete.width;
+      current_interval.height = current_size.discrete.height;
+      for (current_interval.index = 0;
+        usb_cam::utils::xioctl(
+          fd_, static_cast<int>(VIDIOC_ENUM_FRAMEINTERVALS), &current_interval) == 0;
+        ++current_interval.index)
       {
-        if (interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
-          RCLCPP_INFO_STREAM(
-            rclcpp::get_logger("usb_cam"),
-            "  " << interval.type << " " << interval.discrete.numerator << " / " <<
-              interval.discrete.denominator);
-        } else {
-          RCLCPP_INFO(rclcpp::get_logger("usb_cam"), "other type");
+        if (current_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
+          capture_format_t capture_format;
+          capture_format.format = current_format;
+          capture_format.size = current_size;
+          capture_format.interval = current_interval;
+          supported_formats.push_back(capture_format);
         }
       }  // interval loop
     }  // size loop
   }  // fmt loop
+
+  return supported_formats;
 }
 
 bool UsbCam::grab_image()

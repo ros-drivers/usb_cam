@@ -33,6 +33,7 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#include <linux/videodev2.h>
 }
 
 #include <chrono>
@@ -68,6 +69,14 @@ typedef struct
 } camera_image_t;
 
 
+typedef struct
+{
+  struct v4l2_fmtdesc format;
+  struct v4l2_frmsizeenum size;
+  struct v4l2_frmivalenum interval;
+} capture_format_t;
+
+
 class UsbCam
 {
 public:
@@ -87,7 +96,7 @@ public:
     struct timespec & stamp, std::string & encoding,
     uint32_t & height, uint32_t & width, uint32_t & step, std::vector<uint8_t> & data);
 
-  void get_formats();  // std::vector<usb_cam::msg::Format>& formats);
+  std::vector<capture_format_t> get_supported_formats();
 
   // enables/disable auto focus
   bool set_auto_focus(int value);
@@ -98,7 +107,109 @@ public:
 
   bool stop_capturing(void);
   bool start_capturing(void);
-  bool is_capturing();
+
+  inline void scale()
+  {
+    sws_scale(
+      video_sws_, avframe_camera_->data, avframe_camera_->linesize,
+      0, avcodec_context_->height, avframe_rgb_->data, avframe_rgb_->linesize);
+    // TODO(lucasw) keep around until parameters change
+    sws_freeContext(video_sws_);
+  }
+
+  inline std::string get_camera_dev()
+  {
+    return camera_dev_;
+  }
+
+  inline unsigned int get_pixelformat()
+  {
+    return pixelformat_;
+  }
+
+  inline bool is_monochrome()
+  {
+    return monochrome_;
+  }
+
+  inline usb_cam::utils::io_method get_io_method()
+  {
+    return io_;
+  }
+
+  inline int get_fd()
+  {
+    return fd_;
+  }
+
+  inline usb_cam::utils::buffer * get_buffers()
+  {
+    return buffers_;
+  }
+
+  inline unsigned int number_of_buffers()
+  {
+    return n_buffers_;
+  }
+
+  inline AVFrame * get_avframe_camera()
+  {
+    return avframe_camera_;
+  }
+
+  inline AVFrame * get_avframe_rgb()
+  {
+    return avframe_rgb_;
+  }
+
+  inline AVCodec * get_avcodec()
+  {
+    return avcodec_;
+  }
+
+  inline AVDictionary * get_avoptions()
+  {
+    return avoptions_;
+  }
+
+  inline AVCodecContext * get_avcodec_context()
+  {
+    return avcodec_context_;
+  }
+
+  inline int get_avframe_camera_size()
+  {
+    return avframe_camera_size_;
+  }
+
+  inline int get_avframe_rgb_size()
+  {
+    return avframe_rgb_size_;
+  }
+
+  inline struct SwsContext * get_video_sws()
+  {
+    video_sws_ = sws_getContext(
+      avcodec_context_->width, avcodec_context_->height, avcodec_context_->pix_fmt,
+      avcodec_context_->width, avcodec_context_->height,
+      AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
+    return video_sws_;
+  }
+
+  inline camera_image_t * get_current_image()
+  {
+    return image_;
+  }
+
+  inline bool is_capturing()
+  {
+    return is_capturing_;
+  }
+
+  inline time_t get_epoch_time_shift()
+  {
+    return epoch_time_shift_;
+  }
 
 private:
   int init_decoder(
@@ -106,7 +217,6 @@ private:
     AVCodecID codec_id, const char * codec_name);
   int init_h264_decoder(int image_width, int image_height, color_format cf);
   int init_mjpeg_decoder(int image_width, int image_height, color_format cf);
-  bool mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels);
   bool process_image(const void * src, int len, camera_image_t * dest);
   bool read_frame();
   bool uninit_device(void);

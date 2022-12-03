@@ -28,22 +28,32 @@
 
 #include <gtest/gtest.h>
 
+#include <chrono>
+#include <iostream>
+#include <thread>
+
 #include "usb_cam/usb_cam.hpp"
 
 
 TEST(test_usb_cam_lib, test_usb_cam_class) {
   usb_cam::UsbCam test_usb_cam;
 
-  test_usb_cam.start(
-    "/dev/video0",
-    usb_cam::utils::IO_METHOD_MMAP,
-    usb_cam::utils::PIXEL_FORMAT_YUYV,
-    usb_cam::utils::COLOR_FORMAT_YUV420P,
-    640, 480, 10);
+  auto supported_fmts = test_usb_cam.get_supported_formats();
 
-  test_usb_cam.get_formats();
+  // TODO(flynneva): iterate over availble formats with test_usb_cam obj
+  for (auto fmt : supported_fmts) {
+    std::cerr << "format: " << fmt.format.type << std::endl;
+  }
 
-  // TODO(flynneva): uncomment once /dev/video0 can be simulated in CI
-  // EXPECT_TRUE(test_usb_cam.is_capturing());
-  // EXPECT_TRUE(test_usb_cam.shutdown());
+  {
+    test_usb_cam.start(
+      "/dev/video0",
+      usb_cam::utils::IO_METHOD_MMAP,
+      usb_cam::utils::PIXEL_FORMAT_YUYV,
+      usb_cam::utils::COLOR_FORMAT_YUV422P,
+      640, 480, 30);
+    // TODO(flynneva): uncomment once /dev/video0 can be simulated in CI
+    // EXPECT_TRUE(test_usb_cam.is_capturing());
+    test_usb_cam.shutdown();
+  }
 }

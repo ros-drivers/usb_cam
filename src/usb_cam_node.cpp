@@ -147,7 +147,18 @@ void UsbCamNode::init()
   cam_.start(
     video_device_name_.c_str(), io_method, pixel_format, color_format, image_width_,
     image_height_, framerate_);
-  cam_.get_formats();
+  auto supported_formats = cam_.get_supported_formats();
+
+  RCLCPP_INFO(this->get_logger(), "This devices supproted formats:");
+  for (auto fmt : supported_formats) {
+    RCLCPP_INFO(
+      this->get_logger(),
+      "\t%s: %d x %d (%d Hz)",
+      fmt.format.description,
+      fmt.interval.width,
+      fmt.interval.height,
+      fmt.interval.discrete.denominator / fmt.interval.discrete.numerator);
+  }
 
   // TODO(lucasw) should this check a little faster than expected frame rate?
   // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
@@ -155,7 +166,7 @@ void UsbCamNode::init()
   timer_ = this->create_wall_timer(
     std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
     std::bind(&UsbCamNode::update, this));
-  RCLCPP_INFO_STREAM(this->get_logger(), "starting timer " << period_ms);
+  RCLCPP_INFO_STREAM(this->get_logger(), "Timer triggering every " << period_ms << " ms");
 }
 
 void UsbCamNode::get_params()
