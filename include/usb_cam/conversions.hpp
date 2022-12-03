@@ -50,79 +50,69 @@ namespace conversions
 /// @param len Length of MJPEG image in memory
 /// @param RGB Output RGB image to fill
 /// @param NumPixels Length of output RGB image in memory
-inline bool MJPEG2RGB(char * MJPEG, int len, char * RGB, int NumPixels)
+inline bool MJPEG2RGB(
+  usb_cam::UsbCam * usb_cam_obj, char * MJPEG, int len, char * RGB, const int & NumPixels)
 {
-  (void)MJPEG;
-  (void)len;
-  (void)RGB;
-  (void)NumPixels;
-//   int got_picture = 1;
-//
-//   (void)len;
-//
-//   // clear the picture
-//   memset(RGB, 0, NumPixels);
-//
-// #if LIBAVCODEC_VERSION_MAJOR > 52
-//   // TODO(flynneva): what is this checking?
-//   if (avcodec_context_->codec_type == AVMEDIA_TYPE_VIDEO)
-// #else
-//   avcodec_decode_video(
-//     avcodec_context_, avframe_camera_, &got_picture, reinterpret_cast<uint8_t *>(MJPEG), len);
-// #endif
-//
-//   {if (!got_picture) {
-//       RCLCPP_ERROR(
-//         rclcpp::get_logger("usb_cam"), "Webcam: expected picture but didn't get it...");
-//       return false;
-//     }
-//   }
-//
-//   int xsize = avcodec_context_->width;
-//   int ysize = avcodec_context_->height;
-// #if LIBAVCODEC_VERSION_MAJOR > 52
-//   int pic_size = av_image_get_buffer_size(avcodec_context_->pix_fmt, xsize, ysize, 1);
-// #else
-//   // TODO(lucasw) avpicture_get_size corrupts the pix_fmt
-//   int pic_size = avpicture_get_size(avcodec_context_->pix_fmt, xsize, ysize);
-// #endif
-//
-//   // int pic_size = av_image_get_buffer_size(avcodec_context_->pix_fmt, xsize, ysize);
-//   if (pic_size != avframe_camera_size_) {
-//     RCLCPP_ERROR(
-//       rclcpp::get_logger("usb_cam"),
-//       "outbuf size mismatch.  pic_size: %d bufsize: %d", pic_size, avframe_camera_size_);
-//     return false;
-//   }
-//
-//   // TODO(lucasw) why does the image need to be scaled?  Does it also convert formats?
-//   // RCLCPP_INFO_STREAM(
-//   //   rclcpp::get_logger("usb_cam"), "sw scaler " << xsize << " " << ysize << " "
-//   //     << avcodec_context_->pix_fmt << ", linesize " << avframe_rgb_->linesize);
-//   // TODO(lucasw) only do if xsize and ysize or pix fmt is different from last time
-//   video_sws_ = sws_getContext(
-//     xsize, ysize, avcodec_context_->pix_fmt, xsize, ysize,
-//     AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
-//   sws_scale(
-//     video_sws_, avframe_camera_->data, avframe_camera_->linesize,
-//     0, ysize, avframe_rgb_->data, avframe_rgb_->linesize);
-//   // TODO(lucasw) keep around until parameters change
-//   sws_freeContext(video_sws_);
-//
-// #if LIBAVCODEC_VERSION_MAJOR > 52
-//   int size = av_image_copy_to_buffer(
-//     reinterpret_cast<uint8_t *>(avframe_rgb_), pic_size, avframe_camera_->data,
-//     avframe_camera_->linesize, avcodec_context_->pix_fmt, xsize, ysize, 1);
-// #else
-//   int size = avpicture_layout(
-//     reinterpret_cast<AVPicture *>(avframe_rgb_), AV_PIX_FMT_RGB24,
-//     xsize, ysize, reinterpret_cast<uint8_t *>(RGB), avframe_rgb_size_);
-// #endif
-//
-//   if (size != avframe_rgb_size_) {
-//     RCLCPP_ERROR(rclcpp::get_logger("usb_cam"), "webcam: avpicture_layout error: %d", size);
-//     return false;
-//   }
+  int got_picture = 1;
+
+  // clear the picture
+  memset(RGB, 0, NumPixels);
+
+  auto avcodec_context_ = usb_cam_obj->get_avcodec_context();
+  auto avframe_camera_ = usb_cam_obj->get_avframe_camera();
+  auto avframe_camera_size_ = usb_cam_obj->get_avframe_camera_size();
+  auto avframe_rgb_ = usb_cam_obj->get_avframe_rgb();
+  auto avframe_rgb_size_ = usb_cam_obj->get_avframe_rgb_size();
+
+#if LIBAVCODEC_VERSION_MAJOR > 52
+  avcodec_receive_frame(avcodec_context_, avframe_camera_);
+  // avcodec_send_packet(avcodec_context_, );
+#else
+  avcodec_decode_video2(
+    avcodec_context_, avframe_camera_, &got_picture, reinterpret_cast<uint8_t *>(MJPEG), len);
+#endif
+
+  if (!got_picture) {
+    std::cerr << "Webcam: expected picture but didn't get it..." << std::endl;
+    return false;
+  }
+
+  int xsize = avcodec_context_->width;
+  int ysize = avcodec_context_->height;
+#if LIBAVCODEC_VERSION_MAJOR > 52
+  int pic_size = av_image_get_buffer_size(avcodec_context_->pix_fmt, xsize, ysize, 1);
+#else
+  // TODO(lucasw) avpicture_get_size corrupts the pix_fmt
+  int pic_size = avpicture_get_size(avcodec_context_->pix_fmt, xsize, ysize);
+#endif
+  // int pic_size = av_image_get_buffer_size(avcodec_context_->pix_fmt, xsize, ysize);
+  if (pic_size != avframe_camera_size_) {
+    std::cerr << "Outbuf size mismatch.  pic_size: " << pic_size;
+    std::cerr << " bufsize: " << avframe_camera_size_ << std::endl;
+    return false;
+  }
+  // TODO(lucasw) why does the image need to be scaled?  Does it also convert formats?
+  // RCLCPP_INFO_STREAM(
+  //   std::cout << "sw scaler " << xsize << " " << ysize << " "
+  //     << avcodec_context_->pix_fmt << ", linesize " << avframe_rgb_->linesize << std::endl;
+  // TODO(lucasw) only do if xsize and ysize or pix fmt is different from last time
+  usb_cam_obj->get_video_sws();
+  usb_cam_obj->scale();
+#if LIBAVCODEC_VERSION_MAJOR > 52
+  int size = av_image_copy_to_buffer(
+    reinterpret_cast<uint8_t *>(avframe_rgb_), pic_size, avframe_camera_->data,
+    avframe_camera_->linesize, avcodec_context_->pix_fmt, xsize, ysize, 1);
+#else
+  int size = avpicture_layout(
+    reinterpret_cast<AVPicture *>(avframe_rgb_), AV_PIX_FMT_RGB24,
+    xsize, ysize, reinterpret_cast<uint8_t *>(RGB), avframe_rgb_size_);
+#endif
+
+  if (size != avframe_rgb_size_) {
+    std::cerr << "avpicture_layout error: " << size << std::endl;
+    return false;
+  }
+
   return true;
 }
 

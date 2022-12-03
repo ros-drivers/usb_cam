@@ -182,6 +182,7 @@ bool UsbCam::process_image(const void * src, int len, camera_image_t * dest)
         reinterpret_cast<const char *>(src)), dest->image, dest->width * dest->height);
   } else if (pixelformat_ == V4L2_PIX_FMT_MJPEG || pixelformat_ == V4L2_PIX_FMT_H264) {
     result = conversions::MJPEG2RGB(
+      this,
       const_cast<char *>(
         reinterpret_cast<const char *>(src)), len, dest->image, dest->width * dest->height);
   } else if (pixelformat_ == V4L2_PIX_FMT_RGB24 || pixelformat_ == V4L2_PIX_FMT_GREY) {
