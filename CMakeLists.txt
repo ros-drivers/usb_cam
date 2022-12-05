@@ -15,35 +15,50 @@ ament_auto_find_build_dependencies()
 
 find_package(OpenCV REQUIRED)
 
-## pkg-config libraries
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(avcodec libavcodec REQUIRED)
-pkg_check_modules(swscale libswscale REQUIRED)
+pkg_check_modules(avcodec REQUIRED libavcodec)
+pkg_check_modules(avutil REQUIRED libavutil)
+pkg_check_modules(swscale REQUIRED libswscale)
 
-include_directories(include
-  ${avcodec_INCLUDE_DIRS}
-  ${swscale_INCLUDE_DIRS}
-)
+if(EXISTS ${avcodec})
+  message(STATUS "Found libavcodec: ${avcodec}")
+endif()
+
+if(EXISTS ${avutil})
+  message(STATUS "Found libavutil: ${avutil}")
+endif()
+
+if(EXISTS ${swscale})
+  message(STATUS "Found libswscale: ${swscale}")
+endif()
 
 ## Build the USB camera library
-ament_auto_add_library(${PROJECT_NAME} SHARED
+## Do not use ament_auto here so as to not link to rclcpp
+add_library(${PROJECT_NAME} SHARED
   src/usb_cam.cpp
 )
 
-## Declare a cpp executable
+target_include_directories(${PROJECT_NAME} PUBLIC
+  "include"
+)
+
+target_link_libraries(${PROJECT_NAME}
+  ${avcodec_LIBRARIES}
+  ${avutil_LIBRARIES}
+  ${swscale_LIBRARIES}
+  ${OpenCV_LIBRARIES})
+
+ament_export_libraries(${PROJECT_NAME})
+
+## Declare a ROS 2 composible node as a library
 ament_auto_add_library(${PROJECT_NAME}_node SHARED
   src/usb_cam_node.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_node
-  ${PROJECT_NAME}
-  ${avcodec_LIBRARIES}
-  ${swscale_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  # TODO(lucasw) should this have been in libavcodec?
-  #avutil
-)
+  ${PROJECT_NAME})
 
+## Use node to generate an executable
 rclcpp_components_register_node(${PROJECT_NAME}_node
   PLUGIN "usb_cam::UsbCamNode"
   EXECUTABLE ${PROJECT_NAME}_node_exe
@@ -53,7 +68,18 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  # TODO(flynneva): add some unit and integration tests
+  find_package(ament_cmake_gtest)
+
+  # Unit tests
+  ament_add_gtest(test_usb_cam_utils
+    test/test_usb_cam_utils.cpp)
+  target_link_libraries(test_usb_cam_utils
+    ${PROJECT_NAME})
+  # Integration tests
+  ament_add_gtest(test_usb_cam_lib
+    test/test_usb_cam_lib.cpp)
+  target_link_libraries(test_usb_cam_lib
+    ${PROJECT_NAME})
 endif()
 
 install(

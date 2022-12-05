@@ -26,15 +26,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "usb_cam/usb_cam_node.hpp"
-
-#include <sstream>
-// #include <std_srvs/srv/Empty.h>
-
-#include <string>
-#include <memory>
-#include <vector>
+#include "usb_cam/utils.hpp"
 
 
 namespace usb_cam
@@ -59,7 +57,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   // declare params
   this->declare_parameter("camera_name", "default_cam");
   this->declare_parameter("camera_info_url", "");
-  this->declare_parameter("framerate", 10.0);
+  this->declare_parameter("framerate", 30.0);
   this->declare_parameter("frame_id", "default_cam");
   this->declare_parameter("image_height", 480);
   this->declare_parameter("image_width", 640);
@@ -125,22 +123,22 @@ void UsbCamNode::init()
     image_width_, image_height_, io_method_name_.c_str(),
     pixel_format_name_.c_str(), color_format_name_.c_str(), framerate_);
   // set the IO method
-  UsbCam::io_method io_method = UsbCam::io_method_from_string(io_method_name_);
-  if (io_method == UsbCam::IO_METHOD_UNKNOWN) {
+  io_method io_method = usb_cam::utils::io_method_from_string(io_method_name_);
+  if (io_method == usb_cam::utils::IO_METHOD_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown IO method '%s'", io_method_name_.c_str());
     rclcpp::shutdown();
     return;
   }
   // set the pixel format
-  UsbCam::pixel_format pixel_format = UsbCam::pixel_format_from_string(pixel_format_name_);
-  if (pixel_format == UsbCam::PIXEL_FORMAT_UNKNOWN) {
+  pixel_format pixel_format = usb_cam::utils::pixel_format_from_string(pixel_format_name_);
+  if (pixel_format == usb_cam::utils::PIXEL_FORMAT_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown pixel format '%s'", pixel_format_name_.c_str());
     rclcpp::shutdown();
     return;
   }
   // set the color format
-  UsbCam::color_format color_format = UsbCam::color_format_from_string(color_format_name_);
-  if (color_format == UsbCam::COLOR_FORMAT_UNKNOWN) {
+  color_format color_format = usb_cam::utils::color_format_from_string(color_format_name_);
+  if (color_format == usb_cam::utils::COLOR_FORMAT_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown color format '%s'", color_format_name_.c_str());
     rclcpp::shutdown();
     return;
@@ -149,7 +147,18 @@ void UsbCamNode::init()
   cam_.start(
     video_device_name_.c_str(), io_method, pixel_format, color_format, image_width_,
     image_height_, framerate_);
-  cam_.get_formats();
+  auto supported_formats = cam_.get_supported_formats();
+
+  RCLCPP_INFO(this->get_logger(), "This devices supproted formats:");
+  for (auto fmt : supported_formats) {
+    RCLCPP_INFO(
+      this->get_logger(),
+      "\t%s: %d x %d (%d Hz)",
+      fmt.format.description,
+      fmt.interval.width,
+      fmt.interval.height,
+      fmt.interval.discrete.denominator / fmt.interval.discrete.numerator);
+  }
 
   // TODO(lucasw) should this check a little faster than expected frame rate?
   // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
@@ -157,7 +166,7 @@ void UsbCamNode::init()
   timer_ = this->create_wall_timer(
     std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
     std::bind(&UsbCamNode::update, this));
-  RCLCPP_INFO_STREAM(this->get_logger(), "starting timer " << period_ms);
+  RCLCPP_INFO_STREAM(this->get_logger(), "Timer triggering every " << period_ms << " ms");
 }
 
 void UsbCamNode::get_params()
@@ -202,14 +211,21 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
 
 bool UsbCamNode::take_and_send_image()
 {
+  // TODO(flynneva): this is disgusting. We should find a better way
+  //  to get the timestamp of the image during capture and put it into
+  // whatever format we want (not ROS specific like  ROS-message)
+  struct timespec image_time;
   // grab the image
   if (!cam_.get_image(
-      img_->header.stamp, img_->encoding, img_->height, img_->width,
+      image_time, img_->encoding, img_->height, img_->width,
       img_->step, img_->data))
   {
     RCLCPP_ERROR(this->get_logger(), "grab failed");
     return false;
   }
+
+  img_->header.stamp.sec = image_time.tv_sec;
+  img_->header.stamp.nanosec = image_time.tv_nsec;
 
   // INFO(img_->data.size() << " " << img_->width << " " << img_->height << " " << img_->step);
   auto ci = std::make_unique<sensor_msgs::msg::CameraInfo>(cinfo_->getCameraInfo());

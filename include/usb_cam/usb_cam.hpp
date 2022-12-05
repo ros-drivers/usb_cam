@@ -29,69 +29,57 @@
 
 #ifndef USB_CAM__USB_CAM_HPP_
 #define USB_CAM__USB_CAM_HPP_
-#include "usb_cam/usb_cam_utils.hpp"
 
-#include <asm/types.h>          /* for videodev2.h */
-
-extern "C"
-{
-#include <linux/videodev2.h>
+extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
-#include <libavutil/mem.h>
+#include <linux/videodev2.h>
 }
 
-// legacy reasons
-#include <libavcodec/version.h>
-#if LIBAVCODEC_VERSION_MAJOR < 55
-#define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
-#endif
-
+#include <chrono>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
 
-#include "builtin_interfaces/msg/time.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/time.hpp"
-// #include "sensor_msgs/msg/image.hpp"
+#include "usb_cam/utils.hpp"
 
 
 namespace usb_cam
 {
 
+using utils::io_method;
+using utils::pixel_format;
+using utils::color_format;
+
+// TODO(lucasw) just store an Image shared_ptr here
+// TOOD(flynnev) can new Image shared_ptr be used for both ROS 1 and ROS 2?
+//   we should try and eliminate all ROS-specific code from this `usb_cam` lib
+//   so we can reuse it for all ROS distros. I think this clock is the only thing
+//   left...other than the loggers.
+typedef struct
+{
+  uint32_t width;
+  uint32_t height;
+  int bytes_per_pixel;
+  int image_size;
+  struct timespec stamp;
+  char * image;
+  int is_new;
+} camera_image_t;
+
+
+typedef struct
+{
+  struct v4l2_fmtdesc format;
+  struct v4l2_frmsizeenum size;
+  struct v4l2_frmivalenum interval;
+} capture_format_t;
+
 
 class UsbCam
 {
 public:
-  typedef enum
-  {
-    IO_METHOD_READ,
-    IO_METHOD_MMAP,
-    IO_METHOD_USERPTR,
-    IO_METHOD_UNKNOWN,
-  } io_method;
-
-  typedef enum
-  {
-    PIXEL_FORMAT_YUYV,
-    PIXEL_FORMAT_UYVY,
-    PIXEL_FORMAT_MJPEG,
-    PIXEL_FORMAT_YUVMONO10,
-    PIXEL_FORMAT_RGB24,
-    PIXEL_FORMAT_GREY,
-    PIXEL_FORMAT_YU12,
-    PIXEL_FORMAT_H264,
-    PIXEL_FORMAT_UNKNOWN
-  } pixel_format;
-
-  typedef enum
-  {
-    COLOR_FORMAT_YUV420P,
-    COLOR_FORMAT_YUV422P,
-    COLOR_FORMAT_UNKNOWN,
-  } color_format;
-
   UsbCam();
   ~UsbCam();
 
@@ -105,10 +93,10 @@ public:
   // grabs a new image from the camera
   // bool get_image(sensor_msgs::msg::Image:::SharedPtr image);
   bool get_image(
-    builtin_interfaces::msg::Time & stamp, std::string & encoding,
+    struct timespec & stamp, std::string & encoding,
     uint32_t & height, uint32_t & width, uint32_t & step, std::vector<uint8_t> & data);
 
-  void get_formats();  // std::vector<usb_cam::msg::Format>& formats);
+  std::vector<capture_format_t> get_supported_formats();
 
   // enables/disable auto focus
   bool set_auto_focus(int value);
@@ -117,40 +105,118 @@ public:
   bool set_v4l_parameter(const std::string & param, int value);
   bool set_v4l_parameter(const std::string & param, const std::string & value);
 
-  static io_method io_method_from_string(const std::string & str);
-  static pixel_format pixel_format_from_string(const std::string & str);
-  static color_format color_format_from_string(const std::string & str);
-
   bool stop_capturing(void);
   bool start_capturing(void);
-  bool is_capturing();
+
+  inline void scale()
+  {
+    sws_scale(
+      video_sws_, avframe_camera_->data, avframe_camera_->linesize,
+      0, avcodec_context_->height, avframe_rgb_->data, avframe_rgb_->linesize);
+    // TODO(lucasw) keep around until parameters change
+    sws_freeContext(video_sws_);
+  }
+
+  inline std::string get_camera_dev()
+  {
+    return camera_dev_;
+  }
+
+  inline unsigned int get_pixelformat()
+  {
+    return pixelformat_;
+  }
+
+  inline bool is_monochrome()
+  {
+    return monochrome_;
+  }
+
+  inline usb_cam::utils::io_method get_io_method()
+  {
+    return io_;
+  }
+
+  inline int get_fd()
+  {
+    return fd_;
+  }
+
+  inline usb_cam::utils::buffer * get_buffers()
+  {
+    return buffers_;
+  }
+
+  inline unsigned int number_of_buffers()
+  {
+    return n_buffers_;
+  }
+
+  inline AVFrame * get_avframe_camera()
+  {
+    return avframe_camera_;
+  }
+
+  inline AVFrame * get_avframe_rgb()
+  {
+    return avframe_rgb_;
+  }
+
+  inline AVCodec * get_avcodec()
+  {
+    return avcodec_;
+  }
+
+  inline AVDictionary * get_avoptions()
+  {
+    return avoptions_;
+  }
+
+  inline AVCodecContext * get_avcodec_context()
+  {
+    return avcodec_context_;
+  }
+
+  inline int get_avframe_camera_size()
+  {
+    return avframe_camera_size_;
+  }
+
+  inline int get_avframe_rgb_size()
+  {
+    return avframe_rgb_size_;
+  }
+
+  inline struct SwsContext * get_video_sws()
+  {
+    video_sws_ = sws_getContext(
+      avcodec_context_->width, avcodec_context_->height, avcodec_context_->pix_fmt,
+      avcodec_context_->width, avcodec_context_->height,
+      AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
+    return video_sws_;
+  }
+
+  inline camera_image_t * get_current_image()
+  {
+    return image_;
+  }
+
+  inline bool is_capturing()
+  {
+    return is_capturing_;
+  }
+
+  inline time_t get_epoch_time_shift()
+  {
+    return epoch_time_shift_;
+  }
 
 private:
-  // TODO(lucasw) just store an Image shared_ptr here
-  typedef struct
-  {
-    uint32_t width;
-    uint32_t height;
-    int bytes_per_pixel;
-    int image_size;
-    builtin_interfaces::msg::Time stamp;
-    char * image;
-    int is_new;
-  } camera_image_t;
-
-  struct buffer
-  {
-    void * start;
-    size_t length;
-  };
-
-
   int init_decoder(
     int image_width, int image_height, color_format color_format,
     AVCodecID codec_id, const char * codec_name);
   int init_h264_decoder(int image_width, int image_height, color_format cf);
   int init_mjpeg_decoder(int image_width, int image_height, color_format cf);
-  bool mjpeg2rgb(char * MJPEG, int len, char * RGB, int NumPixels);
   bool process_image(const void * src, int len, camera_image_t * dest);
   bool read_frame();
   bool uninit_device(void);
@@ -162,13 +228,12 @@ private:
   bool open_device(void);
   bool grab_image();
 
-  rclcpp::Clock::SharedPtr clock_;
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;
-  io_method io_;
+  usb_cam::utils::io_method io_;
   int fd_;
-  buffer * buffers_;
+  usb_cam::utils::buffer * buffers_;
   unsigned int n_buffers_;
   AVFrame * avframe_camera_;
   AVFrame * avframe_rgb_;
@@ -180,6 +245,7 @@ private:
   struct SwsContext * video_sws_;
   camera_image_t * image_;
   bool is_capturing_;
+  const time_t epoch_time_shift_;
 };
 
 }  // namespace usb_cam
