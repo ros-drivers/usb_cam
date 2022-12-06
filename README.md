@@ -19,7 +19,7 @@ For either MacOS or Windows - if you would like to try and get it working please
 Assuming you have a supported ROS2 distro installed, run the following command to install the binary release:
 
 ```bash
-sudo apt get install ros-<ros2-distro>-usb-cam
+sudo apt-get install ros-<ros2-distro>-usb-cam
 ```
 
 As of today this package should be available for binary installation on all active ROS2 distros.
