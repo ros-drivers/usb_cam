@@ -220,7 +220,7 @@ bool UsbCam::read_frame()
           /* fall through */
 
           default:
-            std::cerr << "error, quitting " << errno << std::endl;
+            std::cerr << "Unable to read frame " << errno << std::endl;
             return false;  // ("read");
         }
       }
@@ -249,7 +249,7 @@ bool UsbCam::read_frame()
           /* fall through */
 
           default:
-            std::cerr << "error, quitting " << errno << std::endl;
+            std::cerr << "Unable to retrieve frame with mmap " << errno << std::endl;
             return false;  // ("VIDIOC_DQBUF");
         }
       }
@@ -267,7 +267,7 @@ bool UsbCam::read_frame()
       }
 
       if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_QBUF), &buf)) {
-        std::cerr << "error, quitting " << errno << std::endl;
+        std::cerr << "Unable to exchange buffer with the driver " << errno << std::endl;
         return false;  // ("VIDIOC_QBUF");
       }
 
@@ -292,7 +292,7 @@ bool UsbCam::read_frame()
           /* fall through */
 
           default:
-            std::cerr << "error, quitting " << errno << std::endl;
+            std::cerr << "Unable to exchange buffer with driver " << errno << std::endl;
             return false;  // ("VIDIOC_DQBUF");
         }
       }
@@ -318,7 +318,7 @@ bool UsbCam::read_frame()
       }
 
       if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_QBUF), &buf)) {
-        std::cerr << "error, quitting " << errno << std::endl;
+        std::cerr << "Unable to exchange buffer with driver " << errno << std::endl;
         return false;  // ("VIDIOC_QBUF");
       }
 
@@ -349,7 +349,7 @@ bool UsbCam::stop_capturing(void)
       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
       if (-1 == usb_cam::utils::xioctl(fd_, VIDIOC_STREAMOFF, &type)) {
-        std::cerr << "error, quitting " << errno << std::endl;
+        std::cerr << "Unable to stop capturing stream " << errno << std::endl;
         return false;  // ("VIDIOC_STREAMOFF");
       }
 
@@ -384,7 +384,7 @@ bool UsbCam::start_capturing(void)
         buf.index = i;
 
         if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_QBUF), &buf)) {
-          std::cerr << "error, quitting " << errno << std::endl;
+          std::cerr << "Unable to configure strem " << errno << std::endl;
           return false;  // ("VIDIOC_QBUF");
         }
       }
@@ -392,7 +392,7 @@ bool UsbCam::start_capturing(void)
       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
       if (-1 == usb_cam::utils::xioctl(fd_, VIDIOC_STREAMON, &type)) {
-        std::cerr << "error, quitting " << errno << std::endl;
+        std::cerr << "Unable to start stream " << errno << std::endl;
         return false;  // ("VIDIOC_STREAMON");
       }
       break;
@@ -410,7 +410,7 @@ bool UsbCam::start_capturing(void)
         buf.length = buffers_[i].length;
 
         if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_QBUF), &buf)) {
-          std::cerr << "error, quitting " << errno << std::endl;
+          std::cerr << "Unable to configure stream " << errno << std::endl;
           return false;  // ("VIDIOC_QBUF");
         }
       }
@@ -418,7 +418,7 @@ bool UsbCam::start_capturing(void)
       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
       if (-1 == usb_cam::utils::xioctl(fd_, VIDIOC_STREAMON, &type)) {
-        std::cerr << "error, quitting " << errno << std::endl;
+        std::cerr << "Unable to start stream " << errno << std::endl;
         return false;  // ("VIDIOC_STREAMON");
       }
 
@@ -443,7 +443,7 @@ bool UsbCam::uninit_device(void)
     case io_method::IO_METHOD_MMAP:
       for (i = 0; i < n_buffers_; ++i) {
         if (-1 == munmap(buffers_[i].start, buffers_[i].length)) {
-          std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+          std::cerr << "Unable to deallocate memory " << errno << std::endl;
           return false;  // ("munmap");
         }
       }
@@ -497,7 +497,7 @@ bool UsbCam::init_mmap(void)
       std::cerr << camera_dev_ << " does not support memory mapping" << std::endl;
       return false;
     } else {
-      std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+      std::cerr << "Unable to initialize memory mapping " << errno << std::endl;
       return false;  // ("VIDIOC_REQBUFS");
     }
   }
@@ -524,7 +524,7 @@ bool UsbCam::init_mmap(void)
     buf.index = n_buffers_;
 
     if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_QUERYBUF), &buf)) {
-      std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+      std::cerr << "Unable to query status of buffer " << errno << std::endl;
       return false;  // ("VIDIOC_QUERYBUF");
     }
 
@@ -535,7 +535,7 @@ bool UsbCam::init_mmap(void)
       MAP_SHARED /* recommended */, fd_, buf.m.offset);
 
     if (MAP_FAILED == buffers_[n_buffers_].start) {
-      std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+      std::cerr << "Unable to allocate memory " << errno << std::endl;
       return false;  // ("mmap");
     }
   }
@@ -561,7 +561,7 @@ bool UsbCam::init_userp(unsigned int buffer_size)
       std::cerr << camera_dev_ << " does not support user pointer i/o" << std::endl;
       return false;  // (EXIT_FAILURE);
     } else {
-      std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+      std::cerr << "Unable to initialize memory mapping " << errno << std::endl;
       return false;  // ("VIDIOC_REQBUFS");
     }
   }
@@ -598,7 +598,7 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
       std::cerr << camera_dev_ << " is no V4L2 device" << std::endl;
       return false;  // (EXIT_FAILURE);
     } else {
-      std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+      std::cerr << "Unable to query device capabilities " << errno << std::endl;
       return false;  // ("VIDIOC_QUERYCAP");
     }
   }
@@ -663,7 +663,7 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
   fmt.fmt.pix.field = V4L2_FIELD_INTERLACED;
 
   if (-1 == usb_cam::utils::xioctl(fd_, static_cast<int>(VIDIOC_S_FMT), &fmt)) {
-    std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+    std::cerr << "Unable to set video format " << errno << std::endl;
     return false;  // ("VIDIOC_S_FMT");
   }
 
@@ -725,7 +725,7 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
 bool UsbCam::close_device(void)
 {
   if (-1 == close(fd_)) {
-    std::cerr << "error, quitting, TODO throw " << errno << std::endl;
+    std::cerr << "Unable to close file descriptor " << errno << std::endl;
     return false;  // ("close");
   }
 
