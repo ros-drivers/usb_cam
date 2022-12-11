@@ -61,6 +61,8 @@ typedef struct
 {
   uint32_t width;
   uint32_t height;
+  uint32_t step;
+  std::string encoding;
   int bytes_per_pixel;
   int image_size;
   struct timespec stamp;
@@ -90,11 +92,13 @@ public:
   // shutdown camera
   bool shutdown(void);
 
-  // grabs a new image from the camera
-  // bool get_image(sensor_msgs::msg::Image:::SharedPtr image);
-  bool get_image(
-    struct timespec & stamp, std::string & encoding,
-    uint32_t & height, uint32_t & width, uint32_t & step, std::vector<uint8_t> & data);
+  /// @brief Take a new image with device and return it
+  ///   To copy the returned image to another format:
+  ///   sensor_msgs::msg::Image image_msg;
+  ///   auto new_image = get_image();
+  ///   image_msg.data.resize(step * height);
+  ///   memcpy(&image_msg.data[0], new_image->image, image_msg.data.size());
+  camera_image_t * get_image();
 
   std::vector<capture_format_t> get_supported_formats();
 

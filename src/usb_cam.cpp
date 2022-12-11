@@ -843,37 +843,26 @@ bool UsbCam::shutdown(void)
   return true;
 }
 
-bool UsbCam::get_image(
-  struct timespec & stamp,
-  std::string & encoding, uint32_t & height, uint32_t & width,
-  uint32_t & step, std::vector<uint8_t> & data)
+camera_image_t * UsbCam::get_image()
 {
   if ((image_->width == 0) || (image_->height == 0)) {
-    return false;
+    return nullptr;
   }
   // grab the image
   if (!grab_image()) {
-    return false;
+    return nullptr;
   }
 
-  // stamp the image
-  stamp = image_->stamp;
-  // fill in the info
-  height = image_->height;
-  width = image_->width;
   if (monochrome_) {
-    encoding = "mono8";
-    step = width;
+    image_->encoding = "mono8";
+    image_->step = image_->width;
   } else {
     // TODO(lucasw) aren't there other encoding types?
-    encoding = "rgb8";
-    step = width * 3;
+    image_->encoding = "rgb8";
+    image_->step = image_->width * 3;
   }
-  // TODO(lucasw) create an Image here and already have the memory allocated,
-  // eliminate this copy
-  data.resize(step * height);
-  memcpy(&data[0], image_->image, data.size());
-  return true;
+
+  return image_;
 }
 
 std::vector<capture_format_t> UsbCam::get_supported_formats()
