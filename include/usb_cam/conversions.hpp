@@ -66,6 +66,8 @@ inline bool MJPEG2RGB(
   auto avframe_rgb_size_ = usb_cam_obj->get_avframe_rgb_size();
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
+  (void)len;
+  (void)MJPEG;
   avcodec_receive_frame(avcodec_context_, avframe_camera_);
   // avcodec_send_packet(avcodec_context_, );
 #else
