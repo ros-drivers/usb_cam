@@ -86,6 +86,13 @@ install(
   PROGRAMS scripts/show_image.py
   DESTINATION lib/${PROJECT_NAME})
 
+install(TARGETS
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_node
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+)
 ament_auto_package(
   INSTALL_TO_SHARE
     launch
