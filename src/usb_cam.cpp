@@ -66,7 +66,7 @@ UsbCam::UsbCam()
   avframe_camera_(NULL), avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL),
   avcodec_context_(NULL), avframe_camera_size_(0), avframe_rgb_size_(0),
   video_sws_(NULL), image_(NULL), is_capturing_(false),
-  epoch_time_shift_(usb_cam::utils::get_epoch_time_shift())
+  epoch_time_shift_(usb_cam::utils::get_epoch_time_shift()), supported_formats_()
 {}
 
 UsbCam::~UsbCam()
@@ -867,7 +867,7 @@ camera_image_t * UsbCam::get_image()
 
 std::vector<capture_format_t> UsbCam::get_supported_formats()
 {
-  std::vector<capture_format_t> supported_formats;
+  supported_formats_.clear();
   struct v4l2_fmtdesc current_format;
   current_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   current_format.index = 0;
@@ -900,13 +900,13 @@ std::vector<capture_format_t> UsbCam::get_supported_formats()
           capture_format.format = current_format;
           capture_format.size = current_size;
           capture_format.interval = current_interval;
-          supported_formats.push_back(capture_format);
+          supported_formats_.push_back(capture_format);
         }
       }  // interval loop
     }  // size loop
   }  // fmt loop
 
-  return supported_formats;
+  return supported_formats_;
 }
 
 bool UsbCam::grab_image()

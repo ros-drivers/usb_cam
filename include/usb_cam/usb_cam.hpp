@@ -215,6 +215,11 @@ public:
     return epoch_time_shift_;
   }
 
+  inline std::vector<capture_format_t> supported_formats()
+  {
+    return supported_formats_;
+  }
+
 private:
   int init_decoder(
     int image_width, int image_height, color_format color_format,
@@ -250,6 +255,7 @@ private:
   camera_image_t * image_;
   bool is_capturing_;
   const time_t epoch_time_shift_;
+  std::vector<capture_format_t> supported_formats_;
 };
 
 }  // namespace usb_cam
