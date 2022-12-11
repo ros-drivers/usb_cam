@@ -48,9 +48,9 @@ extern "C" {
 namespace usb_cam
 {
 
-using utils::io_method;
-using utils::pixel_format;
-using utils::color_format;
+using utils::io_method_t;
+using utils::pixel_format_t;
+using utils::color_format_t;
 
 // TODO(lucasw) just store an Image shared_ptr here
 // TOOD(flynnev) can new Image shared_ptr be used for both ROS 1 and ROS 2?
@@ -87,8 +87,10 @@ public:
 
   // start camera
   bool start(
-    const std::string & dev, io_method io, pixel_format pf, color_format cf,
+    const std::string & dev,
+    io_method_t io_method, pixel_format_t pixel_format, color_format_t color_format,
     uint32_t image_width, uint32_t image_height, int framerate);
+
   // shutdown camera
   bool shutdown(void);
 
@@ -136,7 +138,7 @@ public:
     return monochrome_;
   }
 
-  inline usb_cam::utils::io_method get_io_method()
+  inline usb_cam::utils::io_method_t get_io_method()
   {
     return io_;
   }
@@ -222,10 +224,10 @@ public:
 
 private:
   int init_decoder(
-    int image_width, int image_height, color_format color_format,
+    int image_width, int image_height, color_format_t color_format,
     AVCodecID codec_id, const char * codec_name);
-  int init_h264_decoder(int image_width, int image_height, color_format cf);
-  int init_mjpeg_decoder(int image_width, int image_height, color_format cf);
+  int init_h264_decoder(int image_width, int image_height, color_format_t cf);
+  int init_mjpeg_decoder(int image_width, int image_height, color_format_t cf);
   bool process_image(const void * src, int len, camera_image_t * dest);
   bool read_frame();
   bool uninit_device(void);
@@ -240,7 +242,7 @@ private:
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;
-  usb_cam::utils::io_method io_;
+  usb_cam::utils::io_method_t io_;
   int fd_;
   usb_cam::utils::buffer * buffers_;
   unsigned int n_buffers_;

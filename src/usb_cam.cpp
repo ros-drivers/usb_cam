@@ -46,7 +46,7 @@ extern "C" {
 #include <string>
 #include <vector>
 
-#include "opencv4/opencv2/imgproc.hpp"
+#include "opencv2/imgproc.hpp"
 
 #include "usb_cam/usb_cam.hpp"
 #include "usb_cam/conversions.hpp"
@@ -56,13 +56,13 @@ extern "C" {
 namespace usb_cam
 {
 
-using utils::io_method;
-using utils::pixel_format;
-using utils::color_format;
+using utils::io_method_t;
+using utils::pixel_format_t;
+using utils::color_format_t;
 
 
 UsbCam::UsbCam()
-: io_(io_method::IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0),
+: io_(io_method_t::IO_METHOD_MMAP), fd_(-1), buffers_(NULL), n_buffers_(0),
   avframe_camera_(NULL), avframe_rgb_(NULL), avcodec_(NULL), avoptions_(NULL),
   avcodec_context_(NULL), avframe_camera_size_(0), avframe_rgb_size_(0),
   video_sws_(NULL), image_(NULL), is_capturing_(false),
@@ -75,7 +75,7 @@ UsbCam::~UsbCam()
 }
 
 int UsbCam::init_decoder(
-  int image_width, int image_height, color_format color_format,
+  int image_width, int image_height, color_format_t color_format,
   AVCodecID codec_id, const char * codec_name)
 {
   avcodec_ = avcodec_find_decoder(codec_id);
@@ -118,7 +118,7 @@ int UsbCam::init_decoder(
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
   // TODO(lucasw) it gets set correctly here, but then changed later to deprecated J422P format
-  if (color_format == color_format::COLOR_FORMAT_YUV420P) {
+  if (color_format == color_format_t::COLOR_FORMAT_YUV420P) {
     avcodec_context_->pix_fmt = AV_PIX_FMT_YUV420P;
     std::cout << "using YUV420P " << AV_PIX_FMT_YUV420P << " ";
     std::cout << avcodec_context_->pix_fmt << std::endl;
@@ -151,14 +151,14 @@ int UsbCam::init_decoder(
   return 1;
 }
 
-int UsbCam::init_mjpeg_decoder(int image_width, int image_height, color_format cf)
+int UsbCam::init_mjpeg_decoder(int image_width, int image_height, color_format_t color_format)
 {
-  return init_decoder(image_width, image_height, cf, AV_CODEC_ID_MJPEG, "MJPEG");
+  return init_decoder(image_width, image_height, color_format, AV_CODEC_ID_MJPEG, "MJPEG");
 }
 
-int UsbCam::init_h264_decoder(int image_width, int image_height, color_format cf)
+int UsbCam::init_h264_decoder(int image_width, int image_height, color_format_t color_format)
 {
-  return init_decoder(image_width, image_height, cf, AV_CODEC_ID_H264, "H264");
+  return init_decoder(image_width, image_height, color_format, AV_CODEC_ID_H264, "H264");
 }
 
 bool UsbCam::process_image(const void * src, int len, camera_image_t * dest)
@@ -207,7 +207,7 @@ bool UsbCam::read_frame()
   int64_t buffer_time_s;
 
   switch (io_) {
-    case io_method::IO_METHOD_READ:
+    case io_method_t::IO_METHOD_READ:
       len = read(fd_, buffers_[0].start, buffers_[0].length);
       if (len == -1) {
         switch (errno) {
@@ -232,7 +232,7 @@ bool UsbCam::read_frame()
 
       break;
 
-    case io_method::IO_METHOD_MMAP:
+    case io_method_t::IO_METHOD_MMAP:
       CLEAR(buf);
 
       buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -275,7 +275,7 @@ bool UsbCam::read_frame()
 
       break;
 
-    case io_method::IO_METHOD_USERPTR:
+    case io_method_t::IO_METHOD_USERPTR:
       CLEAR(buf);
 
       buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -324,7 +324,7 @@ bool UsbCam::read_frame()
 
       image_->stamp = stamp;
       break;
-    case io_method::IO_METHOD_UNKNOWN:
+    case io_method_t::IO_METHOD_UNKNOWN:
       // TODO(flynneva): log something to indicate IO method unknown
       break;
   }
@@ -340,12 +340,12 @@ bool UsbCam::stop_capturing(void)
   enum v4l2_buf_type type;
 
   switch (io_) {
-    case io_method::IO_METHOD_READ:
+    case io_method_t::IO_METHOD_READ:
       /* Nothing to do. */
       break;
 
-    case io_method::IO_METHOD_MMAP:
-    case io_method::IO_METHOD_USERPTR:
+    case io_method_t::IO_METHOD_MMAP:
+    case io_method_t::IO_METHOD_USERPTR:
       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
       if (-1 == usb_cam::utils::xioctl(fd_, VIDIOC_STREAMOFF, &type)) {
@@ -354,7 +354,7 @@ bool UsbCam::stop_capturing(void)
       }
 
       break;
-    case io_method::IO_METHOD_UNKNOWN:
+    case io_method_t::IO_METHOD_UNKNOWN:
       // TODO(flynneva): log something indicating IO method unknown
       break;
   }
@@ -369,11 +369,11 @@ bool UsbCam::start_capturing(void)
   enum v4l2_buf_type type;
 
   switch (io_) {
-    case io_method::IO_METHOD_READ:
+    case io_method_t::IO_METHOD_READ:
       /* Nothing to do. */
       break;
 
-    case io_method::IO_METHOD_MMAP:
+    case io_method_t::IO_METHOD_MMAP:
       for (i = 0; i < n_buffers_; ++i) {
         struct v4l2_buffer buf;
 
@@ -397,7 +397,7 @@ bool UsbCam::start_capturing(void)
       }
       break;
 
-    case io_method::IO_METHOD_USERPTR:
+    case io_method_t::IO_METHOD_USERPTR:
       for (i = 0; i < n_buffers_; ++i) {
         struct v4l2_buffer buf;
 
@@ -423,7 +423,7 @@ bool UsbCam::start_capturing(void)
       }
 
       break;
-    case io_method::IO_METHOD_UNKNOWN:
+    case io_method_t::IO_METHOD_UNKNOWN:
       // TODO(flynneva): log something indicating IO method unknown
       break;
   }
@@ -436,11 +436,11 @@ bool UsbCam::uninit_device(void)
   unsigned int i;
 
   switch (io_) {
-    case io_method::IO_METHOD_READ:
+    case io_method_t::IO_METHOD_READ:
       free(buffers_[0].start);
       break;
 
-    case io_method::IO_METHOD_MMAP:
+    case io_method_t::IO_METHOD_MMAP:
       for (i = 0; i < n_buffers_; ++i) {
         if (-1 == munmap(buffers_[i].start, buffers_[i].length)) {
           std::cerr << "Unable to deallocate memory " << errno << std::endl;
@@ -449,12 +449,12 @@ bool UsbCam::uninit_device(void)
       }
       break;
 
-    case io_method::IO_METHOD_USERPTR:
+    case io_method_t::IO_METHOD_USERPTR:
       for (i = 0; i < n_buffers_; ++i) {
         free(buffers_[i].start);
       }
       break;
-    case io_method::IO_METHOD_UNKNOWN:
+    case io_method_t::IO_METHOD_UNKNOWN:
       // TODO(flynneva): log something
       break;
   }
@@ -609,7 +609,7 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
   }
 
   switch (io_) {
-    case io_method::IO_METHOD_READ:
+    case io_method_t::IO_METHOD_READ:
       if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
         std::cerr << camera_dev_ << " does not support read i/o" << std::endl;
         return false;  // (EXIT_FAILURE);
@@ -617,15 +617,15 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
 
       break;
 
-    case io_method::IO_METHOD_MMAP:
-    case io_method::IO_METHOD_USERPTR:
+    case io_method_t::IO_METHOD_MMAP:
+    case io_method_t::IO_METHOD_USERPTR:
       if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
         std::cout << camera_dev_ << " does not support streaming i/o" << std::endl;
         return false;  // (EXIT_FAILURE);
       }
 
       break;
-    case io_method::IO_METHOD_UNKNOWN:
+    case io_method_t::IO_METHOD_UNKNOWN:
       // TODO(flynneva): log something
       break;
   }
@@ -704,18 +704,18 @@ bool UsbCam::init_device(uint32_t image_width, uint32_t image_height, int framer
   }
 
   switch (io_) {
-    case io_method::IO_METHOD_READ:
+    case io_method_t::IO_METHOD_READ:
       init_read(fmt.fmt.pix.sizeimage);
       break;
 
-    case io_method::IO_METHOD_MMAP:
+    case io_method_t::IO_METHOD_MMAP:
       init_mmap();
       break;
 
-    case io_method::IO_METHOD_USERPTR:
+    case io_method_t::IO_METHOD_USERPTR:
       init_userp(fmt.fmt.pix.sizeimage);
       break;
-    case io_method::IO_METHOD_UNKNOWN:
+    case io_method_t::IO_METHOD_UNKNOWN:
       // TODO(flynneva): log something
       break;
   }
@@ -759,34 +759,35 @@ bool UsbCam::open_device(void)
 }
 
 bool UsbCam::start(
-  const std::string & dev, io_method io_method, pixel_format pixel_format, color_format cf,
+  const std::string & dev,
+  io_method_t io_method, pixel_format_t pixel_format, color_format_t color_format,
   uint32_t image_width, uint32_t image_height, int framerate)
 {
   camera_dev_ = dev;
 
   io_ = io_method;
   monochrome_ = false;
-  if (pixel_format == pixel_format::PIXEL_FORMAT_YUYV) {
+  if (pixel_format == pixel_format_t::PIXEL_FORMAT_YUYV) {
     pixelformat_ = V4L2_PIX_FMT_YUYV;
-  } else if (pixel_format == pixel_format::PIXEL_FORMAT_UYVY) {
+  } else if (pixel_format == pixel_format_t::PIXEL_FORMAT_UYVY) {
     pixelformat_ = V4L2_PIX_FMT_UYVY;
-  } else if (pixel_format == pixel_format::PIXEL_FORMAT_MJPEG) {
+  } else if (pixel_format == pixel_format_t::PIXEL_FORMAT_MJPEG) {
     pixelformat_ = V4L2_PIX_FMT_MJPEG;
-    init_mjpeg_decoder(image_width, image_height, cf);
-  } else if (pixel_format == pixel_format::PIXEL_FORMAT_H264) {
+    init_mjpeg_decoder(image_width, image_height, color_format);
+  } else if (pixel_format == pixel_format_t::PIXEL_FORMAT_H264) {
     pixelformat_ = V4L2_PIX_FMT_H264;
-    init_h264_decoder(image_width, image_height, cf);
-  } else if (pixel_format == pixel_format::PIXEL_FORMAT_YUVMONO10) {
+    init_h264_decoder(image_width, image_height, color_format);
+  } else if (pixel_format == pixel_format_t::PIXEL_FORMAT_YUVMONO10) {
     // actually format V4L2_PIX_FMT_Y16 (10-bit mono expresed as 16-bit pixels)
     // but we need to use the advertised type (yuyv)
     pixelformat_ = V4L2_PIX_FMT_YUYV;
     monochrome_ = true;
-  } else if (pixel_format == pixel_format::PIXEL_FORMAT_RGB24) {
+  } else if (pixel_format == pixel_format_t::PIXEL_FORMAT_RGB24) {
     pixelformat_ = V4L2_PIX_FMT_RGB24;
-  } else if (pixel_format == pixel_format::PIXEL_FORMAT_GREY) {
+  } else if (pixel_format == pixel_format_t::PIXEL_FORMAT_GREY) {
     pixelformat_ = V4L2_PIX_FMT_GREY;
     monochrome_ = true;
-  } else if (pixel_format == pixel_format::PIXEL_FORMAT_YU12) {
+  } else if (pixel_format == pixel_format_t::PIXEL_FORMAT_YU12) {
     pixelformat_ = V4L2_PIX_FMT_YUV420;
   } else {
     std::cerr << "Unknown pixel format" << std::endl;

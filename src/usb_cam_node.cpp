@@ -123,21 +123,21 @@ void UsbCamNode::init()
     image_width_, image_height_, io_method_name_.c_str(),
     pixel_format_name_.c_str(), color_format_name_.c_str(), framerate_);
   // set the IO method
-  io_method io_method = usb_cam::utils::io_method_from_string(io_method_name_);
+  io_method_t io_method = usb_cam::utils::io_method_from_string(io_method_name_);
   if (io_method == usb_cam::utils::IO_METHOD_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown IO method '%s'", io_method_name_.c_str());
     rclcpp::shutdown();
     return;
   }
   // set the pixel format
-  pixel_format pixel_format = usb_cam::utils::pixel_format_from_string(pixel_format_name_);
+  pixel_format_t pixel_format = usb_cam::utils::pixel_format_from_string(pixel_format_name_);
   if (pixel_format == usb_cam::utils::PIXEL_FORMAT_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown pixel format '%s'", pixel_format_name_.c_str());
     rclcpp::shutdown();
     return;
   }
   // set the color format
-  color_format color_format = usb_cam::utils::color_format_from_string(color_format_name_);
+  color_format_t color_format = usb_cam::utils::color_format_from_string(color_format_name_);
   if (color_format == usb_cam::utils::COLOR_FORMAT_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown color format '%s'", color_format_name_.c_str());
     rclcpp::shutdown();
