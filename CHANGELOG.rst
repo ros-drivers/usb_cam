@@ -2,6 +2,72 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.0 (2023-01-14)
+------------------
+* Merge pull request `#212 <https://github.com/flynneva/usb_cam/issues/212>`_ from flynneva/203-refactor-usb-cam-library-with-no-ros-deps
+  Improve ros2 rewrite some more
+* Ensure usb_cam lib and node are installed
+* Add missing include to test_usb_cam_lib
+* Rename format enums to make code easier to read
+* Make supported formats a member variable of the UsbCam class
+* Adjust get_image method to return image to reduce required args
+* Use unused arguments in MJPEG2RGB conversion function
+* Treat all compiler warnings as errors to be more strict
+* Improve logging errors for usb_cam lib
+* Fix opencv include path
+* Merge pull request `#210 <https://github.com/flynneva/usb_cam/issues/210>`_ from revanthsenthil/ros2
+  ROS 2 installation instruction typo fix
+* Merge branch 'ros-drivers:ros2' into ros2
+* Merge pull request `#209 <https://github.com/flynneva/usb_cam/issues/209>`_ from flynneva/203-refactor-usb-cam-library-with-no-ros-deps
+  Refactor usb cam library with no ros deps
+* Update README.md
+  resolved error with `apt-get` from `apt get`
+* Add back in missing copyrights
+* Improve supported formats method for UsbCam object
+* Fix MJPEG2RGB conversion function
+* Enable code coverage using lcov
+* Add integration test for usb_cam lib
+* Clean up usb_cam lib, remove rclcpp dep
+* Bump default framerate to 30hz
+* Improve CLIPVALUE method, add unit test for it
+* Fix humble CI name
+* Add some basic unit tests to usb_cam
+* Remove ROS dep from usb_cam by rewriting timestamping of frames
+* Restructure usb_cam code into more digestible pieces
+* Merge pull request `#207 <https://github.com/flynneva/usb_cam/issues/207>`_ from flynneva/fix-compiler-warnings
+  Fix compiler warnings, replace deprecated code
+* Add basic linters to CMake, fix linter errors found
+* Fix compiler warnings, replace deprecated code
+* Merge pull request `#206 <https://github.com/flynneva/usb_cam/issues/206>`_ from flynneva/ros2
+  Add humble to CI
+* Add humble to CI
+* Merge pull request `#177 <https://github.com/flynneva/usb_cam/issues/177>`_ from benmaidel/feature/YUV420_ros2
+  [ros2] add support for YUV420 (yu12) pixel format
+* Merge pull request `#193 <https://github.com/flynneva/usb_cam/issues/193>`_ from mad0x60/patch-1
+* update the deprecated uncompressed command
+  The current ros2 image decompression command produces the following warning because it is deprecated:
+  [WARN] [1662133933.155713605] [rcl]: Found remap rule 'in/compressed:=image_raw/compressed'. This syntax is deprecated. Use '--ros-args --remap in/compressed:=image_raw/compressed' instead.
+  [WARN] [1662133933.155877454] [rcl]: Found remap rule 'out:=image_raw/uncompressed'. This syntax is deprecated. Use '--ros-args --remap out:=image_raw/uncompressed' instead.
+  This change update to match the most recent ROS2 format
+* Merge pull request `#189 <https://github.com/flynneva/usb_cam/issues/189>`_ from flynneva/ros2
+  Suppress libav deprecated pixel format used warnings (backport from #…
+* Suppress libav deprecated pixel format used warnings (backport from `#115 <https://github.com/flynneva/usb_cam/issues/115>`_)
+* Merge branch 'ros2' into feature/YUV420_ros2
+* Merge pull request `#188 <https://github.com/flynneva/usb_cam/issues/188>`_ from krsche/feat/ros2-add-h264-support
+* feat: add color_format param to support yuv422p
+  required for using cams like the Logitech C920 with the h264 pixel_format
+* feat: add h264 support
+* Merge pull request `#185 <https://github.com/flynneva/usb_cam/issues/185>`_ from progtologist/ros2
+  Enabled dynamic reconfiguration of usb_cam_node
+* Added debug print in callback
+  Co-authored-by: Evan Flynn <6157095+flynneva@users.noreply.github.com>
+* Merge pull request `#186 <https://github.com/flynneva/usb_cam/issues/186>`_ from ros-drivers/prep-for-release
+  Prep for release
+* Enabled dynamic reconfiguration of usb_cam_node
+* Merge branch 'ros2' into feature/YUV420_ros2
+* add support for YUV420 (yu12) pixel format
+* Contributors: Andrei Vukolov, Aris Synodinos, Benjamin Maidel, Evan Flynn, Fabian Kirschner, Mohamed Moustafa, Revanth S
+
 0.4.2 (2022-04-25)
 ------------------
 * Minor bump for release
