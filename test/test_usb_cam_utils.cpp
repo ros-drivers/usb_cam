@@ -38,7 +38,7 @@ using usb_cam::utils::pixel_format_from_string;
 
 
 TEST(test_usb_cam_utils, test_io_method_from_string) {
-  usb_cam::utils::io_method test_io;
+  usb_cam::utils::io_method_t test_io;
 
   test_io = io_method_from_string("mmap");
   EXPECT_EQ(test_io, usb_cam::utils::IO_METHOD_MMAP);
@@ -54,7 +54,7 @@ TEST(test_usb_cam_utils, test_io_method_from_string) {
 }
 
 TEST(test_usb_cam_utils, test_pixel_format_from_string) {
-  usb_cam::utils::pixel_format test_fmt;
+  usb_cam::utils::pixel_format_t test_fmt;
 
   test_fmt = pixel_format_from_string("yuyv");
   EXPECT_EQ(test_fmt, usb_cam::utils::PIXEL_FORMAT_YUYV);
@@ -116,7 +116,7 @@ TEST(test_usb_cam_utils, test_pixel_format_to_string) {
 }
 
 TEST(test_usb_cam_utils, test_color_format) {
-  usb_cam::utils::color_format test_fmt;
+  usb_cam::utils::color_format_t test_fmt;
 
   test_fmt = usb_cam::utils::color_format_from_string("yuv420p");
   EXPECT_EQ(test_fmt, usb_cam::utils::COLOR_FORMAT_YUV420P);

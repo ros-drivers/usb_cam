@@ -123,21 +123,21 @@ void UsbCamNode::init()
     image_width_, image_height_, io_method_name_.c_str(),
     pixel_format_name_.c_str(), color_format_name_.c_str(), framerate_);
   // set the IO method
-  io_method io_method = usb_cam::utils::io_method_from_string(io_method_name_);
+  io_method_t io_method = usb_cam::utils::io_method_from_string(io_method_name_);
   if (io_method == usb_cam::utils::IO_METHOD_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown IO method '%s'", io_method_name_.c_str());
     rclcpp::shutdown();
     return;
   }
   // set the pixel format
-  pixel_format pixel_format = usb_cam::utils::pixel_format_from_string(pixel_format_name_);
+  pixel_format_t pixel_format = usb_cam::utils::pixel_format_from_string(pixel_format_name_);
   if (pixel_format == usb_cam::utils::PIXEL_FORMAT_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown pixel format '%s'", pixel_format_name_.c_str());
     rclcpp::shutdown();
     return;
   }
   // set the color format
-  color_format color_format = usb_cam::utils::color_format_from_string(color_format_name_);
+  color_format_t color_format = usb_cam::utils::color_format_from_string(color_format_name_);
   if (color_format == usb_cam::utils::COLOR_FORMAT_UNKNOWN) {
     RCLCPP_ERROR_ONCE(this->get_logger(), "Unknown color format '%s'", color_format_name_.c_str());
     rclcpp::shutdown();
@@ -211,23 +211,27 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
 
 bool UsbCamNode::take_and_send_image()
 {
-  // TODO(flynneva): this is disgusting. We should find a better way
-  //  to get the timestamp of the image during capture and put it into
-  // whatever format we want (not ROS specific like  ROS-message)
-  struct timespec image_time;
   // grab the image
-  if (!cam_.get_image(
-      image_time, img_->encoding, img_->height, img_->width,
-      img_->step, img_->data))
-  {
-    RCLCPP_ERROR(this->get_logger(), "grab failed");
+  auto new_image = cam_.get_image();
+  if (new_image == nullptr) {
+    RCLCPP_ERROR(this->get_logger(), "Grabbing new image failed");
     return false;
   }
 
-  img_->header.stamp.sec = image_time.tv_sec;
-  img_->header.stamp.nanosec = image_time.tv_nsec;
+  img_->header.stamp.sec = new_image->stamp.tv_sec;
+  img_->header.stamp.nanosec = new_image->stamp.tv_nsec;
 
-  // INFO(img_->data.size() << " " << img_->width << " " << img_->height << " " << img_->step);
+  // Only resize if required
+  if (img_->data.size() != static_cast<size_t>(new_image->step * new_image->height)) {
+    img_->width = new_image->width;
+    img_->height = new_image->height;
+    img_->encoding = new_image->encoding;
+    img_->step = new_image->step;
+    img_->data.resize(new_image->step * new_image->height);
+  }
+  // Fill in image data
+  memcpy(&img_->data[0], new_image->image, img_->data.size());
+
   auto ci = std::make_unique<sensor_msgs::msg::CameraInfo>(cinfo_->getCameraInfo());
   ci->header = img_->header;
   image_pub_->publish(*img_, *ci);

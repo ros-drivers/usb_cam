@@ -48,9 +48,9 @@ extern "C" {
 namespace usb_cam
 {
 
-using utils::io_method;
-using utils::pixel_format;
-using utils::color_format;
+using utils::io_method_t;
+using utils::pixel_format_t;
+using utils::color_format_t;
 
 // TODO(lucasw) just store an Image shared_ptr here
 // TOOD(flynnev) can new Image shared_ptr be used for both ROS 1 and ROS 2?
@@ -61,6 +61,8 @@ typedef struct
 {
   uint32_t width;
   uint32_t height;
+  uint32_t step;
+  std::string encoding;
   int bytes_per_pixel;
   int image_size;
   struct timespec stamp;
@@ -85,16 +87,20 @@ public:
 
   // start camera
   bool start(
-    const std::string & dev, io_method io, pixel_format pf, color_format cf,
+    const std::string & dev,
+    io_method_t io_method, pixel_format_t pixel_format, color_format_t color_format,
     uint32_t image_width, uint32_t image_height, int framerate);
+
   // shutdown camera
   bool shutdown(void);
 
-  // grabs a new image from the camera
-  // bool get_image(sensor_msgs::msg::Image:::SharedPtr image);
-  bool get_image(
-    struct timespec & stamp, std::string & encoding,
-    uint32_t & height, uint32_t & width, uint32_t & step, std::vector<uint8_t> & data);
+  /// @brief Take a new image with device and return it
+  ///   To copy the returned image to another format:
+  ///   sensor_msgs::msg::Image image_msg;
+  ///   auto new_image = get_image();
+  ///   image_msg.data.resize(step * height);
+  ///   memcpy(&image_msg.data[0], new_image->image, image_msg.data.size());
+  camera_image_t * get_image();
 
   std::vector<capture_format_t> get_supported_formats();
 
@@ -132,7 +138,7 @@ public:
     return monochrome_;
   }
 
-  inline usb_cam::utils::io_method get_io_method()
+  inline usb_cam::utils::io_method_t get_io_method()
   {
     return io_;
   }
@@ -211,12 +217,17 @@ public:
     return epoch_time_shift_;
   }
 
+  inline std::vector<capture_format_t> supported_formats()
+  {
+    return supported_formats_;
+  }
+
 private:
   int init_decoder(
-    int image_width, int image_height, color_format color_format,
+    int image_width, int image_height, color_format_t color_format,
     AVCodecID codec_id, const char * codec_name);
-  int init_h264_decoder(int image_width, int image_height, color_format cf);
-  int init_mjpeg_decoder(int image_width, int image_height, color_format cf);
+  int init_h264_decoder(int image_width, int image_height, color_format_t cf);
+  int init_mjpeg_decoder(int image_width, int image_height, color_format_t cf);
   bool process_image(const void * src, int len, camera_image_t * dest);
   bool read_frame();
   bool uninit_device(void);
@@ -231,7 +242,7 @@ private:
   std::string camera_dev_;
   unsigned int pixelformat_;
   bool monochrome_;
-  usb_cam::utils::io_method io_;
+  usb_cam::utils::io_method_t io_;
   int fd_;
   usb_cam::utils::buffer * buffers_;
   unsigned int n_buffers_;
@@ -246,6 +257,7 @@ private:
   camera_image_t * image_;
   bool is_capturing_;
   const time_t epoch_time_shift_;
+  std::vector<capture_format_t> supported_formats_;
 };
 
 }  // namespace usb_cam

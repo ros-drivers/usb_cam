@@ -7,7 +7,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
 find_package(ament_cmake_auto REQUIRED)
@@ -86,6 +86,13 @@ install(
   PROGRAMS scripts/show_image.py
   DESTINATION lib/${PROJECT_NAME})
 
+install(TARGETS
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_node
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+)
 ament_auto_package(
   INSTALL_TO_SHARE
     launch
