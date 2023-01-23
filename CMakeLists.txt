@@ -1,82 +1,123 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.2)
 project(usb_cam)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS cv_bridge image_transport roscpp std_msgs std_srvs sensor_msgs camera_info_manager)
-
-# Find OpenCV
-find_package(OpenCV REQUIRED)
-
-## pkg-config libraries
+message(STATUS "Searching required modules")
 find_package(PkgConfig REQUIRED)
+# FFMPEG
 pkg_check_modules(avcodec libavcodec REQUIRED)
 pkg_check_modules(avutil libavutil REQUIRED)
 pkg_check_modules(swscale libswscale REQUIRED)
+pkg_check_modules(video4linux libv4l2 REQUIRED)
+# OPENCV
+find_package(OpenCV REQUIRED)
+# Reporting
+if(avcodec_FOUND)
+    message(STATUS "Found libavcodec: ${avcodec_VERSION}")
+endif()
+if(avutil_FOUND)
+    message(STATUS "Found libavutil: ${avutil_VERSION}")
+endif()
+if(swscale_FOUND)
+    message(STATUS "Found libswscale: ${swscale_VERSION}")
+endif()
+if(OpenCV_FOUND)
+    message(STATUS "Found OpenCV: ${OpenCV_VERSION}")
+endif()
+if(video4linux_FOUND)
+    message(STATUS "Found Video4Linux kernel library: ${video4linux_VERSION}")
+endif()
 
-###################################################
-## Declare things to be passed to other projects ##
-###################################################
-
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
+# Catkin
+find_package(catkin REQUIRED COMPONENTS
+    cv_bridge
+    image_transport
+    roscpp
+    std_msgs
+    std_srvs
+    sensor_msgs
+    camera_info_manager
+)
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
+    INCLUDE_DIRS include
+    LIBRARIES usb_cam
 )
 
-###########
-## Build ##
-###########
+# Build scenario
+option(SUPPRESS_BIND_GLOBAL_PLACEHOLDERS
+    "Suppresses Boost >= 1.68 deprecation warning message for global placeholders in boost::bind instantiation"
+    ON
+) # Workaround for deprecation message from instantiation of Boost::bind
+if(SUPPRESS_BIND_GLOBAL_PLACEHOLDERS)
+    add_compile_definitions(BOOST_BIND_GLOBAL_PLACEHOLDERS)
+endif(SUPPRESS_BIND_GLOBAL_PLACEHOLDERS)
 
-include_directories(include
-  ${catkin_INCLUDE_DIRS}
-  ${avcodec_INCLUDE_DIRS}
-  ${swscale_INCLUDE_DIRS}
-  ${avutil_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
+include_directories(include)
+link_directories(
+    ${video4linux_LIBRARY_DIRS}
+    ${avcodec_LIBRARY_DIRS}
+    ${avutil_LIBRARY_DIRS}
+    ${swscale_LIBRARY_DIRS}
 )
 
-## Build the USB camera library
-add_library(${PROJECT_NAME} src/usb_cam.cpp)
-target_link_libraries(${PROJECT_NAME}
-  ${avcodec_LIBRARIES}
-  ${avutil_LIBRARIES}
-  ${swscale_LIBRARIES}
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
+set(usb_cam_SHARED_HEADERS
+    include/usb_cam/types.h
+    include/usb_cam/util.h
+    include/usb_cam/converters.h
+    include/usb_cam/usb_cam.h
+)
+add_library(usb_cam
+    ${usb_cam_SHARED_HEADERS}
+    src/util.cpp
+    src/converters.cpp
+    src/usb_cam.cpp
+)
+target_include_directories(usb_cam PUBLIC
+    ${catkin_INCLUDE_DIRS}
+    ${video4linux_INCLUDE_DIRS}
+    ${avcodec_INCLUDE_DIRS}
+    ${swscale_INCLUDE_DIRS}
+    ${avutil_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+)
+target_link_libraries(usb_cam
+    ${video4linux_LIBRARIES}
+    ${avcodec_LIBRARIES}
+    ${avutil_LIBRARIES}
+    ${swscale_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
 )
 
 ## Declare a cpp executable
-add_executable(${PROJECT_NAME}_node nodes/usb_cam_node.cpp)
-target_link_libraries(${PROJECT_NAME}_node
-  ${PROJECT_NAME}
-  ${avcodec_LIBRARIES}
-  ${avutil_LIBRARIES}
-  ${swscale_LIBRARIES}
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
+add_executable(usb_cam_node
+    src/usb_cam_node.cpp
+)
+target_include_directories(usb_cam_node PRIVATE
+    ${catkin_INCLUDE_DIRS}
+    ${avcodec_INCLUDE_DIRS}
+    ${swscale_INCLUDE_DIRS}
+    ${avutil_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+)
+target_link_libraries(usb_cam_node
+    usb_cam
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
 )
 
-#############
-## Install ##
-#############
-
-## Mark executables and/or libraries for installation
+# Installation scenario
+# Executables and libraries
 install(TARGETS ${PROJECT_NAME}_node ${PROJECT_NAME}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
-
-## Copy launch files
+# Launch files
 install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-  FILES_MATCHING PATTERN "*.launch"
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+    FILES_MATCHING PATTERN "*.launch"
 )
-
+# Include files
 install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
