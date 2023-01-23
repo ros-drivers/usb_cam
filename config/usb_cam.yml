@@ -39,7 +39,7 @@ framerate: 30                       # Camera polling frequency, Hz (integer)
     # namespace.
     # See also the comprehensive node output describing parameter names and feasible values for them to be set up here.
     # It is also possible to have a list of the available control names using v4l2-ctl application from v4l2-util package:
-    # v4l2-ctrl --device=/dev/video<ID> -L
+    # v4l2-ctl --device=/dev/video<ID> -L
 intrinsic_controls:                 
     focus_auto: true
     exposure_auto_priority: true
