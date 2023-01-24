@@ -36,6 +36,7 @@
 
 #include <linux/videodev2.h>
 #include <ros/ros.h>
+#include <sstream>
 #include "usb_cam/usb_cam.h"
 
 using namespace usb_cam;
@@ -75,6 +76,7 @@ image_transport::CameraPublisher* UsbCam::image_pub = nullptr;
 camera_info_manager::CameraInfoManager* UsbCam::camera_info = nullptr;
 ros::ServiceServer* UsbCam::service_start = nullptr;
 ros::ServiceServer* UsbCam::service_stop = nullptr;
+ros::ServiceServer* UsbCam::service_supported_formats = nullptr;
 image_transport::ImageTransport* UsbCam::image_transport = nullptr;
 
 /* V4L camera parameters */
@@ -112,6 +114,29 @@ bool UsbCam::service_start_callback(std_srvs::Empty::Request &request, std_srvs:
 bool UsbCam::service_stop_callback(std_srvs::Empty::Request &request, std_srvs::Empty::Response &response)
 {
     return suspend();
+}
+
+bool UsbCam::service_supported_formats_callback(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+    get_supported_formats();
+    std::stringstream output_stream;
+    std::cout << "SUPPORTED INPUT FORMATS FOR V4L DEVICE " << video_device_name << std::endl;
+    for(auto fmt : supported_formats)
+    {
+        output_stream << " | " << fmt.format.description
+                      << " [" << fmt.interval.width << " x "
+                      << fmt.interval.height << "], "
+                      << fmt.interval.discrete.denominator / fmt.interval.discrete.numerator
+                      << " fps";
+        std::cout << "\t" << fmt.format.description
+                  << " [" << fmt.interval.width << " x "
+                  << fmt.interval.height << "], "
+                  << fmt.interval.discrete.denominator / fmt.interval.discrete.numerator
+                  << " fps" << std::endl;
+    }
+    response.success = true;
+    response.message = output_stream.str();
+    return true;
 }
 
 bool UsbCam::start()
@@ -1103,6 +1128,9 @@ UsbCam::UsbCam():
     ROS_INFO("Advertising std_srvs::Empty suspension service under name '%s'", _service_stop_name.c_str());
     _service_stop = node.advertiseService(_service_stop_name, &UsbCam::service_stop_callback);
     service_stop = &_service_stop;
+    ROS_INFO("Advertising std_srvs::Trigger supported formats information service under name 'supported_formats'");
+    _service_supported_formats = node.advertiseService("supported_formats", &UsbCam::service_supported_formats_callback);
+    service_supported_formats = &_service_supported_formats;
 
     /* All parameters set, running frame grabber */
     if(!start())
@@ -1111,14 +1139,6 @@ UsbCam::UsbCam():
         node.shutdown();
         return;
     }
-    /* get_supported_formats();
-    ROS_INFO("SUPPORTED INPUT FORMATS FOR V4L DEVICE %s", video_device_name.c_str());
-    for (auto fmt : supported_formats)
-        ROS_INFO("\t%s [%i x %i], %d",
-                 fmt.format.description,
-                 fmt.interval.width,
-                 fmt.interval.height,
-                 fmt.interval.discrete.denominator / fmt.interval.discrete.numerator); */
     adjust_camera();
     // Creating timer
     ros::Duration frame_period(1.f / static_cast<float>(framerate));

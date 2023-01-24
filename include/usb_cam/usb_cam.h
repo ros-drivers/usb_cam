@@ -36,6 +36,7 @@
 #ifndef USB_CAM_USB_CAM_H
 #define USB_CAM_USB_CAM_H
 
+#include "ros/service_server.h"
 #include <string>
 extern "C"
 {
@@ -66,6 +67,7 @@ extern "C"
 #include <image_transport/image_transport.h>
 #include <camera_info_manager/camera_info_manager.h>
 #include <std_srvs/Empty.h>
+#include <std_srvs/Trigger.h>
 
 #include "usb_cam/types.h"
 #include "usb_cam/util.h"
@@ -82,7 +84,7 @@ private:
     virtual ~UsbCam();
     UsbCam(const UsbCam& root) = delete;
     UsbCam operator=(const UsbCam& root) = delete;
-
+protected:
     /* V4L/HARDWARE */
     static io_method_t io_method; // io_
     static pixel_format_t pixel_format;
@@ -138,6 +140,10 @@ private:
     static ros::ServiceServer* service_stop;
     static bool service_stop_callback(std_srvs::Empty::Request& request,
                                       std_srvs::Empty::Response& response);
+    ros::ServiceServer _service_supported_formats;
+    static ros::ServiceServer* service_supported_formats;
+    static bool service_supported_formats_callback(std_srvs::Trigger::Request& request,
+                                                   std_srvs::Trigger::Response& response);
 
     /* V4L camera parameters */
     static bool streaming_status;
