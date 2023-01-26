@@ -95,11 +95,17 @@ public:
   int image_width_;
   int image_height_;
   int framerate_;
-
-  // TODO(lucasw) use v4l2ucp for these?
-  // int exposure_, brightness_, contrast_, saturation_, sharpness_, focus_,
-  //    white_balance_, gain_;
-  // bool autofocus_, autoexposure_, auto_white_balance_;
+  int brightness_;
+  int contrast_;
+  int saturation_;
+  int sharpness_;
+  int gain_;
+  int white_balance_;
+  int exposure_;
+  int focus_;
+  bool auto_white_balance_;
+  bool autoexposure_;
+  bool autofocus_;
 
   std::string camera_name_;
   std::string camera_info_url_;

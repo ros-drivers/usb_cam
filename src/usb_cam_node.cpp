@@ -65,6 +65,17 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("pixel_format", "yuyv");
   this->declare_parameter("color_format", "yuv422p");
   this->declare_parameter("video_device", "/dev/video0");
+  this->declare_parameter("brightness", 50); //0-255, -1 "leave alone"
+  this->declare_parameter("contrast", -1); //0-255, -1 "leave alone"
+  this->declare_parameter("saturation", -1); //0-255, -1 "leave alone"
+  this->declare_parameter("sharpness", -1); //0-255, -1 "leave alone"
+  this->declare_parameter("gain", -1); //0-100?, -1 "leave alone"
+  this->declare_parameter("auto_white_balance", true);
+  this->declare_parameter("white_balance", 4000);
+  this->declare_parameter("autoexposure", true);
+  this->declare_parameter("exposure", 100);
+  this->declare_parameter("autofocus", false);
+  this->declare_parameter("focus", -1); //0-255, -1 "leave alone"
 
   get_params();
   init();
@@ -160,6 +171,67 @@ void UsbCamNode::init()
       fmt.interval.discrete.denominator / fmt.interval.discrete.numerator);
   }
 
+
+  // set camera parameters
+  if (brightness_ >= 0) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'brightness' to %d", brightness_);
+    cam_.set_v4l_parameter("brightness", brightness_);
+  }
+
+  if (contrast_ >= 0) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'contrast' to %d", contrast_);
+    cam_.set_v4l_parameter("contrast", contrast_);
+  }
+
+  if (saturation_ >= 0) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'saturation' to %d", saturation_);
+    cam_.set_v4l_parameter("saturation", saturation_);
+  }
+
+  if (sharpness_ >= 0) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'sharpness' to %d", sharpness_);
+    cam_.set_v4l_parameter("sharpness", sharpness_);
+  }
+
+  if (gain_ >= 0) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'gain' to %d", gain_);
+    cam_.set_v4l_parameter("gain", gain_);
+  }
+
+  // check auto white balance
+  if (auto_white_balance_) {
+    cam_.set_v4l_parameter("white_balance_temperature_auto", 1);
+    RCLCPP_INFO(this->get_logger(), "Setting 'white_balance_temperature_auto' to %d", 1);
+  } else {
+    RCLCPP_INFO(this->get_logger(), "Setting 'white_balance' to %d", white_balance_);
+    cam_.set_v4l_parameter("white_balance_temperature_auto", 0);
+    cam_.set_v4l_parameter("white_balance_temperature", white_balance_);
+  }
+
+  // check auto exposure
+  if (!autoexposure_) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'exposure_auto' to %d", 1);
+    RCLCPP_INFO(this->get_logger(), "Setting 'exposure' to %d", exposure_);
+    // turn down exposure control (from max of 3)
+    cam_.set_v4l_parameter("exposure_auto", 1);
+    // change the exposure level
+    cam_.set_v4l_parameter("exposure_absolute", exposure_);
+  }
+
+  // check auto focus
+  if (autofocus_) {
+    cam_.set_auto_focus(1);
+    RCLCPP_INFO(this->get_logger(), "Setting 'focus_auto' to %d", 1);
+    cam_.set_v4l_parameter("focus_auto", 1);
+  } else {
+    RCLCPP_INFO(this->get_logger(), "Setting 'focus_auto' to %d", 0);
+    cam_.set_v4l_parameter("focus_auto", 0);
+    if (focus_ >= 0) {
+      RCLCPP_INFO(this->get_logger(), "Setting 'focus_absolute' to %d", focus_);
+      cam_.set_v4l_parameter("focus_absolute", focus_);
+    }
+  }
+
   // TODO(lucasw) should this check a little faster than expected frame rate?
   // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
   const int period_ms = 1000.0 / framerate_;
@@ -174,7 +246,10 @@ void UsbCamNode::get_params()
   auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
   auto parameters = parameters_client->get_parameters(
     {"camera_name", "camera_info_url", "frame_id", "framerate",
-      "image_height", "image_width", "io_method", "pixel_format", "color_format", "video_device"});
+      "image_height", "image_width", "io_method", "pixel_format", "color_format", "video_device", 
+      "brightness", "contrast", "saturation", "sharpness", "gain", "auto_white_balance",
+      "white_balance", "autoexposure", "exposure", "autofocus", "focus"});
+
   assign_params(parameters);
 }
 
@@ -203,6 +278,28 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       color_format_name_ = parameter.value_to_string();
     } else if (parameter.get_name() == "video_device") {
       video_device_name_ = parameter.value_to_string();
+    } else if (parameter.get_name() == "brightness") {
+      brightness_ = parameter.as_int();
+    } else if (parameter.get_name() == "contrast") {
+      contrast_ = parameter.as_int();
+    } else if (parameter.get_name() == "saturation") {
+      saturation_ = parameter.as_int();
+    } else if (parameter.get_name() == "sharpness") {
+      sharpness_ = parameter.as_int();
+    } else if (parameter.get_name() == "gain") {
+      gain_ = parameter.as_int();
+    } else if (parameter.get_name() == "auto_white_balance") {
+      auto_white_balance_ = parameter.as_bool();
+    } else if (parameter.get_name() == "white_balance") {
+      white_balance_ = parameter.as_int();
+    } else if (parameter.get_name() == "autoexposure") {
+      autoexposure_ = parameter.as_bool();
+    } else if (parameter.get_name() == "exposure") {
+      exposure_ = parameter.as_int();
+    } else if (parameter.get_name() == "autofocus") {
+      autofocus_ = parameter.as_bool();
+    } else if (parameter.get_name() == "focus") {
+      focus_ = parameter.as_int();
     } else {
       RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name().c_str());
     }
