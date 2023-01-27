@@ -10,7 +10,7 @@
       image_height: 480
       camera_name: "test_camera"
       camera_info_url: "package://usb_cam/config/camera_info.yaml"
-      brightness: 50
+      brightness: -1
       contrast: -1
       saturation: -1
       sharpness: -1
