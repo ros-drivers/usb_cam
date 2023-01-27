@@ -245,10 +245,13 @@ void UsbCamNode::get_params()
 {
   auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
   auto parameters = parameters_client->get_parameters(
-    {"camera_name", "camera_info_url", "frame_id", "framerate",
-      "image_height", "image_width", "io_method", "pixel_format", "color_format", "video_device", 
-      "brightness", "contrast", "saturation", "sharpness", "gain", "auto_white_balance",
-      "white_balance", "autoexposure", "exposure", "autofocus", "focus"});
+    {
+      "camera_name", "camera_info_url", "frame_id", "framerate", "image_height", "image_width",
+      "io_method", "pixel_format", "color_format", "video_device", "brightness", "contrast",
+      "saturation", "sharpness", "gain", "auto_white_balance", "white_balance", "autoexposure",
+      "exposure", "autofocus", "focus"
+    }
+  );
 
   assign_params(parameters);
 }
