@@ -3,7 +3,7 @@ io_method: mmap                     # I/O method
                                     # - read - for devices supporting virtual filesystem or block I/O
                                     # - mmap - for devices with direct libusb memory mapping
                                     # - userptr - for userspace devices supporting userspace pointer exchange
-pixel_format: yuv                  # Pixel format for Video4linux device (also selects decoder mode)
+pixel_format: yuyv                  # Pixel format for Video4linux device (also selects decoder mode)
                                     # https://wiki.videolan.org/YUV#YUV_4:2:0_.28I420.2FJ420.2FYV12.29
                                     # - yuyv - YUV420
                                     # - yuv - synonym for yuyv
@@ -33,7 +33,7 @@ exposure: 100                       # Absolute exposure, percents or hardware-de
 brightness: -1                      # Brightness, percents, 0-100, default -1 to ignore (integer)
 contrast: -1                        # Contrast, percents, 0-100, default -1 to ignore (integer)
 saturation: -1                      # Saturation, percents, 0-100, default -1 to ignore (integer)
-sharpness: -1                       # Shapening, hardware-defined unit, default -1 to ignore (integer)
+sharpness: -1                       # Sharpening, hardware-defined unit, default -1 to ignore (integer)
 focus: -1                           # Focal distance, hardware-defined unit, default -1 to ignore (integer)
 white_balance: 4000                 # Absolute color temperature, K (integer)
 gain: -1                            # Gain coefficient, hardware-defined unit, default -1 to ignore (integer)
