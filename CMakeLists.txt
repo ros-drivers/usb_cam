@@ -63,12 +63,14 @@ set(usb_cam_SHARED_HEADERS
     include/usb_cam/types.h
     include/usb_cam/util.h
     include/usb_cam/converters.h
+    include/usb_cam/camera_driver.h
     include/usb_cam/usb_cam.h
 )
 add_library(usb_cam
     ${usb_cam_SHARED_HEADERS}
     src/util.cpp
     src/converters.cpp
+    src/camera_driver.cpp
     src/usb_cam.cpp
 )
 target_include_directories(usb_cam PUBLIC
@@ -94,15 +96,10 @@ add_executable(usb_cam_node
 )
 target_include_directories(usb_cam_node PRIVATE
     ${catkin_INCLUDE_DIRS}
-    ${avcodec_INCLUDE_DIRS}
-    ${swscale_INCLUDE_DIRS}
-    ${avutil_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIRS}
 )
 target_link_libraries(usb_cam_node
     usb_cam
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
 )
 
 # Installation scenario
