@@ -59,35 +59,47 @@ link_directories(
     ${swscale_LIBRARY_DIRS}
 )
 
-set(usb_cam_SHARED_HEADERS
+# Shared V4L2 driver library
+set(v4l_driver_SHARED_HEADERS
     include/usb_cam/types.h
     include/usb_cam/util.h
     include/usb_cam/converters.h
     include/usb_cam/camera_driver.h
-    include/usb_cam/usb_cam.h
 )
-add_library(usb_cam
-    ${usb_cam_SHARED_HEADERS}
+add_library(v4l_driver
+    ${v4l_driver_SHARED_HEADERS}
     src/util.cpp
     src/converters.cpp
     src/camera_driver.cpp
-    src/usb_cam.cpp
 )
-target_include_directories(usb_cam PUBLIC
-    ${catkin_INCLUDE_DIRS}
+target_include_directories(v4l_driver PUBLIC
     ${video4linux_INCLUDE_DIRS}
     ${avcodec_INCLUDE_DIRS}
     ${swscale_INCLUDE_DIRS}
     ${avutil_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
 )
-target_link_libraries(usb_cam
+target_link_libraries(v4l_driver
     ${video4linux_LIBRARIES}
     ${avcodec_LIBRARIES}
     ${avutil_LIBRARIES}
     ${swscale_LIBRARIES}
-    ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
+)
+
+set(usb_cam_SHARED_HEADERS
+    include/usb_cam/usb_cam.h
+)
+add_library(usb_cam
+    ${usb_cam_SHARED_HEADERS}
+    src/usb_cam.cpp
+)
+target_include_directories(usb_cam PRIVATE
+    ${catkin_INCLUDE_DIRS}
+)
+target_link_libraries(usb_cam
+    ${catkin_LIBRARIES}
+    v4l_driver
 )
 
 ## Declare a cpp executable
