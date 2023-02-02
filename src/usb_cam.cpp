@@ -37,6 +37,10 @@
 #include <linux/videodev2.h>
 #include <ros/ros.h>
 #include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+#include "ros/service_server.h"
 #include "usb_cam/usb_cam.h"
 
 using namespace usb_cam;
@@ -51,6 +55,7 @@ camera_info_manager::CameraInfoManager* UsbCam::camera_info = nullptr;
 ros::ServiceServer* UsbCam::service_start = nullptr;
 ros::ServiceServer* UsbCam::service_stop = nullptr;
 ros::ServiceServer* UsbCam::service_supported_formats = nullptr;
+ros::ServiceServer* UsbCam::service_supported_controls = nullptr;
 image_transport::ImageTransport* UsbCam::image_transport = nullptr;
 
 /* Node parameters */
@@ -93,11 +98,26 @@ bool UsbCam::service_supported_formats_callback(std_srvs::Trigger::Request &requ
     return true;
 }
 
+bool UsbCam::service_supported_controls_callback(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+    std::stringstream output_stream;
+    std::cout << "SUPPORTED V4L CONTROLS FOR DEVICE " << video_device_name << std::endl;
+    std::cout << "NOTE: these controls are supported on host machine, not natively by ROS!" << std::endl;
+    for(auto c: controls)
+    {
+        output_stream << " | " << c.name << " [" << c.value << "]: " << c.description;
+        std::cout << c.name << " [" << c.value << "]" << std::endl << "\t" << c.description << std::endl;
+    }
+    response.success = true;
+    response.message = output_stream.str();
+    return true;
+}
+
 UsbCam::UsbCam():
+    AbstractV4LUSBCam(),
     node("~"),
     _img_msg(),
-    _image_transport(node),
-    AbstractV4LUSBCam()
+    _image_transport(node)
 {
     img_msg = &_img_msg;
     image_transport = &_image_transport;
@@ -116,17 +136,6 @@ UsbCam::UsbCam():
     node.getParam("image_width", image_width);
     node.getParam("image_height", image_height);
     node.getParam("framerate", framerate);
-    node.param<int>("exposure", exposure, 100);
-    node.param<int>("brightness", brightness, -1);
-    node.param<int>("contrast", contrast, -1);
-    node.param<int>("saturation", saturation, -1);
-    node.param<int>("sharpness", sharpness, -1);
-    node.param<int>("focus", focus, -1);
-    node.param<int>("white_balance", white_balance, 4000);
-    node.param<int>("gain", gain, -1);
-    node.param<bool>("autofocus", autofocus, false);
-    node.param<bool>("autoexposure", autoexposure, true);
-    node.param<bool>("auto_white_balance", auto_white_balance, false);
     node.param<std::string>("start_service_name", _service_start_name, "start_capture");
     node.param<std::string>("stop_service_name", _service_stop_name, "stop_capture");
 
@@ -170,6 +179,9 @@ UsbCam::UsbCam():
     ROS_INFO("Advertising std_srvs::Trigger supported formats information service under name 'supported_formats'");
     _service_supported_formats = node.advertiseService("supported_formats", &UsbCam::service_supported_formats_callback);
     service_supported_formats = &_service_supported_formats;
+    ROS_INFO("Advertising std_srvs::Trigger supported V4L controls information service under name 'supported_controls'");
+    _service_supported_controls = node.advertiseService("supported_controls", &UsbCam::service_supported_controls_callback);
+    service_supported_controls = &_service_supported_controls;
 
     /* All parameters set, running frame grabber */
     if(!start())
@@ -178,6 +190,78 @@ UsbCam::UsbCam():
         node.shutdown();
         return;
     }
+    /* Device opened, creating parameter grabber*/
+    v4l_query_controls();
+    /* Dynamically created V4L2 parameters */
+    ROS_WARN("NOTE: the parameters generated for V4L intrinsic camera controls will be placed under namespace 'intrinsic_controls'");
+    ROS_INFO("Use 'intrinsic_controls/ignore' list to enumerate the controls provoking errors or the ones you just want to keep untouched");
+    for(auto c = controls.begin(); c != controls.end(); c++)
+    { // intrinsic_controls
+        ROS_INFO("Attempting to generate ROS parameter for V4L2 control '%s':\n\t%s [%s]%s", c->name.c_str(), c->description.c_str(), c->value.c_str(), c->type == V4L2_CTRL_TYPE_BOOLEAN ? " (bool 1/0)" : "");
+        std::string tps;
+        bool tpb;
+        int tpi;
+        bool generated = true;
+        long tpl;
+        switch(c->type)
+        {
+        case V4L2_CTRL_TYPE_INTEGER:
+        case V4L2_CTRL_TYPE_MENU:
+        case V4L2_CTRL_TYPE_INTEGER_MENU:
+            //tpi = std::stoi(c.value);
+            node.param<int>("intrinsic_controls/" + c->name, tpi, std::stoi(c->value));
+            c->value = std::to_string(tpi);
+            break;
+        case V4L2_CTRL_TYPE_BOOLEAN:
+            //tpb = c.value == "1" ? true : false;
+            node.param<bool>("intrinsic_controls/" + c->name, tpb, c->value == "1" ? true : false);
+            c->value = tpb ? std::to_string(1) : std::to_string(0);
+            break;
+        case V4L2_CTRL_TYPE_STRING:
+            //tps = c.value;
+            node.param<std::string>("intrinsic_controls/" + c->name, tps, c->value);
+            c->value = tps;
+            break;
+        case V4L2_CTRL_TYPE_INTEGER64:
+            node.param<std::string>("intrinsic_controls/" + c->name, tps, c->value);
+            try
+            {
+                tpl = std::stol(tps);
+                ROS_INFO("64-bit integer 0x%lX successfully transposed to control %s", tpl, c->name.c_str());
+                c->value = tps;
+            }
+            catch(std::invalid_argument)
+            {
+                ROS_ERROR("Cannot convert string value '%s' to 64-bit integer! Please check your configuration file! Dropping down parameter '%s'", tps.c_str(), std::string("intrinsic_controls/" + c->name).c_str());
+                node.deleteParam("intrinsic_controls/" + c->name);
+            }
+            break;
+        default:
+            ROS_WARN("Unsupported type descriptor (%u) for V4L control '%s'. This parameter cannot be set via ROS. Please consider to set this parameter via 3rd party controller application", c->type, c->name.c_str());
+            generated = false;
+        }
+        if(generated)
+            ROS_INFO("Parameter intrinsic_controls/%s exposed with value %s", c->name.c_str(), c->value.c_str());
+    }
+    std::vector<std::string>ignored;
+    node.param< std::vector<std::string> >("intrinsic_controls/ignore", ignored, std::vector<std::string>());
+    // Set up ignored control names
+    if(!ignored.empty())
+        for(auto n: ignored)
+            ignore_controls.insert(n);
+    /*
+    node.param<int>("exposure", exposure, 100);
+    node.param<int>("brightness", brightness, -1);
+    node.param<int>("contrast", contrast, -1);
+    node.param<int>("saturation", saturation, -1);
+    node.param<int>("sharpness", sharpness, -1);auto
+    node.param<int>("focus", focus, -1);
+    node.param<int>("white_balance", white_balance, 4000);
+    node.param<int>("gain", gain, -1);
+    node.param<bool>("autofocus", autofocus, false);
+    node.param<bool>("autoexposure", autoexposure, true);
+    node.param<bool>("auto_white_balance", auto_white_balance, false);
+    */
     adjust_camera();
 
     // Creating timer
