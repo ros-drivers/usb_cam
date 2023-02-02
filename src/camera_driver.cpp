@@ -1,5 +1,11 @@
 #include <cstdio>
+#include <linux/videodev2.h>
+#include <sstream>
+#include <string>
+
 #include "usb_cam/camera_driver.h"
+#include "usb_cam/converters.h"
+#include "usb_cam/types.h"
 
 using namespace usb_cam;
 
@@ -40,17 +46,9 @@ std::string AbstractV4LUSBCam::color_format_name = "yuv422p";
 int AbstractV4LUSBCam::image_width = 320;
 int AbstractV4LUSBCam::image_height = 240;
 int AbstractV4LUSBCam::framerate = 10;
-int AbstractV4LUSBCam::exposure = 100;
-int AbstractV4LUSBCam::brightness = -1;
-int AbstractV4LUSBCam::contrast = -1;
-int AbstractV4LUSBCam::saturation = -1;
-int AbstractV4LUSBCam::sharpness = -1;
-int AbstractV4LUSBCam::focus = -1;
-int AbstractV4LUSBCam::white_balance = 4000;
-int AbstractV4LUSBCam::gain = -1;
-bool AbstractV4LUSBCam::autofocus = false;
-bool AbstractV4LUSBCam::autoexposure = true;
-bool AbstractV4LUSBCam::auto_white_balance = true;
+std::vector<camera_control_t> AbstractV4LUSBCam::controls = std::vector<camera_control_t>();
+std::set<std::string> AbstractV4LUSBCam::ignore_controls = std::set<std::string>();
+
 
 bool AbstractV4LUSBCam::init()
 {
@@ -636,6 +634,7 @@ camera_image_t *AbstractV4LUSBCam::read_frame()
         image->encoding = "rgb8";
         image->step = image->width * 3;
     }
+
     image->is_new = 1;
     return image;
 }
@@ -895,7 +894,7 @@ bool AbstractV4LUSBCam::process_image(const void *src, int len, camera_image_t *
         result = util::converters::YUV4202RGB(const_cast<char *>(reinterpret_cast<const char *>(src)), dest->image, dest->width, dest->height);
     else if(v4l_pixel_format == V4L2_PIX_FMT_BGR24) // Direct copy for OpenCV
     {
-        memcpy(dest, src, len);
+        memcpy(dest->image, src, len);
         result = true;
     }
     return result;
@@ -906,6 +905,7 @@ bool AbstractV4LUSBCam::set_v4l_parameter(const std::string &param, const std::s
     std::stringstream ss;
     ss << "v4l2-ctl --device=" << video_device_name << " -c " << param << "=" << value << " 2>&1";
     std::string cmd = ss.str();
+    // printf("%s\n", cmd.c_str());
     // capture the output
     std::string output;
     const int kBufferSize = 256;
@@ -922,7 +922,7 @@ bool AbstractV4LUSBCam::set_v4l_parameter(const std::string &param, const std::s
         // any output should be an error
         if (output.length() > 0)
         {
-            printf("Video4linux: error setting camera parameter: %s\n", output.c_str());
+            printf("Video4linux: error setting camera parameter: '%s'\n", output.c_str());
             return false;
         }
     }
@@ -934,9 +934,92 @@ bool AbstractV4LUSBCam::set_v4l_parameter(const std::string &param, const std::s
     return true;
 }
 
+void AbstractV4LUSBCam::v4l_query_controls()
+{
+    // https://gist.github.com/tugstugi/2627647
+    // https://www.kernel.org/doc/html/v4.8/media/uapi/v4l/extended-controls.html
+    printf("Video4linux: Querying V4L2 driver for available controls (register base 0x%X, 0..99)\n", V4L2_CID_BASE);
+    struct v4l2_queryctrl ctrl;
+    struct v4l2_querymenu menu;
+    memset (&ctrl, 0, sizeof (ctrl));
+    memset (&menu, 0, sizeof (menu));
+    std::vector<std::string> disabled_controls;
+    // std::vector<std::string> ignored_controls;
+    ctrl.id = V4L2_CID_BASE;
+    while(ioctl(file_dev, VIDIOC_QUERYCTRL, &ctrl) == 0)
+    {
+        camera_control_t control;
+        std::stringstream description;
+        if(ctrl.flags & V4L2_CTRL_FLAG_DISABLED)
+        {
+            disabled_controls.push_back(util::converters::v4l_control_name_to_param_name(reinterpret_cast<char*>(ctrl.name)));
+        }
+        else
+        {
+            control.name = util::converters::v4l_control_name_to_param_name(reinterpret_cast<char*>(ctrl.name));
+            control.type = static_cast<v4l2_ctrl_type>(ctrl.type);
+            control.value = std::to_string(ctrl.default_value);
+            description << std::string(reinterpret_cast<char*>(ctrl.name)) << ", min = "
+                        << std::to_string(ctrl.minimum) << ", max = "
+                        << std::to_string(ctrl.maximum) << ", step = "
+                        << std::to_string(ctrl.step) << ", flags = 0x" << std::hex << ctrl.flags << std::dec;
+            if(ctrl.type == V4L2_CTRL_TYPE_MENU)
+            {
+                menu.id = ctrl.id;
+                description << " [ ";
+                for(menu.index = ctrl.minimum; menu.index <= ctrl.maximum; menu.index++)
+                {
+                    if(ioctl(file_dev, VIDIOC_QUERYMENU, &menu) == 0)
+                        description << menu.index << ": " << std::string(reinterpret_cast<char*>(menu.name)) << " ";
+                }
+                description << "]";
+            }
+            control.description = description.str();
+            controls.push_back(control);
+        }
+        //std::cout << util::converters::v4l_control_name_to_param_name(reinterpret_cast<char*>(ctrl.name)) << std::endl;
+
+        ctrl.id |= V4L2_CTRL_FLAG_NEXT_CTRL;
+    }
+    if(!disabled_controls.empty())
+    {
+        std::cout << "Disabled controls: ";
+        for(auto dc: disabled_controls)
+            std::cout << dc << " ";
+        std::cout << std::endl;
+    }
+    printf("Sorting control names:\n");
+    if(!controls.empty())
+    {
+        for(auto c = controls.begin(); c != controls.end(); c++)
+        {
+            if(c->name.find("auto") != std::string::npos)
+            {
+                camera_control_t tc = (*c);
+                controls.erase(c);
+                controls.insert(controls.begin(), tc);
+            }
+        }
+    }
+    for(auto c: controls)
+        printf("\t%s\n", c.name.c_str());
+}
+
 void AbstractV4LUSBCam::adjust_camera()
 {
-    printf("Setting up auxiliary camera parameters\n");
+    printf("Video4linux: Setting up auxiliary camera parameters\n");
+    if(controls.empty())
+    {
+        printf("Video4linux: camera controls was not queried properly, please call v4l_query_controls() before!\n");
+        return;
+    }
+    for(auto control: controls)
+    {
+        if(ignore_controls.find(control.name) == ignore_controls.end())
+            if(!set_v4l_parameter(control.name, control.value))
+                printf("Video4linux: cannot set V4L control %s\n", control.name.c_str());
+    }
+    /* REPLACED WITH DYNAMICALLY QUERIED PARAMETERS
     // Autofocus
     if(autofocus)
     {
@@ -1003,4 +1086,5 @@ void AbstractV4LUSBCam::adjust_camera()
     // Gain
     if(gain >= 0)
         set_v4l_parameter("gain", gain);
+    */
 }

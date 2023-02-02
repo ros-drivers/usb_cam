@@ -73,60 +73,68 @@ static const int clipping_table_offset = 128;
 
 enum io_method_t
 {
-  IO_METHOD_READ,
-  IO_METHOD_MMAP,
-  IO_METHOD_USERPTR,
-  IO_METHOD_UNKNOWN,
-};
+    IO_METHOD_READ,
+    IO_METHOD_MMAP,
+    IO_METHOD_USERPTR,
+    IO_METHOD_UNKNOWN,
+    };
 
 
 enum pixel_format_t
 {
-  PIXEL_FORMAT_YUYV,
-  PIXEL_FORMAT_UYVY,
-  PIXEL_FORMAT_MJPEG,
-  PIXEL_FORMAT_YUVMONO10,
-  PIXEL_FORMAT_RGB24,
-  PIXEL_FORMAT_BGR24,
-  PIXEL_FORMAT_GREY,
-  PIXEL_FORMAT_YU12,
-  PIXEL_FORMAT_H264,
-  PIXEL_FORMAT_UNKNOWN
+    PIXEL_FORMAT_YUYV,
+    PIXEL_FORMAT_UYVY,
+    PIXEL_FORMAT_MJPEG,
+    PIXEL_FORMAT_YUVMONO10,
+    PIXEL_FORMAT_RGB24,
+    PIXEL_FORMAT_BGR24,
+    PIXEL_FORMAT_GREY,
+    PIXEL_FORMAT_YU12,
+    PIXEL_FORMAT_H264,
+    PIXEL_FORMAT_UNKNOWN
 };
 
 
 enum color_format_t
 {
-  COLOR_FORMAT_YUV420P,
-  COLOR_FORMAT_YUV422P,
-  COLOR_FORMAT_UNKNOWN,
+    COLOR_FORMAT_YUV420P,
+    COLOR_FORMAT_YUV422P,
+    COLOR_FORMAT_UNKNOWN,
 };
 
 
 struct buffer
 {
-  void * start;
-  std::size_t length;
+    void * start;
+    std::size_t length;
 };
 
 struct camera_image_t
 {
-  uint32_t width;
-  uint32_t height;
-  uint32_t step;
-  std::string encoding;
-  int bytes_per_pixel;
-  int image_size;
-  struct timespec stamp;
-  char * image;
-  int is_new;
+    uint32_t width;
+    uint32_t height;
+    uint32_t step;
+    std::string encoding;
+    int bytes_per_pixel;
+    int image_size;
+    struct timespec stamp;
+    char * image;
+    int is_new;
 };
 
 struct capture_format_t
 {
-  struct v4l2_fmtdesc format;
-  struct v4l2_frmsizeenum size;
-  struct v4l2_frmivalenum interval;
+    struct v4l2_fmtdesc format;
+    struct v4l2_frmsizeenum size;
+    struct v4l2_frmivalenum interval;
+};
+
+struct camera_control_t
+{
+    v4l2_ctrl_type type;
+    std::string name;
+    std::string description;
+    std::string value;
 };
 
 }  // namespace usb_cam
