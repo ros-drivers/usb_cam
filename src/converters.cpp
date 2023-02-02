@@ -234,6 +234,24 @@ bool UYVY2RGB(const char *YUV, char *&RGB, const int &NumPixels)
     return true;
 }
 
+std::string v4l_control_name_to_param_name(const char *name)
+{ // https://github.com/cz172638/v4l-utils/blob/master/utils/v4l2-ctl/v4l2-ctl-common.cpp
+    std::string s;
+    int add_underscore = 0;
+
+    while (*name) {
+        if (isalnum(*name)) {
+            if (add_underscore)
+                s += '_';
+            add_underscore = 0;
+            s += std::string(1, tolower(*name));
+        }
+        else if (s.length()) add_underscore = 1;
+        name++;
+    }
+    return s;
+}
+
 }
 
 }

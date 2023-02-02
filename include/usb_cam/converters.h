@@ -17,6 +17,7 @@ pixel_format_t pixel_format_from_string(const std::string & str);
 std::string pixel_format_to_string(const uint32_t & pixelformat);
 color_format_t color_format_from_string(const std::string & str);
 unsigned int v4l_pixel_format_from_pixel_format(const pixel_format_t& pixelformat, bool& mono);
+std::string v4l_control_name_to_param_name(const char *name);
 
 /* Standalone format converters */
 /**
