@@ -110,6 +110,7 @@ protected:
     static void release_device();
     static void close_handlers();
     AbstractV4LUSBCam();
+    AbstractV4LUSBCam(const AbstractV4LUSBCam& root) = delete;
 
 public:
     virtual ~AbstractV4LUSBCam();
