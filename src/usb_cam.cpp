@@ -204,7 +204,6 @@ bool UsbCam::read_frame()
   unsigned int i;
   int len;
   struct timespec stamp;
-  int64_t buffer_time_s;
 
   switch (io_) {
     case io_method_t::IO_METHOD_READ:
