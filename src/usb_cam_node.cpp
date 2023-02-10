@@ -65,17 +65,17 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("pixel_format", "yuyv");
   this->declare_parameter("color_format", "yuv422p");
   this->declare_parameter("video_device", "/dev/video0");
-  this->declare_parameter("brightness", 50); //0-255, -1 "leave alone"
-  this->declare_parameter("contrast", -1); //0-255, -1 "leave alone"
-  this->declare_parameter("saturation", -1); //0-255, -1 "leave alone"
-  this->declare_parameter("sharpness", -1); //0-255, -1 "leave alone"
-  this->declare_parameter("gain", -1); //0-100?, -1 "leave alone"
+  this->declare_parameter("brightness", 50);  // 0-255, -1 "leave alone"
+  this->declare_parameter("contrast", -1);    // 0-255, -1 "leave alone"
+  this->declare_parameter("saturation", -1);  // 0-255, -1 "leave alone"
+  this->declare_parameter("sharpness", -1);   // 0-255, -1 "leave alone"
+  this->declare_parameter("gain", -1);        // 0-100?, -1 "leave alone"
   this->declare_parameter("auto_white_balance", true);
   this->declare_parameter("white_balance", 4000);
   this->declare_parameter("autoexposure", true);
   this->declare_parameter("exposure", 100);
   this->declare_parameter("autofocus", false);
-  this->declare_parameter("focus", -1); //0-255, -1 "leave alone"
+  this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
 
   get_params();
   init();
