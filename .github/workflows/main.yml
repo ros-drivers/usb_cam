@@ -1,0 +1,28 @@
+name: ROS1 CI
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  industrial_ci:
+    strategy:
+      matrix:
+        env:
+          - ROS_DISTRO: melodic
+            ROS_REPO: testing
+            CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Debug'
+          - ROS_DISTRO: melodic
+            ROS_REPO: testing
+            CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Release'
+          - ROS_DISTRO: noetic
+            ROS_REPO: testing
+            CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Debug'
+          - ROS_DISTRO: noetic
+            ROS_REPO: testing
+            CMAKE_ARGS: '-DCMAKE_BUILD_TYPE=Release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}
