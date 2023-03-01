@@ -36,7 +36,7 @@
 #ifndef USB_CAM_USB_CAM_H
 #define USB_CAM_USB_CAM_H
 
-#include "ros/forwards.h"
+#include <ros/forwards.h>
 #include "usb_cam/camera_driver.h"
 
 #include <ros/ros.h>
