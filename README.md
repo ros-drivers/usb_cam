@@ -31,7 +31,7 @@ If for some reason you cannot install the binaries, follow the directions below 
 Clone/Download the source code into your workspace:
 
 ```
-cd /path/to/catkin_ws/src
+cd /path/to/colcon_ws/src
 git clone https://github.com/ros-drivers/usb_cam.git
 ```
 
