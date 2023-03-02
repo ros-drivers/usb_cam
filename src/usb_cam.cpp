@@ -498,7 +498,7 @@ void UsbCam::mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
   //avpkt.size = len;
   //avpkt.data = (unsigned char*)MJPEG;
-  av_new_packet(&avpkt, len);
+  av_init_packet(&avpkt);
   av_packet_from_data (&avpkt, (unsigned char*)MJPEG, len);
   decoded_len = avcodec_send_packet(avcodec_context_, &avpkt);
   //decoded_len = avcodec_decode_video2(avcodec_context_, avframe_camera_, &got_picture, &avpkt);
