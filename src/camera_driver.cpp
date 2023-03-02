@@ -766,7 +766,7 @@ bool AbstractV4LUSBCam::decode_ffmpeg(const void *src, int len, camera_image_t *
     // clear the picture
     memset(RGB, 0, avframe_rgb_size);
 #if LIBAVCODEC_VERSION_MAJOR > 52
-    av_new_packet(avpkt, len);
+    av_init_packet(avpkt);
     av_packet_from_data(avpkt, reinterpret_cast<unsigned char*>(MJPEG), len);
     if(avcodec_send_packet(avcodec_context, avpkt) < 0)
     {
