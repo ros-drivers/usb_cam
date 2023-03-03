@@ -2,8 +2,8 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.7 (2023-03-03)
+------------------
 * Merge pull request `#234 <https://github.com/ros-drivers/usb_cam/issues/234>`_ from knorth55/add-maintainer
   Add Shingo Kitagawa as maintainer
 * add shingo kitagawa as maintainer
