@@ -2,6 +2,85 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#234 <https://github.com/ros-drivers/usb_cam/issues/234>`_ from knorth55/add-maintainer
+  Add Shingo Kitagawa as maintainer
+* add shingo kitagawa as maintainer
+* Merge pull request `#233 <https://github.com/ros-drivers/usb_cam/issues/233>`_ from knorth55/fix-memory-leak
+  fix memory leak in usb_cam.cpp
+* fix memory leak in usb_cam.cpp
+* Merge pull request `#229 <https://github.com/ros-drivers/usb_cam/issues/229>`_ from knorth55/update-readme
+  update readme
+* update readme
+  update budges
+  format md
+  add ros2 branch info
+* Merge pull request `#227 <https://github.com/ros-drivers/usb_cam/issues/227>`_ from knorth55/develop-ci
+  Adds CI protocols
+* Merge pull request `#228 <https://github.com/ros-drivers/usb_cam/issues/228>`_ from knorth55/fix-typo
+  not use LINK libraries
+* change workflows name
+* change workflows name
+* not use LINK libraries
+* add github actions
+* add github actions
+* AUTHORS.md - typo fix
+* Added contributors information
+* Workaround for CMake deprecation warning
+* Fixed library names for pkg-config
+  - Fixed library names in the `pkg-config` section of CMakeLists.txt
+  - Closes `#202 <https://github.com/ros-drivers/usb_cam/issues/202>`_
+* Added maintainer address
+* Added maintainer address
+* Added proper CMake OpenCV package handler
+* Merge pull request `#126 <https://github.com/ros-drivers/usb_cam/issues/126>`_ from benmaidel/feature/unsupported_set_format_options
+  allow cameras that do not support setting format options via VIDIOC_S_FMT
+* Added support for BGR24 pixel format
+  - Added support for OpenCV BRG24 pixel format
+  (supported by Raspberry Pi camera V4L2 kernel drivers)
+  Solution by @romainreignier manually merged by @twdragon
+  - Untested. Merged in favour of the tests made by @flynneva
+  - Closes `#97 <https://github.com/ros-drivers/usb_cam/issues/97>`_
+* Deprecation message workaround for native H.264
+  - Added MJPEG pixel format deprecation reset
+  (solution by @at-wat)
+  - Added native H.264 pixel format deprecation
+  workaround.
+  TODO: Find a way to start H.264 decoding from the keyframe
+  - Added frame parser context for future development
+  - Removed possible memory leak in context allocation
+  (all libav contexts and packets are now released properly)
+  - Closes `#72 <https://github.com/ros-drivers/usb_cam/issues/72>`_
+* Merge branch 'develop' of github.com:ros-drivers/usb_cam into develop
+* Merge pull request `#110 <https://github.com/ros-drivers/usb_cam/issues/110>`_ from rmukhia/develop
+  Add support for cameras with hardware 'h264' encoding.
+* Merge branch 'develop-h264' into develop
+* Cosmetic fix for old repository URLS
+* Merge branch 'develop' into develop
+* Merge pull request `#115 <https://github.com/ros-drivers/usb_cam/issues/115>`_ from lukehutch/develop
+  Suppress libav "deprecated pixel format used" mjpeg warnings
+* Merge pull request `#125 <https://github.com/ros-drivers/usb_cam/issues/125>`_ from benmaidel/feature/YUV420
+  add support for YUV420 (yu12) pixel format
+* Merge pull request `#197 <https://github.com/ros-drivers/usb_cam/issues/197>`_ from twdragon/develop
+  Full support for last FFMPEG
+* Name mismatch fix
+* Full support for last FFMPEG release
+  - Removed deprecated AVPicture API calls
+  - Implemented correct instantiation for
+  AVFrame structures
+  - Minor build fixes
+* Merge branch 'ros-drivers:develop' into develop
+* allow cameras that do not support setting format options via VIDIOC_S_FMT
+* add support for YUV420 (yu12) pixel format
+* Merge pull request `#124 <https://github.com/ros-drivers/usb_cam/issues/124>`_ from k-okada/add_noetic
+  add noetic .travis.yml
+* add noetic .travis.yml
+* Suppress libav "deprecated pixel format used" mjpeg warnings
+* Updated sample launch file. h264 supported in 'pixel_format' params. A new parameter 'color_format' supports 'yuv422p' and 'yuv420p'
+* Enable h264 encoding to work with cams which supports hardware h264 encoding like Mobius Maxi.
+* Contributors: Andrei Vukolov, Andrey Vukolov, Benjamin Maidel, Evan Flynn, Kei Okada, Luke Hutchison, Raunak Mukhia, Shingo Kitagawa
+
 0.3.6 (2017-06-15)
 ------------------
 * .travis.yml: udpate to trusty
