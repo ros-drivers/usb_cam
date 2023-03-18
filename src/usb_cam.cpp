@@ -204,7 +204,6 @@ bool UsbCam::read_frame()
   unsigned int i;
   int len;
   struct timespec stamp;
-  int64_t buffer_time_s;
 
   switch (io_) {
     case io_method_t::IO_METHOD_READ:
@@ -254,10 +253,7 @@ bool UsbCam::read_frame()
         }
       }
 
-      buffer_time_s =
-        buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
-
-      stamp.tv_sec = static_cast<time_t>(round(buffer_time_s)) + epoch_time_shift_;
+      stamp.tv_sec = static_cast<time_t>(round(buf.timestamp.tv_sec)) + epoch_time_shift_;
       stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec * 1000.0);
 
       assert(buf.index < n_buffers_);
@@ -297,10 +293,7 @@ bool UsbCam::read_frame()
         }
       }
 
-      buffer_time_s =
-        buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
-
-      stamp.tv_sec = static_cast<time_t>(round(buffer_time_s)) + epoch_time_shift_;
+      stamp.tv_sec = static_cast<time_t>(round(buf.timestamp.tv_sec)) + epoch_time_shift_;
       stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec / 1000.0);
 
       for (i = 0; i < n_buffers_; ++i) {
