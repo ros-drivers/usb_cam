@@ -4,8 +4,7 @@
       framerate: 30.0
       io_method: "mmap"
       frame_id: "camera"
-      pixel_format: "yuyv"
-      color_format: "yuv422p"
+      pixel_format: "mjpeg2rgb"  # see usb_cam/supported_formats for list of supported formats
       image_width: 640
       image_height: 480
       camera_name: "test_camera"

@@ -27,6 +27,7 @@
   <depend>image_transport_plugins</depend>
   <depend>v4l-utils</depend>
 
+  <!-- Only required for MJPEG to RGB converison -->
   <depend>ffmpeg</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>

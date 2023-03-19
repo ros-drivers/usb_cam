@@ -46,12 +46,10 @@ TEST(test_usb_cam_lib, test_usb_cam_class) {
   }
 
   {
-    test_usb_cam.start(
-      "/dev/video0",
+    test_usb_cam.configure("/dev/video0",
       usb_cam::utils::IO_METHOD_MMAP,
-      usb_cam::utils::PIXEL_FORMAT_YUYV,
-      usb_cam::utils::COLOR_FORMAT_YUV422P,
-      640, 480, 30);
+      "yuy422", 640, 480, 30);
+    test_usb_cam.start();
     // TODO(flynneva): uncomment once /dev/video0 can be simulated in CI
     // EXPECT_TRUE(test_usb_cam.is_capturing());
     test_usb_cam.shutdown();
