@@ -1,4 +1,4 @@
-// Copyright 2022 Evan Flynn
+// Copyright 2023 Evan Flynn
 // Copyright 2014 Robert Bosch, LLC
 //
 // Redistribution and use in source and binary forms, with or without
@@ -52,16 +52,14 @@ inline void MONO102MONO8(const char * RAW, char * MONO, const int & NumPixels)
     // first byte is low byte, second byte is high byte; smash together and convert to 8-bit
     MONO[j] = (unsigned char)(((RAW[i + 0] >> 2) & 0x3F) | ((RAW[i + 1] << 6) & 0xC0));
   }
-  return;
 }
 
 inline void YUV4202RGB(char * YUV, char * RGB, const int & width, const int & height)
-{ 
+{
   cv::Size size(height, width);
   cv::Mat cv_img(height, width, CV_8UC1, YUV);
   cv::Mat cv_out(height, width, CV_8UC3, RGB);
   cv::cvtColor(cv_img, cv_out, cv::COLOR_YUV420p2RGB);
-  return;
 }
 
 std::string FCC2S(const unsigned int & val)

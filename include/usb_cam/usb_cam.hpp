@@ -76,22 +76,27 @@ typedef struct
   size_t bytes_per_line;
   size_t size_in_bytes;
   v4l2_format v4l2_fmt;
+  struct timespec stamp;
 
-  size_t set_number_of_pixels() {
+  size_t set_number_of_pixels()
+  {
     number_of_pixels = width * height;
     return number_of_pixels;
   }
-  size_t set_bytes_per_line() {
+  size_t set_bytes_per_line()
+  {
     bytes_per_line = width * pixel_format->channels();
     return bytes_per_line;
   }
-  size_t set_size_in_bytes() {
+  size_t set_size_in_bytes()
+  {
     size_in_bytes = width * height * pixel_format->channels();
     return size_in_bytes;
   }
 
   /// @brief make it a shorter API call to get the pixel format
-  unsigned int get_format_fourcc() {
+  unsigned int get_format_fourcc()
+  {
     return pixel_format->v4l2();
   }
 } image_t;
@@ -105,7 +110,7 @@ public:
   /// @brief Configure device, should be called before start
   void configure(
     const std::string & dev, const io_method_t & io_method, const std::string & pixel_format_str,
-    const uint32_t & image_width, const uint32_t & image_height, const int  & framerate);
+    const uint32_t & image_width, const uint32_t & image_height, const int & framerate);
 
   /// @brief Start the configured device
   void start();
@@ -149,15 +154,18 @@ public:
 
   inline size_t get_image_size()
   {
-    // TODO(flynneva): handle multi-plane pixel formats
     return m_image.size_in_bytes;
   }
 
+  inline timespec get_image_timestamp()
+  {
+    return m_image.stamp;
+  }
+
   /// @brief Get number of bytes per line in image
-  /// @return 
+  /// @return number of bytes per line in image
   inline unsigned int get_image_step()
   {
-    // TODO(flynneva): handle multi-plane pixel formats
     return m_image.bytes_per_line;
   }
 
@@ -245,16 +253,18 @@ public:
     using usb_cam::formats::MONO8;
     using usb_cam::formats::MONO16;
     using usb_cam::formats::MJPEG2RGB;
-  
+
     if (str == "rgb8") {
       m_image.pixel_format = std::make_shared<RGB8>();
     } else if (str == "yuyv") {
       m_image.pixel_format = std::make_shared<YUYV>();
     } else if (str == "yuyv2rgb") {
-      m_image.pixel_format = std::make_shared<YUYV2RGB>(m_image.number_of_pixels);  // number of pixels required for conversion method
+      // number of pixels required for conversion method
+      m_image.pixel_format = std::make_shared<YUYV2RGB>(m_image.number_of_pixels);
     } else if (str == "uyvy") {
       m_image.pixel_format = std::make_shared<UYVY>();
     } else if (str == "uyvy2rgb") {
+      // number of pixels required for conversion method
       m_image.pixel_format = std::make_shared<UYVY2RGB>(m_image.number_of_pixels);
     } else if (str == "mjpeg2rgb") {
       m_image.pixel_format = std::make_shared<MJPEG2RGB>(
@@ -301,6 +311,7 @@ private:
   AVDictionary * m_avoptions;
   AVCodecContext * m_avcodec_context;
 
+  int64_t m_buffer_time_s;
   bool m_is_capturing;
   int m_framerate;
   const time_t m_epoch_time_shift;

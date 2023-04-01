@@ -87,7 +87,6 @@ void UsbCam::process_image(const char * src, char * & dest, const int & bytes_us
   } else {
     m_image.pixel_format->convert(src, dest, bytes_used);
   }
-  return;
 }
 
 void UsbCam::read_frame()
@@ -95,8 +94,7 @@ void UsbCam::read_frame()
   struct v4l2_buffer buf;
   unsigned int i;
   int len;
-  // struct timespec stamp;
-  // int64_t buffer_time_s;
+
   switch (m_io) {
     case io_method_t::IO_METHOD_READ:
       len = read(m_fd, m_buffers[0].start, m_buffers[0].length);
@@ -134,11 +132,12 @@ void UsbCam::read_frame()
         }
       }
 
-      // buffer_time_s =
-      //   buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
+      // Get timestamp from V4L2 image buffer
+      m_buffer_time_s =
+        buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
 
-      // stamp.tv_sec = static_cast<time_t>(round(buffer_time_s)) + epoch_time_shift_;
-      // stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec * 1000.0);
+      m_image.stamp.tv_sec = static_cast<time_t>(round(m_buffer_time_s)) + m_epoch_time_shift;
+      m_image.stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec * 1000.0);
 
       assert(buf.index < m_number_of_buffers);
       process_image(m_buffers[buf.index].start, m_image.data, buf.bytesused);
@@ -163,11 +162,11 @@ void UsbCam::read_frame()
         }
       }
 
-      //buffer_time_s =
-      //  buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
+      m_buffer_time_s =
+        buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
 
-      //stamp.tv_sec = static_cast<time_t>(round(buffer_time_s)) + epoch_time_shift_;
-      //stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec / 1000.0);
+      m_image.stamp.tv_sec = static_cast<time_t>(round(m_buffer_time_s)) + m_epoch_time_shift;
+      m_image.stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec / 1000.0);
 
       for (i = 0; i < m_number_of_buffers; ++i) {
         if (buf.m.userptr == reinterpret_cast<uint64_t>(m_buffers[i].start) && \
@@ -272,7 +271,6 @@ void UsbCam::start_capturing()
       throw std::invalid_argument("IO method unknown");
   }
   m_is_capturing = true;
-  return;
 }
 
 void UsbCam::uninit_device()
@@ -299,11 +297,10 @@ void UsbCam::uninit_device()
     case io_method_t::IO_METHOD_UNKNOWN:
       // Should never get here, right?
       throw std::invalid_argument("IO method unknown");
-    }
+  }
 
   free(m_buffers);
   free(m_image.data);
-  return;
 }
 
 void UsbCam::init_read()
@@ -315,12 +312,11 @@ void UsbCam::init_read()
   }
 
   m_buffers[0].length = m_image.size_in_bytes;
-  m_buffers[0].start = (char *)malloc(m_image.size_in_bytes);
+  m_buffers[0].start = reinterpret_cast<char *>(malloc(m_image.size_in_bytes));
 
   if (!m_buffers[0].start) {
     throw std::overflow_error("Out of memory");
   }
-  return;
 }
 
 void UsbCam::init_mmap()
@@ -366,16 +362,15 @@ void UsbCam::init_mmap()
 
     m_buffers[current_buffer].length = buf.length;
     m_buffers[current_buffer].start =
-      (char *)mmap(
-      NULL /* start anywhere */, buf.length, PROT_READ | PROT_WRITE /* required */,
-      MAP_SHARED /* recommended */, m_fd, buf.m.offset);
+      reinterpret_cast<char *>(mmap(
+        NULL /* start anywhere */, buf.length, PROT_READ | PROT_WRITE /* required */,
+        MAP_SHARED /* recommended */, m_fd, buf.m.offset));
 
     if (MAP_FAILED == m_buffers[current_buffer].start) {
       throw std::runtime_error("Unable to allocate memory for image buffers");
     }
   }
   m_number_of_buffers = req.count;
-  return;
 }
 
 void UsbCam::init_userp()
@@ -408,13 +403,13 @@ void UsbCam::init_userp()
 
   for (uint32_t current_buffer = 0; current_buffer < req.count; ++current_buffer) {
     m_buffers[current_buffer].length = buffer_size;
-    m_buffers[current_buffer].start = (char *)memalign(/* boundary */ page_size, buffer_size);
+    m_buffers[current_buffer].start =
+      reinterpret_cast<char *>(memalign(/* boundary */ page_size, buffer_size));
 
     if (!m_buffers[current_buffer].start) {
       throw std::overflow_error("Out of memory");
     }
   }
-  return;
 }
 
 void UsbCam::init_device()
@@ -520,7 +515,6 @@ void UsbCam::init_device()
       // TODO(flynneva): log something
       break;
   }
-  return;
 }
 
 void UsbCam::close_device()
@@ -530,7 +524,6 @@ void UsbCam::close_device()
   }
 
   m_fd = -1;
-  return;
 }
 
 void UsbCam::open_device()
@@ -550,7 +543,6 @@ void UsbCam::open_device()
   if (-1 == m_fd) {
     throw strerror(errno);
   }
-  return;
 }
 
 void UsbCam::configure(
@@ -579,7 +571,6 @@ void UsbCam::configure(
   memset(m_image.data, 0, m_image.size_in_bytes * sizeof(char *));
 
   init_device();
-  return;
 }
 
 void UsbCam::start()
@@ -595,7 +586,6 @@ void UsbCam::shutdown()
 
   free(m_image.data);
   m_image.data = NULL;
-  return;
 }
 
 /// @brief Grab new image from V4L2 device, return pointer to image
@@ -621,7 +611,6 @@ void UsbCam::get_image(char * destination)
   m_image.data = destination;
   // grab the image
   grab_image();
-  return;
 }
 
 std::vector<capture_format_t> UsbCam::get_supported_formats()
@@ -632,7 +621,7 @@ std::vector<capture_format_t> UsbCam::get_supported_formats()
   current_format.index = 0;
   for (current_format.index = 0;
     usb_cam::utils::xioctl(
-     m_fd, static_cast<int>(VIDIOC_ENUM_FMT), &current_format) == 0;
+      m_fd, static_cast<int>(VIDIOC_ENUM_FMT), &current_format) == 0;
     ++current_format.index)
   {
     struct v4l2_frmsizeenum current_size;
@@ -681,10 +670,6 @@ void UsbCam::grab_image()
   tv.tv_usec = 0;
 
   r = select(m_fd + 1, &fds, NULL, NULL, &tv);
-  // if the v4l2_buffer timestamp isn't available use this time, though
-  // it may be 10s of milliseconds after the frame acquisition.
-  // avframe_->stamp = clock_->now();
-  // timespec_get(&avframe_->stamp, TIME_UTC);
 
   if (-1 == r) {
     if (EINTR == errno) {
@@ -702,7 +687,6 @@ void UsbCam::grab_image()
   }
 
   read_frame();
-  return;
 }
 
 // enables/disables auto focus

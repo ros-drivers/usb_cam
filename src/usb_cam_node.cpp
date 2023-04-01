@@ -144,7 +144,6 @@ void UsbCamNode::init()
     video_device_name_, io_method, pixel_format_name_,
     image_width_, image_height_, framerate_);
 
-  // bool selected_pixel_format_is_supported = false;  
   RCLCPP_INFO(this->get_logger(), "This devices supproted formats:");
   for (auto fmt : cam_.supported_formats()) {
     RCLCPP_INFO(
@@ -311,10 +310,11 @@ bool UsbCamNode::take_and_send_image()
   }
 
   // grab the image, pass image msg buffer to fill
-  cam_.get_image((char *)&img_->data[0]);
+  cam_.get_image(reinterpret_cast<char *>(&img_->data[0]));
 
-  //img_->header.stamp.sec = new_image->stamp.tv_sec;
-  // img_->header.stamp.nanosec = new_image->stamp.tv_nsec;
+  auto stamp = cam_.get_image_timestamp();
+  img_->header.stamp.sec = stamp.tv_sec;
+  img_->header.stamp.nanosec = stamp.tv_nsec;
 
   auto ci = std::make_unique<sensor_msgs::msg::CameraInfo>(cinfo_->getCameraInfo());
   ci->header = img_->header;

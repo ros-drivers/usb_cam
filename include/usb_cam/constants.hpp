@@ -1,4 +1,4 @@
-// Copyright 2022 Evan Flynn
+// Copyright 2023 Evan Flynn
 // Copyright 2014 Robert Bosch, LLC
 //
 // Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,9 @@
 #ifndef USB_CAM__CONSTANTS_HPP_
 #define USB_CAM__CONSTANTS_HPP_
 
+#include <string>
 #include <vector>
+
 
 namespace usb_cam
 {
@@ -105,7 +107,7 @@ const char NV21[] = "nv21";
 // NV24: https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/pixfmt-yuv-planar.html
 const char NV24[] = "nv24";
 
-const std::string UNKNOWN="unknown";
+const char UNKNOWN[] = "unknown";
 
 const std::vector<unsigned char> uchar_clipping_table = {
   0, 0, 0, 0, 0, 0, 0, 0,        // -128 - -121

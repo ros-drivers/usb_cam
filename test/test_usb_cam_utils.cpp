@@ -1,4 +1,4 @@
-// Copyright 2022 Evan Flynn
+// Copyright 2023 Evan Flynn
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -27,10 +27,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
+#include <libavutil/pixfmt.h>
 
 #include <string>
-
-#include <libavutil/pixfmt.h>
 
 #include "usb_cam/utils.hpp"
 #include "usb_cam/formats/utils.hpp"
@@ -54,25 +53,6 @@ TEST(test_usb_cam_utils, test_io_method_from_string) {
   test_io = io_method_from_string("bananas");
   EXPECT_EQ(test_io, usb_cam::utils::IO_METHOD_UNKNOWN);
 }
-
-// TEST(test_usb_cam_utils, test_pixel_format_from_string) {
-// 
-//   auto test_fmt = pixel_format_from_string("yuyv");
-//   EXPECT_EQ(test_fmt->name(), "yuyv");
-//   EXPECT_EQ(test_fmt->v4l2(), V4L2_PIX_FMT_YUYV);
-//   EXPECT_EQ(test_fmt->ros(), "yuv422_yuy2");
-//   EXPECT_EQ(test_fmt->channels(), 2);
-//   EXPECT_EQ(test_fmt->bit_depth(), 8);
-// 
-//   test_fmt = pixel_format_from_string("uyvy");
-//   EXPECT_EQ(test_fmt->v4l2(), V4L2_PIX_FMT_UYVY);
-// 
-//   test_fmt = pixel_format_from_string("rgb8");
-//   EXPECT_EQ(test_fmt->v4l2(), V4L2_PIX_FMT_RGB332);
-// 
-//   test_fmt = pixel_format_from_string("mono8");
-//   EXPECT_EQ(test_fmt->v4l2(), V4L2_PIX_FMT_GREY);
-// }
 
 TEST(test_usb_cam_utils, test_clip_value) {
   // Clip values to 0 if -128<=val<0
