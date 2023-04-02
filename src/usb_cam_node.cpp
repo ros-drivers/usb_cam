@@ -199,6 +199,9 @@ void UsbCamNode::init()
     cam_.set_v4l_parameter("exposure_auto", 1);
     // change the exposure level
     cam_.set_v4l_parameter("exposure_absolute", exposure_);
+  } else {
+    RCLCPP_INFO(this->get_logger(), "Setting 'exposure_auto' to %d", 3);
+    cam_.set_v4l_parameter("exposure_auto", 3);
   }
 
   // check auto focus
