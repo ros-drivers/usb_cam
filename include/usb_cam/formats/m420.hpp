@@ -1,5 +1,4 @@
 // Copyright 2023 Evan Flynn
-// Copyright 2014 Robert Bosch, LLC
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -28,38 +27,53 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
-#ifndef USB_CAM__CONVERSIONS_HPP_
-#define USB_CAM__CONVERSIONS_HPP_
+#ifndef USB_CAM__FORMATS__M420_HPP_
+#define USB_CAM__FORMATS__M420_HPP_
 
-#include <string>
+#include "linux/videodev2.h"
 
 #include "opencv2/imgproc.hpp"
 
-#include "usb_cam/constants.hpp"
-#include "usb_cam/utils.hpp"
+#include "usb_cam/formats/pixel_format_base.hpp"
+#include "usb_cam/formats/utils.hpp"
 
 
 namespace usb_cam
 {
-namespace conversions
+namespace formats
 {
 
-
-std::string FCC2S(const unsigned int & val)
+class M4202RGB : public pixel_format_base
 {
-  std::string s;
+public:
+  M4202RGB(const int & width, const int & height)
+  : pixel_format_base(
+      "m4202rgb",
+      V4L2_PIX_FMT_M420,
+      usb_cam::constants::RGB8,
+      3,
+      8,
+      true),
+    m_width(width),
+    m_height(height)
+  {}
 
-  s += val & 0x7f;
-  s += (val >> 8) & 0x7f;
-  s += (val >> 16) & 0x7f;
-  s += (val >> 24) & 0x7f;
-  if (val & (1 << 31)) {
-    s += "-BE";
+  /// @brief Convert a YUV420 (aka M420) image to RGB8
+  void convert(const char * & src, char * & dest, const int & bytes_used) override
+  {
+    (void)bytes_used;    // not used by this conversion method
+    cv::Size size(m_height, m_width);
+    const cv::Mat cv_img(m_height, m_width, CV_8UC1, const_cast<char *>(src));
+    cv::Mat cv_out(m_height, m_width, CV_8UC3, dest);
+    cv::cvtColor(cv_img, cv_out, cv::COLOR_YUV420p2RGB);
   }
-  return s;
-}
 
-}  // namespace conversions
+private:
+  int m_width;
+  int m_height;
+};
+
+}  // namespace formats
 }  // namespace usb_cam
 
-#endif  // USB_CAM__CONVERSIONS_HPP_
+#endif  // USB_CAM__FORMATS__M420_HPP_

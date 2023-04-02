@@ -50,6 +50,7 @@ extern "C" {
 #include "usb_cam/formats/rgb.hpp"
 #include "usb_cam/formats/uyvy.hpp"
 #include "usb_cam/formats/yuyv.hpp"
+#include "usb_cam/formats/m420.hpp"
 
 
 namespace usb_cam
@@ -252,7 +253,9 @@ public:
     using usb_cam::formats::UYVY2RGB;
     using usb_cam::formats::MONO8;
     using usb_cam::formats::MONO16;
+    using usb_cam::formats::Y102MONO8;
     using usb_cam::formats::MJPEG2RGB;
+    using usb_cam::formats::M4202RGB;
 
     if (str == "rgb8") {
       m_image.pixel_format = std::make_shared<RGB8>();
@@ -269,10 +272,15 @@ public:
     } else if (str == "mjpeg2rgb") {
       m_image.pixel_format = std::make_shared<MJPEG2RGB>(
         m_image.width, m_image.height);
+    } else if (str == "m4202rgb") {
+      m_image.pixel_format = std::make_shared<M4202RGB>(
+        m_image.width, m_image.height);
     } else if (str == "mono8") {
       m_image.pixel_format = std::make_shared<MONO8>();
     } else if (str == "mono16") {
       m_image.pixel_format = std::make_shared<MONO16>();
+    } else if (str == "y102mono8") {
+      m_image.pixel_format = std::make_shared<Y102MONO8>(m_image.number_of_pixels);
     } else {
       throw std::invalid_argument("Unsupported pixel format specified: " + str);
     }
