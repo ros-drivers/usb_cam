@@ -32,52 +32,74 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-#include <libswscale/swscale.h>
 #include <linux/videodev2.h>
 }
 
 #include <chrono>
 #include <memory>
 #include <sstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
 #include "usb_cam/utils.hpp"
+#include "usb_cam/formats/pixel_format_base.hpp"
+
+#include "usb_cam/formats/mjpeg.hpp"
+#include "usb_cam/formats/mono.hpp"
+#include "usb_cam/formats/rgb.hpp"
+#include "usb_cam/formats/uyvy.hpp"
+#include "usb_cam/formats/yuyv.hpp"
 
 
 namespace usb_cam
 {
 
-using utils::io_method_t;
-using utils::pixel_format_t;
-using utils::color_format_t;
-
-// TODO(lucasw) just store an Image shared_ptr here
-// TOOD(flynnev) can new Image shared_ptr be used for both ROS 1 and ROS 2?
-//   we should try and eliminate all ROS-specific code from this `usb_cam` lib
-//   so we can reuse it for all ROS distros. I think this clock is the only thing
-//   left...other than the loggers.
-typedef struct
-{
-  uint32_t width;
-  uint32_t height;
-  uint32_t step;
-  std::string encoding;
-  int bytes_per_pixel;
-  int image_size;
-  struct timespec stamp;
-  char * image;
-  int is_new;
-} camera_image_t;
+using usb_cam::utils::io_method_t;
+using usb_cam::formats::pixel_format_base;
 
 
 typedef struct
 {
   struct v4l2_fmtdesc format;
-  struct v4l2_frmsizeenum size;
-  struct v4l2_frmivalenum interval;
+  struct v4l2_frmivalenum v4l2_fmt;
 } capture_format_t;
 
+
+typedef struct
+{
+  char * data;
+  size_t width;
+  size_t height;
+  std::shared_ptr<pixel_format_base> pixel_format;
+  size_t number_of_pixels;
+  size_t bytes_per_line;
+  size_t size_in_bytes;
+  v4l2_format v4l2_fmt;
+  struct timespec stamp;
+
+  size_t set_number_of_pixels()
+  {
+    number_of_pixels = width * height;
+    return number_of_pixels;
+  }
+  size_t set_bytes_per_line()
+  {
+    bytes_per_line = width * pixel_format->channels();
+    return bytes_per_line;
+  }
+  size_t set_size_in_bytes()
+  {
+    size_in_bytes = width * height * pixel_format->channels();
+    return size_in_bytes;
+  }
+
+  /// @brief make it a shorter API call to get the pixel format
+  unsigned int get_format_fourcc()
+  {
+    return pixel_format->v4l2();
+  }
+} image_t;
 
 class UsbCam
 {
@@ -85,22 +107,28 @@ public:
   UsbCam();
   ~UsbCam();
 
-  // start camera
-  bool start(
-    const std::string & dev,
-    io_method_t io_method, pixel_format_t pixel_format, color_format_t color_format,
-    uint32_t image_width, uint32_t image_height, int framerate);
+  /// @brief Configure device, should be called before start
+  void configure(
+    const std::string & dev, const io_method_t & io_method, const std::string & pixel_format_str,
+    const uint32_t & image_width, const uint32_t & image_height, const int & framerate);
 
-  // shutdown camera
-  bool shutdown(void);
+  /// @brief Start the configured device
+  void start();
+
+  /// @brief shutdown camera
+  void shutdown(void);
 
   /// @brief Take a new image with device and return it
   ///   To copy the returned image to another format:
   ///   sensor_msgs::msg::Image image_msg;
   ///   auto new_image = get_image();
   ///   image_msg.data.resize(step * height);
-  ///   memcpy(&image_msg.data[0], new_image->image, image_msg.data.size());
-  camera_image_t * get_image();
+  ///   memcpy(&image_msg.data[0], new_image->frame.base, image_msg.data.size());
+  char * get_image();
+
+  /// @brief Overload of get_image to allow users to pass
+  /// in an image pointer to fill in
+  void get_image(char * destination);
 
   std::vector<capture_format_t> get_supported_formats();
 
@@ -111,153 +139,183 @@ public:
   bool set_v4l_parameter(const std::string & param, int value);
   bool set_v4l_parameter(const std::string & param, const std::string & value);
 
-  bool stop_capturing(void);
-  bool start_capturing(void);
+  void stop_capturing();
+  void start_capturing();
 
-  inline void scale()
+  inline size_t get_image_width()
   {
-    sws_scale(
-      video_sws_, avframe_camera_->data, avframe_camera_->linesize,
-      0, avcodec_context_->height, avframe_rgb_->data, avframe_rgb_->linesize);
-    // TODO(lucasw) keep around until parameters change
-    sws_freeContext(video_sws_);
+    return m_image.width;
+  }
+
+  inline size_t get_image_height()
+  {
+    return m_image.height;
+  }
+
+  inline size_t get_image_size()
+  {
+    return m_image.size_in_bytes;
+  }
+
+  inline timespec get_image_timestamp()
+  {
+    return m_image.stamp;
+  }
+
+  /// @brief Get number of bytes per line in image
+  /// @return number of bytes per line in image
+  inline unsigned int get_image_step()
+  {
+    return m_image.bytes_per_line;
   }
 
   inline std::string get_camera_dev()
   {
-    return camera_dev_;
+    return m_camera_dev;
   }
 
-  inline unsigned int get_pixelformat()
+  inline std::shared_ptr<pixel_format_base> get_pixel_format()
   {
-    return pixelformat_;
-  }
-
-  inline bool is_monochrome()
-  {
-    return monochrome_;
+    return m_image.pixel_format;
   }
 
   inline usb_cam::utils::io_method_t get_io_method()
   {
-    return io_;
+    return m_io;
   }
 
   inline int get_fd()
   {
-    return fd_;
+    return m_fd;
   }
 
   inline usb_cam::utils::buffer * get_buffers()
   {
-    return buffers_;
+    return m_buffers;
   }
 
   inline unsigned int number_of_buffers()
   {
-    return n_buffers_;
-  }
-
-  inline AVFrame * get_avframe_camera()
-  {
-    return avframe_camera_;
-  }
-
-  inline AVFrame * get_avframe_rgb()
-  {
-    return avframe_rgb_;
+    return m_number_of_buffers;
   }
 
   inline AVCodec * get_avcodec()
   {
-    return avcodec_;
+    return m_avcodec;
   }
 
   inline AVDictionary * get_avoptions()
   {
-    return avoptions_;
+    return m_avoptions;
   }
 
   inline AVCodecContext * get_avcodec_context()
   {
-    return avcodec_context_;
+    return m_avcodec_context;
   }
 
-  inline int get_avframe_camera_size()
+  inline AVFrame * get_avframe()
   {
-    return avframe_camera_size_;
-  }
-
-  inline int get_avframe_rgb_size()
-  {
-    return avframe_rgb_size_;
-  }
-
-  inline struct SwsContext * get_video_sws()
-  {
-    video_sws_ = sws_getContext(
-      avcodec_context_->width, avcodec_context_->height, avcodec_context_->pix_fmt,
-      avcodec_context_->width, avcodec_context_->height,
-      AV_PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
-    return video_sws_;
-  }
-
-  inline camera_image_t * get_current_image()
-  {
-    return image_;
+    return m_avframe;
   }
 
   inline bool is_capturing()
   {
-    return is_capturing_;
+    return m_is_capturing;
   }
 
   inline time_t get_epoch_time_shift()
   {
-    return epoch_time_shift_;
+    return m_epoch_time_shift;
   }
 
   inline std::vector<capture_format_t> supported_formats()
   {
-    return supported_formats_;
+    if (m_supported_formats.size() == 0) {
+      this->get_supported_formats();
+    }
+
+    return m_supported_formats;
+  }
+
+  /// @brief Get pixel format from string. Required to have logic within UsbCam object
+  /// in case pixel format class requires additional information for conversion function
+  /// (e.g. number of pixels, width, height, etc.)
+  /// @param str name of supported format (see `usb_cam/supported_formats.hpp`)
+  /// @return pixel format structure corresponding to a given name
+  inline std::shared_ptr<pixel_format_base> set_pixel_format_from_string(const std::string & str)
+  {
+    using usb_cam::formats::RGB8;
+    using usb_cam::formats::YUYV;
+    using usb_cam::formats::YUYV2RGB;
+    using usb_cam::formats::UYVY;
+    using usb_cam::formats::UYVY2RGB;
+    using usb_cam::formats::MONO8;
+    using usb_cam::formats::MONO16;
+    using usb_cam::formats::MJPEG2RGB;
+
+    if (str == "rgb8") {
+      m_image.pixel_format = std::make_shared<RGB8>();
+    } else if (str == "yuyv") {
+      m_image.pixel_format = std::make_shared<YUYV>();
+    } else if (str == "yuyv2rgb") {
+      // number of pixels required for conversion method
+      m_image.pixel_format = std::make_shared<YUYV2RGB>(m_image.number_of_pixels);
+    } else if (str == "uyvy") {
+      m_image.pixel_format = std::make_shared<UYVY>();
+    } else if (str == "uyvy2rgb") {
+      // number of pixels required for conversion method
+      m_image.pixel_format = std::make_shared<UYVY2RGB>(m_image.number_of_pixels);
+    } else if (str == "mjpeg2rgb") {
+      m_image.pixel_format = std::make_shared<MJPEG2RGB>(
+        m_image.width, m_image.height);
+    } else if (str == "mono8") {
+      m_image.pixel_format = std::make_shared<MONO8>();
+    } else if (str == "mono16") {
+      m_image.pixel_format = std::make_shared<MONO16>();
+    } else {
+      throw std::invalid_argument("Unsupported pixel format specified: " + str);
+    }
+
+    return m_image.pixel_format;
   }
 
 private:
-  int init_decoder(
-    int image_width, int image_height, color_format_t color_format,
-    AVCodecID codec_id, const char * codec_name);
-  int init_h264_decoder(int image_width, int image_height, color_format_t cf);
-  int init_mjpeg_decoder(int image_width, int image_height, color_format_t cf);
-  bool process_image(const void * src, int len, camera_image_t * dest);
-  bool read_frame();
-  bool uninit_device(void);
-  bool init_read(unsigned int buffer_size);
-  bool init_mmap(void);
-  bool init_userp(unsigned int buffer_size);
-  bool init_device(uint32_t image_width, uint32_t image_height, int framerate);
-  bool close_device(void);
-  bool open_device(void);
-  bool grab_image();
+  void init_read();
+  void init_mmap();
+  void init_userp();
+  void init_device();
 
-  std::string camera_dev_;
-  unsigned int pixelformat_;
-  bool monochrome_;
-  usb_cam::utils::io_method_t io_;
-  int fd_;
-  usb_cam::utils::buffer * buffers_;
-  unsigned int n_buffers_;
-  AVFrame * avframe_camera_;
-  AVFrame * avframe_rgb_;
-  AVCodec * avcodec_;
-  AVDictionary * avoptions_;
-  AVCodecContext * avcodec_context_;
-  int avframe_camera_size_;
-  int avframe_rgb_size_;
-  struct SwsContext * video_sws_;
-  camera_image_t * image_;
-  bool is_capturing_;
-  const time_t epoch_time_shift_;
-  std::vector<capture_format_t> supported_formats_;
+  void open_device();
+  void grab_image();
+  void read_frame();
+  void process_image(const char * src, char * & dest, const int & bytes_used);
+
+  void uninit_device();
+  void close_device();
+
+  std::string m_camera_dev;
+  usb_cam::utils::io_method_t m_io;
+  int m_fd;
+  usb_cam::utils::buffer * m_buffers;
+  unsigned int m_number_of_buffers;
+  image_t m_image;
+
+  // Only used for MJPEG to RGB conversion using ffmpeg utilities
+  /// @brief Initialize ffmpeg utilities to decode the image
+  void init_decoder();
+  AVFrame * m_avframe;
+  int m_avframe_size;
+  AVCodec * m_avcodec;
+  AVCodecID m_codec_id;
+  AVDictionary * m_avoptions;
+  AVCodecContext * m_avcodec_context;
+
+  int64_t m_buffer_time_s;
+  bool m_is_capturing;
+  int m_framerate;
+  const time_t m_epoch_time_shift;
+  std::vector<capture_format_t> m_supported_formats;
 };
 
 }  // namespace usb_cam

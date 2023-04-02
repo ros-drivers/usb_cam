@@ -91,7 +91,6 @@ public:
   // to discover them,
   // or guvcview
   std::string pixel_format_name_;
-  std::string color_format_name_;
   int image_width_;
   int image_height_;
   int framerate_;

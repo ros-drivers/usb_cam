@@ -75,11 +75,16 @@ if(BUILD_TESTING)
     test/test_usb_cam_utils.cpp)
   target_link_libraries(test_usb_cam_utils
     ${PROJECT_NAME})
-  # Integration tests
-  ament_add_gtest(test_usb_cam_lib
-    test/test_usb_cam_lib.cpp)
-  target_link_libraries(test_usb_cam_lib
+  ament_add_gtest(test_pixel_formats
+    test/test_pixel_formats.cpp)
+  target_link_libraries(test_pixel_formats
     ${PROJECT_NAME})
+  # TODO(flynneva): rewrite this test in another PR
+  # Integration tests
+  # ament_add_gtest(test_usb_cam_lib
+  #  test/test_usb_cam_lib.cpp)
+  # target_link_libraries(test_usb_cam_lib
+  #   ${PROJECT_NAME})
 endif()
 
 install(

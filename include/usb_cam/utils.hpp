@@ -37,13 +37,17 @@
 #include <sstream>
 #include <string>
 
-#include "usb_cam/constants.hpp"
+#include "linux/videodev2.h"
 
+#include "usb_cam/constants.hpp"
+#include "usb_cam/formats/pixel_format_base.hpp"
 
 namespace usb_cam
 {
 namespace utils
 {
+
+using usb_cam::formats::pixel_format_base;
 
 
 typedef enum
@@ -54,32 +58,9 @@ typedef enum
   IO_METHOD_UNKNOWN,
 } io_method_t;
 
-
-typedef enum
-{
-  PIXEL_FORMAT_YUYV,
-  PIXEL_FORMAT_UYVY,
-  PIXEL_FORMAT_MJPEG,
-  PIXEL_FORMAT_YUVMONO10,
-  PIXEL_FORMAT_RGB24,
-  PIXEL_FORMAT_GREY,
-  PIXEL_FORMAT_YU12,
-  PIXEL_FORMAT_H264,
-  PIXEL_FORMAT_UNKNOWN
-} pixel_format_t;
-
-
-typedef enum
-{
-  COLOR_FORMAT_YUV420P,
-  COLOR_FORMAT_YUV422P,
-  COLOR_FORMAT_UNKNOWN,
-} color_format_t;
-
-
 struct buffer
 {
-  void * start;
+  char * start;
   size_t length;
 };
 
@@ -118,26 +99,6 @@ inline int xioctl(int fd, int request, void * arg)
   return r;
 }
 
-/** Clip a value to the range 0<val<255. For speed this is done using an
- * array, so can only cope with numbers in the range -128<=val<=383.
- */
-inline unsigned char CLIPVALUE(const int & val)
-{
-  // Old method (if)
-  /*   val = val < 0 ? 0 : val; */
-  /*   return val > 255 ? 255 : val; */
-
-  try {
-    // New method array
-    return usb_cam::constants::uchar_clipping_table.at(
-      val + usb_cam::constants::clipping_table_offset);
-  } catch (std::out_of_range const &) {
-    // fall back to old method
-    unsigned char clipped_val = val < 0 ? 0 : static_cast<unsigned char>(val);
-    return val > 255 ? 255 : clipped_val;
-  }
-}
-
 
 inline io_method_t io_method_from_string(const std::string & str)
 {
@@ -149,68 +110,6 @@ inline io_method_t io_method_from_string(const std::string & str)
     return io_method_t::IO_METHOD_USERPTR;
   } else {
     return io_method_t::IO_METHOD_UNKNOWN;
-  }
-}
-
-
-inline pixel_format_t pixel_format_from_string(const std::string & str)
-{
-  if (str == "yuyv") {
-    return pixel_format_t::PIXEL_FORMAT_YUYV;
-  } else if (str == "uyvy") {
-    return pixel_format_t::PIXEL_FORMAT_UYVY;
-  } else if (str == "mjpeg") {
-    return pixel_format_t::PIXEL_FORMAT_MJPEG;
-  } else if (str == "h264") {
-    return pixel_format_t::PIXEL_FORMAT_H264;
-  } else if (str == "yuvmono10") {
-    return pixel_format_t::PIXEL_FORMAT_YUVMONO10;
-  } else if (str == "rgb24") {
-    return pixel_format_t::PIXEL_FORMAT_RGB24;
-  } else if (str == "grey") {
-    return pixel_format_t::PIXEL_FORMAT_GREY;
-  } else if (str == "yu12") {
-    return pixel_format_t::PIXEL_FORMAT_YU12;
-  } else {
-    return pixel_format_t::PIXEL_FORMAT_UNKNOWN;
-  }
-}
-
-
-inline std::string pixel_format_to_string(const uint32_t & pixelformat)
-{
-  switch (pixelformat) {
-    case pixel_format_t::PIXEL_FORMAT_YUYV:
-      return "yuyv";
-    case pixel_format_t::PIXEL_FORMAT_UYVY:
-      return "uyvy";
-    case pixel_format_t::PIXEL_FORMAT_MJPEG:
-      return "mjpeg";
-    case pixel_format_t::PIXEL_FORMAT_H264:
-      return "h264";
-    case pixel_format_t::PIXEL_FORMAT_YUVMONO10:
-      return "yuvmono10";
-    case pixel_format_t::PIXEL_FORMAT_RGB24:
-      return "rgb24";
-    case pixel_format_t::PIXEL_FORMAT_GREY:
-      return "grey";
-    case pixel_format_t::PIXEL_FORMAT_YU12:
-      return "yu12";
-    case pixel_format_t::PIXEL_FORMAT_UNKNOWN:
-    default:
-      return "unknown";
-  }
-}
-
-
-inline color_format_t color_format_from_string(const std::string & str)
-{
-  if (str == "yuv420p") {
-    return color_format_t::COLOR_FORMAT_YUV420P;
-  } else if (str == "yuv422p") {
-    return color_format_t::COLOR_FORMAT_YUV422P;
-  } else {
-    return color_format_t::COLOR_FORMAT_UNKNOWN;
   }
 }
 
