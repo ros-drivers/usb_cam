@@ -2,6 +2,29 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.0 (2023-04-02)
+------------------
+* If auto exposure is true, set it
+* Migrate previous pixel formats to new approach
+  - Add M4202RGB pixel format (aka YUV420 to RGB8)
+  - Add Y102MONO8 pixel format (aka MONO10 to MONO8)
+* Update documentation related to supported formats
+  - update doc strings in new pixel format base class
+* Fix linter errors, clean up tests
+  - fix humble and rolling build
+* Implement new pixel_format class structure
+  - implement virtual convert method for new pixel format class
+  - fix MJPEG2RGB conversion logic using new pixel format class
+* Fix typo in workspace path in README
+* fix whitespace around comments
+* fix unused variable error
+* possible fix for timestamp jumping
+* fix code style
+* dont change brightness with default config
+* use v4l2  for "brightness", "contrast", "saturation", "sharpness", "gain", "auto_white_balance",
+  "white_balance", "autoexposure", "exposure", "autofocus", "focus"
+* Contributors: Evan Flynn, john
+
 0.5.0 (2023-01-14)
 ------------------
 * Merge pull request `#212 <https://github.com/flynneva/usb_cam/issues/212>`_ from flynneva/203-refactor-usb-cam-library-with-no-ros-deps
