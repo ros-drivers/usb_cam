@@ -59,11 +59,30 @@ public:
     m_requires_conversion(requires_conversion)
   {}
 
+  /// @brief Name of pixel format. Used in the parameters file to select this format
+  /// @return
   inline std::string name() {return m_name;}
+
+  /// @brief Integer value of V4L2 capture pixel format
+  /// @return
   inline uint32_t v4l2() {return m_v4l2;}
+
+  /// @brief Name of output pixel (encoding) format to ROS
+  /// @return
   inline std::string ros() {return m_ros;}
+
+  /// @brief Number of channels (e.g. bytes) per pixel
+  /// @return
   inline uint8_t channels() {return m_channels;}
+
+  /// @brief Number for bit depth of image
+  /// @return
   inline uint8_t bit_depth() {return m_bit_depth;}
+
+  /// @brief True if the current pixel format requires a call to the `convert` method
+  /// Used in the usb_cam library logic to determine if a plain `memcopy` call can be
+  /// used instead of a call to the `convert` method of this class.
+  /// @return
   inline bool requires_conversion() {return m_requires_conversion;}
 
   /// @brief Conversion method. Meant to be overridden if pixel format requires it.
@@ -76,6 +95,10 @@ public:
     (void)bytes_used;
   }
 
+  /// @brief Returns if the final output format is color
+  /// Copied from:
+  ///     https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp
+  /// @return
   inline bool is_color()
   {
     return
@@ -91,6 +114,10 @@ public:
       m_ros == usb_cam::constants::NV24;
   }
 
+  /// @brief Returns if the final output format is monocolor (gray)
+  /// Copied from:
+  ///     https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp
+  /// @return
   inline bool is_mono()
   {
     return
@@ -98,6 +125,10 @@ public:
       m_ros == usb_cam::constants::MONO16;
   }
 
+  /// @brief Returns if the final output format is bayer
+  /// Copied from:
+  ///     https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp
+  /// @return
   inline bool is_bayer()
   {
     return
@@ -111,6 +142,10 @@ public:
       m_ros == usb_cam::constants::BAYER_GRBG16;
   }
 
+  /// @brief Returns if the final output format has an alpha value
+  /// Copied from:
+  ///     https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp
+  /// @return
   inline bool has_alpha()
   {
     return

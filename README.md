@@ -1,13 +1,13 @@
-# usb_cam [![ROS2 CI](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml)
+# usb_cam [![ROS 2 CI](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml)
 
-## A ROS2 Driver for V4L USB Cameras
+## A ROS 2 Driver for V4L USB Cameras
 This package is based off of V4L devices specifically instead of just UVC.
 
 For ros1 documentation, see [the ROS wiki](http://ros.org/wiki/usb_cam).
 
-## Supported ROS2 Distros and Platforms
+## Supported ROS 2 Distros and Platforms
 
-All Officially supported Linux Distros and corresponding ROS2 releases are supported. Please create an issue if you experience any problems on these platforms.
+All Officially supported Linux Distros and corresponding ROS 2 releases are supported. Please create an issue if you experience any problems on these platforms.
 
 Windows: TBD/Untested/Unproven
 MacOS: TBD/Untested/Unproven
@@ -16,13 +16,13 @@ For either MacOS or Windows - if you would like to try and get it working please
 
 ## Quickstart
 
-Assuming you have a supported ROS2 distro installed, run the following command to install the binary release:
+Assuming you have a supported ROS 2 distro installed, run the following command to install the binary release:
 
 ```bash
 sudo apt-get install ros-<ros2-distro>-usb-cam
 ```
 
-As of today this package should be available for binary installation on all active ROS2 distros.
+As of today this package should be available for binary installation on all active ROS 2 distros.
 
 If for some reason you cannot install the binaries, follow the directions below to compile from source.
 
@@ -37,7 +37,7 @@ git clone https://github.com/ros-drivers/usb_cam.git
 
 Or click on the green "Download zip" button on the repo's github webpage.
 
-Once downloaded and ensuring you have sourced your ROS2 underlay, go ahead and install the dependencies:
+Once downloaded and ensuring you have sourced your ROS 2 underlay, go ahead and install the dependencies:
 
 ```
 cd /path/to/colcon_ws
@@ -87,6 +87,50 @@ ros2 run usb_cam usb_cam_node_exe --remap __ns:=/usb_cam_0 --params-file /path/t
 ros2 run usb_cam usb_cam_node_exe --remap __ns:=/usb_cam_1 --params-file /path/to/usb_cam/config/params_1.yaml
 ```
 
+## Supported formats
+
+### Device supported formats
+
+To see a connected devices supported formats, run the `usb_cam_node` and observe the console output.
+
+An example output is:
+
+```
+[INFO] [1680452417.506838265] [usb_cam]: This devices supproted formats:
+[INFO] [1680452417.507199183] [usb_cam]:        Motion-JPEG: 1280 x 720 (30 Hz)
+[INFO] [1680452417.507225494] [usb_cam]:        Motion-JPEG: 960 x 540 (30 Hz)
+[INFO] [1680452417.507239725] [usb_cam]:        Motion-JPEG: 848 x 480 (30 Hz)
+[INFO] [1680452417.507252414] [usb_cam]:        Motion-JPEG: 640 x 480 (30 Hz)
+[INFO] [1680452417.507269112] [usb_cam]:        Motion-JPEG: 640 x 360 (30 Hz)
+[INFO] [1680452417.507281981] [usb_cam]:        YUYV 4:2:2: 640 x 480 (30 Hz)
+[INFO] [1680452417.507296745] [usb_cam]:        YUYV 4:2:2: 1280 x 720 (10 Hz)
+[INFO] [1680452417.507311292] [usb_cam]:        YUYV 4:2:2: 640 x 360 (30 Hz)
+[INFO] [1680452417.507325806] [usb_cam]:        YUYV 4:2:2: 424 x 240 (30 Hz)
+[INFO] [1680452417.507339344] [usb_cam]:        YUYV 4:2:2: 320 x 240 (30 Hz)
+[INFO] [1680452417.507354164] [usb_cam]:        YUYV 4:2:2: 320 x 180 (30 Hz)
+[INFO] [1680452417.507368658] [usb_cam]:        YUYV 4:2:2: 160 x 120 (30 Hz)
+```
+
+### Driver supported formats
+
+The driver has its own supported formats. See [the source code](include/usb_cam/formats/)
+for details.
+
+After observing [the devices supported formats](#device-supported-formats), specify which
+format to use via [the parameters file](config/params.yaml) with the `pixel_format` parameter.
+
+Possible options for this driver today are:
+
+- `yuyv2rgb`: V4L2 capture format of YUYV, ROS image encoding of RGB8
+- `uyvy2rgb`: V4L2 capture format of UYVY, ROS image encoding of RGB8
+- `mjpeg2rgb`: V4L2 capture format of MJPEG, ROS image encoding of RGB8
+- `rgb8`: V4L2 capture format and ROS image encoding format of RGB8
+- `yuyv`: V4L2 capture format and ROS image encoding format of YUYV
+- `uyvy`: V4L2 capture format and ROS image encoding format of UYVY
+- `mono8`: V4L2 capture format and ROS image encoding format of MONO8
+- `mono16`: V4L2 capture format and ROS image encoding format of MONO16
+
+More formats and conversions can be added, contributions welcome!
 
 ## Compression
 
