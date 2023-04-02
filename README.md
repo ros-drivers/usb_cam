@@ -67,6 +67,7 @@ Also provided is a launch file that should launch the `usb_cam_node_exe` executa
 The commands to run each of these different ways of starting the node are shown below:
 
 **NOTE: you only need to run ONE of the commands below to run the node**
+
 ```
 # run the executable with default settings (without params file)
 ros2 run usb_cam usb_cam_node_exe
@@ -127,8 +128,10 @@ Possible options for this driver today are:
 - `rgb8`: V4L2 capture format and ROS image encoding format of RGB8
 - `yuyv`: V4L2 capture format and ROS image encoding format of YUYV
 - `uyvy`: V4L2 capture format and ROS image encoding format of UYVY
+- `m4202rgb8`: V4L2 capture format of M420 (aka YUV420), ROS image encoding of RGB8
 - `mono8`: V4L2 capture format and ROS image encoding format of MONO8
 - `mono16`: V4L2 capture format and ROS image encoding format of MONO16
+- `y102mono8`: V4L2 capture format of Y10 (aka MONO10), ROS image encoding of MONO8
 
 More formats and conversions can be added, contributions welcome!
 

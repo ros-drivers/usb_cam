@@ -30,6 +30,8 @@
 #ifndef USB_CAM__FORMATS__YUYV_HPP_
 #define USB_CAM__FORMATS__YUYV_HPP_
 
+#include "linux/videodev2.h"
+
 #include "usb_cam/formats/pixel_format_base.hpp"
 #include "usb_cam/formats/utils.hpp"
 

@@ -30,6 +30,8 @@
 #ifndef USB_CAM__FORMATS__MONO_HPP_
 #define USB_CAM__FORMATS__MONO_HPP_
 
+#include "linux/videodev2.h"
+
 #include "usb_cam/formats/pixel_format_base.hpp"
 #include "usb_cam/formats/utils.hpp"
 
@@ -53,6 +55,7 @@ public:
   {}
 };
 
+
 class MONO16 : public pixel_format_base
 {
 public:
@@ -65,6 +68,40 @@ public:
       16,
       false)
   {}
+};
+
+
+/// @brief Also known as MONO10 to MONO8
+class Y102MONO8 : public pixel_format_base
+{
+public:
+  explicit Y102MONO8(const int & number_of_pixels)
+  : pixel_format_base(
+      "y102mono8",
+      V4L2_PIX_FMT_Y10,
+      usb_cam::constants::MONO8,
+      1,
+      8,
+      true),
+    m_number_of_pixels(number_of_pixels)
+  {}
+
+  /// @brief Convert a Y10 (MONO10) image to MONO8
+  /// @param src pointer to source Y10 (MONO10) image
+  /// @param dest pointer to destination MONO8 image
+  /// @param bytes_used number of bytes used by source image
+  void convert(const char * & src, char * & dest, const int & bytes_used) override
+  {
+    (void)bytes_used;  // not used by this conversion method
+    int i, j;
+    for (i = 0, j = 0; i < (m_number_of_pixels << 1); i += 2, j += 1) {
+      // first byte is low byte, second byte is high byte; smash together and convert to 8-bit
+      dest[j] = (unsigned char)(((src[i + 0] >> 2) & 0x3F) | ((src[i + 1] << 6) & 0xC0));
+    }
+  }
+
+private:
+  int m_number_of_pixels;
 };
 
 }  // namespace formats
