@@ -340,7 +340,6 @@ bool UsbCamNode::take_and_send_image()
 rcl_interfaces::msg::SetParametersResult UsbCamNode::parameters_callback(
   const std::vector<rclcpp::Parameter> & parameters)
 {
-  std::cout << "PARAMS CLLBCK" << std::endl;
   RCLCPP_DEBUG(this->get_logger(), "Setting parameters for %s", m_parameters.camera_name.c_str());
   m_timer->reset();
   assign_params(parameters);
