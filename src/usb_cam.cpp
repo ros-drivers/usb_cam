@@ -58,7 +58,7 @@ using utils::io_method_t;
 
 
 UsbCam::UsbCam()
-: m_camera_dev(), m_io(io_method_t::IO_METHOD_MMAP), m_fd(-1),
+: m_device_name(), m_io(io_method_t::IO_METHOD_MMAP), m_fd(-1),
   m_buffers(NULL), m_number_of_buffers(0), m_image(),
   m_avframe(NULL), m_avcodec(NULL), m_avoptions(NULL),
   m_avcodec_context(NULL),
@@ -530,7 +530,7 @@ void UsbCam::open_device()
 {
   struct stat st;
 
-  if (-1 == stat(m_camera_dev.c_str(), &st)) {
+  if (-1 == stat(m_device_name.c_str(), &st)) {
     throw strerror(errno);
   }
 
@@ -538,7 +538,7 @@ void UsbCam::open_device()
     throw strerror(errno);
   }
 
-  m_fd = open(m_camera_dev.c_str(), O_RDWR /* required */ | O_NONBLOCK, 0);
+  m_fd = open(m_device_name.c_str(), O_RDWR /* required */ | O_NONBLOCK, 0);
 
   if (-1 == m_fd) {
     throw strerror(errno);
@@ -546,25 +546,23 @@ void UsbCam::open_device()
 }
 
 void UsbCam::configure(
-  const std::string & dev, const io_method_t & io_method,
-  const std::string & pixel_format_str,
-  const uint32_t & image_width, const uint32_t & image_height, const int & framerate)
+  parameters_t & parameters, const io_method_t & io_method)
 {
-  m_camera_dev = dev;
+  m_device_name = parameters.device_name;
   m_io = io_method;
 
   // Open device file descriptor before anything else
   open_device();
 
-  m_image.width = static_cast<int>(image_width);
-  m_image.height = static_cast<int>(image_height);
+  m_image.width = static_cast<int>(parameters.image_width);
+  m_image.height = static_cast<int>(parameters.image_height);
   m_image.set_number_of_pixels();
 
   // Do this before calling set_bytes_per_line and set_size_in_bytes
-  m_image.pixel_format = set_pixel_format_from_string(pixel_format_str);
+  m_image.pixel_format = set_pixel_format_from_string(parameters.pixel_format_name);
   m_image.set_bytes_per_line();
   m_image.set_size_in_bytes();
-  m_framerate = framerate;
+  m_framerate = parameters.framerate;
 
   // Allocate memory for the image
   m_image.data = reinterpret_cast<char *>(calloc(m_image.size_in_bytes, sizeof(char *)));
@@ -746,7 +744,7 @@ bool UsbCam::set_v4l_parameter(const std::string & param, const std::string & va
   int retcode = 0;
   // build the command
   std::stringstream ss;
-  ss << "v4l2-ctl --device=" << m_camera_dev << " -c " << param << "=" << value << " 2>&1";
+  ss << "v4l2-ctl --device=" << m_device_name << " -c " << param << "=" << value << " 2>&1";
   std::string cmd = ss.str();
 
   // capture the output

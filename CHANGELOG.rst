@@ -2,6 +2,11 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Clean up ROS 2 node, update parameter logic
+* Contributors: Evan Flynn
+
 0.6.0 (2023-04-02)
 ------------------
 * If auto exposure is true, set it
