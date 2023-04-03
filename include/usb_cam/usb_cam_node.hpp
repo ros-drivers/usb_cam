@@ -54,7 +54,6 @@ std::ostream & operator<<(std::ostream & ostr, const rclcpp::Time & tm)
 namespace usb_cam
 {
 
-
 class UsbCamNode : public rclcpp::Node
 {
 public:
@@ -64,10 +63,11 @@ public:
   void init();
   void get_params();
   void assign_params(const std::vector<rclcpp::Parameter> & parameters);
+  void set_v4l2_params();
   void update();
   bool take_and_send_image();
 
-  rcl_interfaces::msg::SetParametersResult parametersCallback(
+  rcl_interfaces::msg::SetParametersResult parameters_callback(
     const std::vector<rclcpp::Parameter> & parameters);
 
   void service_capture(
@@ -75,45 +75,20 @@ public:
     const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
     std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
-  UsbCam cam_;
+  UsbCam * m_camera;
 
-  // shared image message
-  sensor_msgs::msg::Image::UniquePtr img_;
-  std::shared_ptr<image_transport::CameraPublisher> image_pub_;
-  // parameters
-  std::string video_device_name_;
-  std::string frame_id_;
+  sensor_msgs::msg::Image::UniquePtr m_image_msg;
+  std::shared_ptr<image_transport::CameraPublisher> m_image_publisher;
 
-  std::string io_method_name_;
-  // these parameters all have to be a combination supported by the device
-  // Use
-  // v4l2-ctl --device=0 --list-formats-ext
-  // to discover them,
-  // or guvcview
-  std::string pixel_format_name_;
-  int image_width_;
-  int image_height_;
-  int framerate_;
-  int brightness_;
-  int contrast_;
-  int saturation_;
-  int sharpness_;
-  int gain_;
-  int white_balance_;
-  int exposure_;
-  int focus_;
-  bool auto_white_balance_;
-  bool autoexposure_;
-  bool autofocus_;
+  parameters_t m_parameters;
 
-  std::string camera_name_;
-  std::string camera_info_url_;
-  std::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
+  sensor_msgs::msg::CameraInfo::UniquePtr m_camera_info_msg;
+  std::shared_ptr<camera_info_manager::CameraInfoManager> m_camera_info;
 
-  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr m_timer;
 
-  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_capture_;
-  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameters_callback_handle_;
+  rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr m_service_capture;
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr m_parameters_callback_handle;
 };
 }  // namespace usb_cam
 #endif  // USB_CAM__USB_CAM_NODE_HPP_
