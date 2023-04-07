@@ -1,0 +1,12 @@
+<launch>
+  <arg name="image_view" default="false" />
+
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+      <rosparam command="load" file="$(find usb_cam)/config/usb_cam.yml"/>
+  </node>
+  <node if="$(arg image_view)" name="image_view" pkg="image_view" type="image_view"
+        respawn="false" output="screen">
+    <remap from="image" to="/usb_cam/image_raw"/>
+    <param name="autosize" value="true" />
+  </node>
+</launch>

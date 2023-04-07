@@ -36,128 +36,73 @@
 #ifndef USB_CAM_USB_CAM_H
 #define USB_CAM_USB_CAM_H
 
-#include <asm/types.h>          /* for videodev2.h */
+#include <ros/forwards.h>
+#include "usb_cam/camera_driver.h"
 
-extern "C"
-{
-#include <linux/videodev2.h>
-#include <libavcodec/avcodec.h>
-#include <libswscale/swscale.h>
-#include <libavutil/mem.h>
-#include <libavutil/imgutils.h>
-}
-
-// legacy reasons
-#include <libavcodec/version.h>
-#if LIBAVCODEC_VERSION_MAJOR < 55
-#define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
-#endif
-
-#include <string>
-#include <sstream>
-
+#include <ros/ros.h>
 #include <sensor_msgs/Image.h>
+#include <image_transport/image_transport.h>
+#include <camera_info_manager/camera_info_manager.h>
+#include <std_srvs/Empty.h>
+#include <std_srvs/Trigger.h>
 
-namespace usb_cam {
+namespace usb_cam
+{
 
-class UsbCam {
- public:
-  typedef enum
-  {
-    IO_METHOD_READ, IO_METHOD_MMAP, IO_METHOD_USERPTR, IO_METHOD_UNKNOWN,
-  } io_method;
+class UsbCam: public AbstractV4LUSBCam
+{
+private:
+    /* SINGLETON */
+    explicit UsbCam();
+    virtual ~UsbCam();
+    UsbCam(const UsbCam& root) = delete;
+    UsbCam operator=(const UsbCam& root) = delete;
+protected:
+    static bool create_suspended;
 
-  typedef enum
-  {
-    PIXEL_FORMAT_YUYV, PIXEL_FORMAT_UYVY, PIXEL_FORMAT_MJPEG, PIXEL_FORMAT_YUVMONO10, PIXEL_FORMAT_RGB24, PIXEL_FORMAT_BGR24, PIXEL_FORMAT_GREY, PIXEL_FORMAT_YU12, PIXEL_FORMAT_H264, PIXEL_FORMAT_UNKNOWN,
-  } pixel_format;
+    /* ROS */
+    ros::NodeHandle node;
+    ros::Timer _frame_timer;
+    static ros::Timer* frame_timer;
+    static void frame_timer_callback(const ros::TimerEvent& event);
 
-  typedef enum
-  {
-    COLOR_FORMAT_YUV420P, COLOR_FORMAT_YUV422P, COLOR_FORMAT_UNKNOWN,
-  } color_format;
+    /* Image stream publisher */
+    sensor_msgs::Image _img_msg; // img_
+    static sensor_msgs::Image* img_msg;
+    image_transport::CameraPublisher _image_pub;
+    static image_transport::CameraPublisher* image_pub;
+    static camera_info_manager::CameraInfoManager* camera_info; // cinfo_
+    image_transport::ImageTransport _image_transport; // it_
+    static image_transport::ImageTransport* image_transport;
 
-  UsbCam();
-  ~UsbCam();
+    /* Service servers */
+    std::string _service_start_name;
+    ros::ServiceServer _service_start;
+    static ros::ServiceServer* service_start;
+    static bool service_start_callback(std_srvs::Empty::Request& request,
+                                       std_srvs::Empty::Response& response);
+    std::string _service_stop_name;
+    ros::ServiceServer _service_stop;
+    static ros::ServiceServer* service_stop;
+    static bool service_stop_callback(std_srvs::Empty::Request& request,
+                                      std_srvs::Empty::Response& response);
+    ros::ServiceServer _service_supported_formats;
+    static ros::ServiceServer* service_supported_formats;
+    static bool service_supported_formats_callback(std_srvs::Trigger::Request& request,
+                                                   std_srvs::Trigger::Response& response);
+    ros::ServiceServer _service_supported_controls;
+    static ros::ServiceServer* service_supported_controls;
+    static bool service_supported_controls_callback(std_srvs::Trigger::Request& request,
+                                                    std_srvs::Trigger::Response& response);
 
-  // start camera
-  void start(const std::string& dev, io_method io, pixel_format pf, color_format cf,
-		    int image_width, int image_height, int framerate);
-  // shutdown camera
-  void shutdown(void);
+    /* Node parameters */
+    static std::string camera_name;
+    static std::string camera_frame_id;
+    static std::string camera_transport_suffix;
+    static std::string camera_info_url;
 
-  // grabs a new image from the camera
-  void grab_image(sensor_msgs::Image* image);
-
-  // enables/disable auto focus
-  void set_auto_focus(int value);
-
-  // Set video device parameters
-  void set_v4l_parameter(const std::string& param, int value);
-  void set_v4l_parameter(const std::string& param, const std::string& value);
-
-  static io_method io_method_from_string(const std::string& str);
-  static pixel_format pixel_format_from_string(const std::string& str);
-  static color_format color_format_from_string(const std::string& str);
-
-  void stop_capturing(void);
-  void start_capturing(void);
-  bool is_capturing();
-
- private:
-  typedef struct
-  {
-    int width;
-    int height;
-    int bytes_per_pixel;
-    int image_size;
-    char *image;
-    int is_new;
-  } camera_image_t;
-
-  struct buffer
-  {
-    void * start;
-    size_t length;
-  };
-
-
-  int init_decoder(int image_width, int image_height,
-      color_format color_format, AVCodecID codec_id, const char *codec_name);
-  int init_mjpeg_decoder(int image_width, int image_height, color_format color_format);
-  int init_h264_decoder(int image_width, int image_height, color_format color_format);
-  void mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels);
-  void process_image(const void * src, int len, camera_image_t *dest);
-  int read_frame();
-  void uninit_device(void);
-  void init_read(unsigned int buffer_size);
-  void init_mmap(void);
-  void init_userp(unsigned int buffer_size);
-  void init_device(int image_width, int image_height, int framerate);
-  void close_device(void);
-  void open_device(void);
-  void grab_image();
-  bool is_capturing_;
-
-
-  std::string camera_dev_;
-  unsigned int pixelformat_;
-  bool monochrome_;
-  io_method io_;
-  int fd_;
-  buffer * buffers_;
-  unsigned int n_buffers_;
-  AVFrame *avframe_camera_;
-  AVFrame *avframe_rgb_;
-  AVCodec *avcodec_;
-  AVDictionary *avoptions_;
-  AVCodecContext *avcodec_context_;
-  AVCodecParserContext *avparser_context_;
-  int avframe_camera_size_;
-  int avframe_rgb_size_;
-  struct SwsContext *video_sws_;
-  camera_image_t *image_;
-
+public:
+    static UsbCam& Instance();
 };
 
 }
