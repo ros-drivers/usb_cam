@@ -81,10 +81,11 @@ if(BUILD_TESTING)
     ${PROJECT_NAME})
   # TODO(flynneva): rewrite this test in another PR
   # Integration tests
-  # ament_add_gtest(test_usb_cam_lib
-  #  test/test_usb_cam_lib.cpp)
-  # target_link_libraries(test_usb_cam_lib
-  #   ${PROJECT_NAME})
+  ament_add_gtest(test_usb_cam_lib
+    test/test_usb_cam_lib.cpp)
+  target_link_libraries(test_usb_cam_lib
+    ${PROJECT_NAME}
+    ${sensor_msgs_LIBRARIES})
 endif()
 
 install(

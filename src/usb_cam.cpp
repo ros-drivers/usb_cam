@@ -30,7 +30,7 @@
 
 extern "C" {
 #include <linux/videodev2.h>  // Defines V4L2 format constants
-#include <malloc.h>  // for memalign
+#include <malloc.h>  // for memalign and malloc
 #include <sys/mman.h>  // for mmap
 #include <sys/stat.h>  // for stat
 #include <unistd.h>  // for getpagesize()
@@ -544,11 +544,12 @@ void UsbCam::open_device()
   }
 }
 
-void UsbCam::configure(parameters_t & parameters)
+void UsbCam::configure()
 {
-  m_parameters = parameters;
+  // TODO(flynneva): check that m_parameters were set before continuing here?
+
   // set the IO method
-  m_io = usb_cam::utils::io_method_from_string(parameters.io_method_name);
+  m_io = usb_cam::utils::io_method_from_string(m_parameters.io_method_name);
   if (m_io == usb_cam::utils::IO_METHOD_UNKNOWN) {
     throw std::runtime_error(
             "Unknown IO method specified via the supplied parameters");
@@ -556,12 +557,12 @@ void UsbCam::configure(parameters_t & parameters)
   // Open device file descriptor before anything else
   open_device();
 
-  m_image.width = static_cast<int>(parameters.image_width);
-  m_image.height = static_cast<int>(parameters.image_height);
+  m_image.width = static_cast<int>(m_parameters.image_width);
+  m_image.height = static_cast<int>(m_parameters.image_height);
   m_image.set_number_of_pixels();
 
   // Do this before calling set_bytes_per_line and set_size_in_bytes
-  m_image.pixel_format = set_pixel_format_from_string(parameters.pixel_format_name);
+  m_image.pixel_format = set_pixel_format_from_string(m_parameters.pixel_format_name);
   m_image.set_bytes_per_line();
   m_image.set_size_in_bytes();
 
@@ -583,8 +584,7 @@ void UsbCam::shutdown()
   uninit_device();
   close_device();
 
-  free(m_image.data);
-  m_image.data = NULL;
+  m_image.data = nullptr;
 }
 
 /// @brief Grab new image from V4L2 device, return pointer to image
@@ -601,6 +601,8 @@ char * UsbCam::get_image()
 
 /// @brief Overload get_image so users can pass in an image pointer to fill
 /// @param destination destination to fill in with image
+/// Note: destination must be pre-allocated to the proper size (use 
+/// UsbCam::get_image_size() utility to get proper size)
 void UsbCam::get_image(char * destination)
 {
   if ((m_image.width == 0) || (m_image.height == 0)) {
@@ -745,7 +747,8 @@ bool UsbCam::set_v4l_parameter(const std::string & param, const std::string & va
   int retcode = 0;
   // build the command
   std::stringstream ss;
-  ss << "v4l2-ctl --device=" << m_parameters.device_name << " -c " << param << "=" << value << " 2>&1";
+  ss << "v4l2-ctl --device=" << m_parameters.device_name;
+  ss << " -c " << param << "=" << value << " 2>&1";
   std::string cmd = ss.str();
 
   // capture the output
@@ -762,7 +765,7 @@ bool UsbCam::set_v4l_parameter(const std::string & param, const std::string & va
     pclose(stream);
     // any output should be an error
     if (output.length() > 0) {
-      std::cout << output.c_str() << std::endl;
+      std::cerr << output.c_str() << std::endl;
       retcode = 1;
     }
   } else {

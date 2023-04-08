@@ -137,13 +137,14 @@ public:
   ~UsbCam();
 
   /// @brief Configure device, should be called before start
-  void configure(parameters_t & parameters);
+  /// Requires that `set_parameters` was already called
+  void configure();
 
   /// @brief Start the configured device
   void start();
 
   /// @brief shutdown camera
-  void shutdown(void);
+  void shutdown();
 
   /// @brief Take a new image with device and return it
   ///   To copy the returned image to another format:
@@ -165,6 +166,11 @@ public:
   // Set video device parameters
   bool set_v4l_parameter(const std::string & param, int value);
   bool set_v4l_parameter(const std::string & param, const std::string & value);
+
+  parameters_t parameters()
+  {
+    return m_parameters;
+  }
 
   void stop_capturing();
   void start_capturing();
@@ -323,27 +329,27 @@ public:
       std::cout << "Setting 'brightness' to " << m_parameters.brightness << std::endl;
       this->set_v4l_parameter("brightness", m_parameters.brightness);
     }
-  
+
     if (m_parameters.contrast >= 0) {
       std::cout << "Setting 'contrast' to " << m_parameters.contrast << std::endl;
       this->set_v4l_parameter("contrast", m_parameters.contrast);
     }
-  
+
     if (m_parameters.saturation >= 0) {
       std::cout << "Setting 'saturation' to " << m_parameters.saturation << std::endl;
       this->set_v4l_parameter("saturation", m_parameters.saturation);
     }
-  
+
     if (m_parameters.sharpness >= 0) {
       std::cout << "Setting 'sharpness' to " << m_parameters.sharpness;
       this->set_v4l_parameter("sharpness", m_parameters.sharpness);
     }
-  
+
     if (m_parameters.gain >= 0) {
       std::cout << "Setting 'gain' to " << m_parameters.gain << std::endl;
       this->set_v4l_parameter("gain", m_parameters.gain);
     }
-  
+
     // check auto white balance
     if (m_parameters.auto_white_balance) {
       this->set_v4l_parameter("white_balance_temperature_auto", 1);
@@ -353,7 +359,7 @@ public:
       this->set_v4l_parameter("white_balance_temperature_auto", 0);
       this->set_v4l_parameter("white_balance_temperature", m_parameters.white_balance);
     }
-  
+
     // check auto exposure
     if (!m_parameters.autoexposure) {
       std::cout << "Setting 'exposure_auto' to " << 1 << std::endl;
@@ -366,20 +372,25 @@ public:
       std::cout << "Setting 'exposure_auto' to " << 3 << std::endl;
       this->set_v4l_parameter("exposure_auto", 3);
     }
-  
+
     // check auto focus
     if (m_parameters.autofocus) {
       this->set_auto_focus(1);
       std::cout << "Setting 'focus_auto' to " << 1 << std::endl;
-      //this->set_v4l_parameter("focus_auto", 1);
+      this->set_v4l_parameter("focus_auto", 1);
     } else {
       std::cout << "Setting 'focus_auto' to " << 0 << std::endl;
-      //this->set_v4l_parameter("focus_auto", 0);
+      this->set_v4l_parameter("focus_auto", 0);
       if (m_parameters.focus >= 0) {
         std::cout << "Setting 'focus_absolute' to " << m_parameters.focus << std::endl;
         this->set_v4l_parameter("focus_absolute", m_parameters.focus);
       }
     }
+  }
+
+  inline void assign_parameters(parameters_t & new_parameters)
+  {
+    m_parameters = new_parameters;
   }
 
 private:

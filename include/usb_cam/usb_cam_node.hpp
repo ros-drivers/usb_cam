@@ -35,11 +35,16 @@
 #include <string>
 #include <vector>
 
+#include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
+#include "std_srvs/srv/set_bool.hpp"
+
+#include "image_transport/camera_publisher.hpp"
+#include "rclcpp/qos.hpp"
+
 #include "camera_info_manager/camera_info_manager.hpp"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/image.hpp"
-#include "std_srvs/srv/set_bool.hpp"
 
 #include "usb_cam/usb_cam.hpp"
 
@@ -61,8 +66,9 @@ public:
   ~UsbCamNode();
 
   void init();
-  void get_params();
-  void assign_params(const std::vector<rclcpp::Parameter> & parameters);
+  void get_ros_params();
+  void assign_ros_params(
+    const std::vector<rclcpp::Parameter> & parameters);
   void update();
   bool take_and_send_image();
 
@@ -79,10 +85,10 @@ public:
   sensor_msgs::msg::Image::UniquePtr m_image_msg;
   std::shared_ptr<image_transport::CameraPublisher> m_image_publisher;
 
-  parameters_t m_parameters;
-
   sensor_msgs::msg::CameraInfo::UniquePtr m_camera_info_msg;
   std::shared_ptr<camera_info_manager::CameraInfoManager> m_camera_info;
+
+  std::vector<rclcpp::Parameter> m_ros_parameters;
 
   rclcpp::TimerBase::SharedPtr m_timer;
 

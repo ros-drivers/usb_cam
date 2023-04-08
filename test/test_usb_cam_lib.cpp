@@ -27,6 +27,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtest/gtest.h>
+#include <malloc.h>
 
 #include <chrono>
 #include <iostream>
@@ -35,25 +36,97 @@
 #include "usb_cam/usb_cam.hpp"
 #include "usb_cam/utils.hpp"
 
-TEST(test_usb_cam_lib, test_usb_cam_class) {
-  usb_cam::UsbCam test_usb_cam;
+#include "sensor_msgs/msg/image.hpp"
 
-  auto supported_fmts = test_usb_cam.get_supported_formats();
 
-  // TODO(flynneva): iterate over availble formats with test_usb_cam obj
-  for (auto fmt : supported_fmts) {
-    std::cerr << "format: " << fmt.format.type << std::endl;
-  }
+namespace
+{
 
-  // TODO(flynneva): rework these tests in another MR
+class test_usb_cam_lib_fixture : public ::testing::Test
+{
+public:
+  void SetUp() override
   {
-    // test_usb_cam.configure(
-    //   "/dev/video0",
-    //   usb_cam::utils::IO_METHOD_MMAP,
-    //   "yuyv2rgb", 640, 480, 30);
-    // test_usb_cam.start();
-    // TODO(flynneva): uncomment once /dev/video0 can be simulated in CI
-    // EXPECT_TRUE(test_usb_cam.is_capturing());
-    // test_usb_cam.shutdown();
+    m_test_cam->assign_parameters(m_test_parameters);
+    m_test_cam->configure();
+    m_test_cam->start();
   }
+
+  void TearDown() override
+  {
+    m_test_cam->shutdown();
+  }
+
+  usb_cam::parameters_t m_test_parameters{
+    "test_camera",
+    "/dev/video0",
+    "test_camera_frame",
+    "mmap",
+    "package://usb_cam/config/camera_info.yaml",
+    "mjpeg2rgb",
+    480,
+    640,
+    30,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+    true,
+    true,
+    false,
+  };
+
+  usb_cam::UsbCam * m_test_cam = new usb_cam::UsbCam();
+};
+
+}  // namespace
+
+
+TEST_F(test_usb_cam_lib_fixture, parametrs) {
+  // Test to make sure a few parameters were initilized properly
+  // and they can be accessed directly if needed
+  ASSERT_EQ(m_test_parameters.camera_name, "test_camera");
+  ASSERT_EQ(m_test_parameters.device_name, "/dev/video0");
+  ASSERT_EQ(m_test_parameters.frame_id, "test_camera_frame");
+}
+
+TEST_F(test_usb_cam_lib_fixture, usb_cam_class_basic) {
+  // Ensure parameters were properly set using some helper functions
+  ASSERT_EQ(m_test_cam->get_image_width(), size_t(480));
+  ASSERT_EQ(m_test_cam->get_image_height(), size_t(640));
+  ASSERT_EQ(m_test_cam->get_image_size(), size_t(921600));
+  ASSERT_EQ(m_test_cam->get_image_step(), 1440U);
+  ASSERT_EQ(m_test_cam->get_device_name(), "/dev/video0");
+  ASSERT_EQ(m_test_cam->get_pixel_format()->name(), "mjpeg2rgb");
+  ASSERT_EQ(m_test_cam->number_of_buffers(), 4U);
+}
+
+TEST_F(test_usb_cam_lib_fixture, usb_cam_class_basic_get_image) {
+  auto image = m_test_cam->get_image();
+
+  ASSERT_NE(image, nullptr);
+
+  auto stamp = m_test_cam->get_image_timestamp();
+
+  ASSERT_GT(stamp.tv_sec, 0);
+  ASSERT_GT(stamp.tv_nsec, 0);
+
+  ASSERT_EQ(m_test_cam->is_capturing(), true);
+  m_test_cam->stop_capturing();
+  ASSERT_EQ(m_test_cam->is_capturing(), false);
+  m_test_cam->start_capturing();
+  ASSERT_EQ(m_test_cam->is_capturing(), true);
+}
+
+TEST_F(test_usb_cam_lib_fixture, usb_cam_class_one_copy_get_image) {
+  // Pre-allocate image
+  char * test_image = reinterpret_cast<char *>(malloc(m_test_cam->get_image_size()));
+  // Pass in pointer
+  m_test_cam->get_image(test_image);
+  ASSERT_NE(test_image, nullptr);
+
 }
