@@ -136,18 +136,9 @@ void UsbCamNode::init()
     m_parameters.camera_name.c_str(), m_parameters.device_name.c_str(),
     m_parameters.image_width, m_parameters.image_height, m_parameters.io_method_name.c_str(),
     m_parameters.pixel_format_name.c_str(), m_parameters.framerate);
-  // set the IO method
-  io_method_t io_method =
-    usb_cam::utils::io_method_from_string(m_parameters.io_method_name);
-  if (io_method == usb_cam::utils::IO_METHOD_UNKNOWN) {
-    RCLCPP_ERROR_ONCE(
-      this->get_logger(),
-      "Unknown IO method '%s'", m_parameters.io_method_name.c_str());
-    rclcpp::shutdown();
-    return;
-  }
+
   // configure the camera
-  m_camera->configure(m_parameters, io_method);
+  m_camera->configure(m_parameters);
 
   RCLCPP_INFO(this->get_logger(), "This devices supproted formats:");
   for (auto fmt : m_camera->supported_formats()) {
@@ -160,7 +151,7 @@ void UsbCamNode::init()
       fmt.v4l2_fmt.discrete.denominator / fmt.v4l2_fmt.discrete.numerator);
   }
 
-  set_v4l2_params();
+  m_camera->set_v4l2_params();
 
   // start the camera
   m_camera->start();
@@ -240,74 +231,6 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
   }
 }
 
-/// @brief Send current parameters to V4L2 device
-/// TODO(flynneva): should this actuaully be part of UsbCam class?
-void UsbCamNode::set_v4l2_params()
-{
-  // set camera parameters
-  if (m_parameters.brightness >= 0) {
-    RCLCPP_INFO(this->get_logger(), "Setting 'brightness' to %d", m_parameters.brightness);
-    m_camera->set_v4l_parameter("brightness", m_parameters.brightness);
-  }
-
-  if (m_parameters.contrast >= 0) {
-    RCLCPP_INFO(this->get_logger(), "Setting 'contrast' to %d", m_parameters.contrast);
-    m_camera->set_v4l_parameter("contrast", m_parameters.contrast);
-  }
-
-  if (m_parameters.saturation >= 0) {
-    RCLCPP_INFO(this->get_logger(), "Setting 'saturation' to %d", m_parameters.saturation);
-    m_camera->set_v4l_parameter("saturation", m_parameters.saturation);
-  }
-
-  if (m_parameters.sharpness >= 0) {
-    RCLCPP_INFO(this->get_logger(), "Setting 'sharpness' to %d", m_parameters.sharpness);
-    m_camera->set_v4l_parameter("sharpness", m_parameters.sharpness);
-  }
-
-  if (m_parameters.gain >= 0) {
-    RCLCPP_INFO(this->get_logger(), "Setting 'gain' to %d", m_parameters.gain);
-    m_camera->set_v4l_parameter("gain", m_parameters.gain);
-  }
-
-  // check auto white balance
-  if (m_parameters.auto_white_balance) {
-    m_camera->set_v4l_parameter("white_balance_temperature_auto", 1);
-    RCLCPP_INFO(this->get_logger(), "Setting 'white_balance_temperature_auto' to %d", 1);
-  } else {
-    RCLCPP_INFO(this->get_logger(), "Setting 'white_balance' to %d", m_parameters.white_balance);
-    m_camera->set_v4l_parameter("white_balance_temperature_auto", 0);
-    m_camera->set_v4l_parameter("white_balance_temperature", m_parameters.white_balance);
-  }
-
-  // check auto exposure
-  if (!m_parameters.autoexposure) {
-    RCLCPP_INFO(this->get_logger(), "Setting 'exposure_auto' to %d", 1);
-    RCLCPP_INFO(this->get_logger(), "Setting 'exposure' to %d", m_parameters.exposure);
-    // turn down exposure control (from max of 3)
-    m_camera->set_v4l_parameter("exposure_auto", 1);
-    // change the exposure level
-    m_camera->set_v4l_parameter("exposure_absolute", m_parameters.exposure);
-  } else {
-    RCLCPP_INFO(this->get_logger(), "Setting 'exposure_auto' to %d", 3);
-    m_camera->set_v4l_parameter("exposure_auto", 3);
-  }
-
-  // check auto focus
-  if (m_parameters.autofocus) {
-    m_camera->set_auto_focus(1);
-    RCLCPP_INFO(this->get_logger(), "Setting 'focus_auto' to %d", 1);
-    m_camera->set_v4l_parameter("focus_auto", 1);
-  } else {
-    RCLCPP_INFO(this->get_logger(), "Setting 'focus_auto' to %d", 0);
-    m_camera->set_v4l_parameter("focus_auto", 0);
-    if (m_parameters.focus >= 0) {
-      RCLCPP_INFO(this->get_logger(), "Setting 'focus_absolute' to %d", m_parameters.focus);
-      m_camera->set_v4l_parameter("focus_absolute", m_parameters.focus);
-    }
-  }
-}
-
 bool UsbCamNode::take_and_send_image()
 {
   // Only resize if required
@@ -343,7 +266,7 @@ rcl_interfaces::msg::SetParametersResult UsbCamNode::parameters_callback(
   RCLCPP_DEBUG(this->get_logger(), "Setting parameters for %s", m_parameters.camera_name.c_str());
   m_timer->reset();
   assign_params(parameters);
-  set_v4l2_params();
+  m_camera->set_v4l2_params();
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
   result.reason = "success";

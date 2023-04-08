@@ -58,11 +58,10 @@ using utils::io_method_t;
 
 
 UsbCam::UsbCam()
-: m_device_name(), m_io(io_method_t::IO_METHOD_MMAP), m_fd(-1),
-  m_buffers(NULL), m_number_of_buffers(0), m_image(),
+: m_io(io_method_t::IO_METHOD_MMAP), m_fd(-1),
+  m_buffers(NULL), m_number_of_buffers(0), m_image(), m_parameters(),
   m_avframe(NULL), m_avcodec(NULL), m_avoptions(NULL),
-  m_avcodec_context(NULL),
-  m_is_capturing(false), m_framerate(0),
+  m_avcodec_context(NULL), m_is_capturing(false),
   m_epoch_time_shift(usb_cam::utils::get_epoch_time_shift()), m_supported_formats()
 {}
 
@@ -496,7 +495,7 @@ void UsbCam::init_device()
   // TODO(lucasw) need to get list of valid numerator/denominator pairs
   // and match closest to what user put in.
   stream_params.parm.capture.timeperframe.numerator = 1;
-  stream_params.parm.capture.timeperframe.denominator = m_framerate;
+  stream_params.parm.capture.timeperframe.denominator = m_parameters.framerate;
   if (usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_S_PARM), &stream_params) < 0) {
     throw std::invalid_argument("Couldn't set camera framerate");
   }
@@ -530,7 +529,7 @@ void UsbCam::open_device()
 {
   struct stat st;
 
-  if (-1 == stat(m_device_name.c_str(), &st)) {
+  if (-1 == stat(m_parameters.device_name.c_str(), &st)) {
     throw strerror(errno);
   }
 
@@ -538,19 +537,22 @@ void UsbCam::open_device()
     throw strerror(errno);
   }
 
-  m_fd = open(m_device_name.c_str(), O_RDWR /* required */ | O_NONBLOCK, 0);
+  m_fd = open(m_parameters.device_name.c_str(), O_RDWR /* required */ | O_NONBLOCK, 0);
 
   if (-1 == m_fd) {
     throw strerror(errno);
   }
 }
 
-void UsbCam::configure(
-  parameters_t & parameters, const io_method_t & io_method)
+void UsbCam::configure(parameters_t & parameters)
 {
-  m_device_name = parameters.device_name;
-  m_io = io_method;
-
+  m_parameters = parameters;
+  // set the IO method
+  m_io = usb_cam::utils::io_method_from_string(parameters.io_method_name);
+  if (m_io == usb_cam::utils::IO_METHOD_UNKNOWN) {
+    throw std::runtime_error(
+            "Unknown IO method specified via the supplied parameters");
+  }
   // Open device file descriptor before anything else
   open_device();
 
@@ -562,7 +564,6 @@ void UsbCam::configure(
   m_image.pixel_format = set_pixel_format_from_string(parameters.pixel_format_name);
   m_image.set_bytes_per_line();
   m_image.set_size_in_bytes();
-  m_framerate = parameters.framerate;
 
   // Allocate memory for the image
   m_image.data = reinterpret_cast<char *>(calloc(m_image.size_in_bytes, sizeof(char *)));
@@ -744,7 +745,7 @@ bool UsbCam::set_v4l_parameter(const std::string & param, const std::string & va
   int retcode = 0;
   // build the command
   std::stringstream ss;
-  ss << "v4l2-ctl --device=" << m_device_name << " -c " << param << "=" << value << " 2>&1";
+  ss << "v4l2-ctl --device=" << m_parameters.device_name << " -c " << param << "=" << value << " 2>&1";
   std::string cmd = ss.str();
 
   // capture the output
