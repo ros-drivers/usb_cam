@@ -1,5 +1,7 @@
 name: ROS2 CI
 
+permissions: write-all
+
 on:
   pull_request:
     branches:
@@ -7,25 +9,15 @@ on:
       - 'ros2'
 
 jobs:
-  test_environment:
+  renode_tests:
     runs-on: [ubuntu-latest]
     strategy:
       fail-fast: false
       matrix:
         ros_distribution:
-          - foxy
-          - galactic
           - humble
           - rolling
         include:
-          # Foxy Fitzroy (June 2020 - May 2023)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-latest
-            ros_distribution: foxy
-            ros_version: 2
-          # Galactic Geochelone (May 2021 - November 2022)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-galactic-ros-base-latest
-            ros_distribution: galactic
-            ros_version: 2
           # Humble Hawksbill  (May 2022 - 2027
           - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
             ros_distribution: humble
@@ -37,35 +29,27 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
-      - name: setup directories
-        run: mkdir -p ros_ws/src
-      - name: checkout
-        uses: actions/checkout@v2
+      - name: install deps
+        run: |
+          sudo apt update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
+          python3-pip telnet iptables iproute2
+      - uses: actions/checkout@v3
         with:
-          path: ros_ws/src
+          path: workspace/src
       - name: build and test
         id: build_and_test_step
-        uses: ros-tooling/action-ros-ci@master
+        # Use antmicro's Renode linux distro that supports
+        # vivid (virtual device emulating a v4l2 device)
+        # https://github.com/antmicro/renode-linux-runner-action
+        uses: antmicro/renode-linux-runner-action@main
         with:
-          package-name: usb_cam
-          target-ros2-distro: ${{ matrix.ros_distribution }}
-          vcs-repo-file-url: ""
-          colcon-defaults: |
-            {
-              "build": {
-                "mixin": ["coverage-gcc"]
-              }
-            }
-          # If possible, pin the repository in the workflow to a specific commit to avoid
-          # changes in colcon-mixin-repository from breaking your tests.
-          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
-      - uses: actions/upload-artifact@v1
-        with:
-          name: colcon-logs-${{ matrix.ros_distribution }}
-          path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/log
-        if: always()
-      - uses: actions/upload-artifact@v1
-        with:
-          name: lcov-logs-${{ matrix.ros_distribution }}
-          path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/lcov
-        if: always()
+          image-type: docker
+          image: ${{ matrix.docker_image }}
+          shared-dirs: |
+            /opt/ros /opt/ros
+            workspace/src
+          renode-run: |
+            source /opt/ros/${{ matrix.ros_distribution }}/setup.sh
+            colcon build
+            colcon test
+          devices: vivid
