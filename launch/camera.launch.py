@@ -38,6 +38,11 @@ import sys
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import GroupAction
+from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
+
 
 
 def generate_launch_description():
@@ -52,26 +57,64 @@ def generate_launch_description():
     usb_cam_dir = get_package_share_directory('usb_cam')
 
     # get path to params file
-    params_path = os.path.join(
+    params_path_1 = os.path.join(
         usb_cam_dir,
         'config',
-        'params.yaml'
+        'params_1.yaml'
+    )
+   
+    params_path_2 = os.path.join(
+        usb_cam_dir,
+        'config',
+        'params_2.yaml'
     )
 
-    node_name = args.node_name
+   # params_path = os.path.join(
+   #     usb_cam_dir,
+   #     'config',
+   #     'params_3.yaml'
+   # )
+   # params_path = os.path.join(
+   #     usb_cam_dir,
+   #     'config',
+   #     'params_4.yaml'
+   # )
 
-    print(params_path)
-    ld.add_action(Node(
+    camera_group = GroupAction([
+
+
+        Node(
         package='usb_cam', executable='usb_cam_node_exe', output='screen',
-        name=node_name,
+        name="usb_cam_1",
         # namespace=ns,
-        parameters=[params_path]
-        ))
-    ld.add_action(Node(
-        package='usb_cam', executable='show_image.py', output='screen',
-        # namespace=ns,
-        # arguments=[image_manip_dir + "/data/mosaic.jpg"])
-        # remappings=[('image_in', 'image_raw')]
-        ))
+        parameters=[params_path_1],
+        remappings=[('image_raw', 'camera1/image_raw'), 
+                    ('image_raw/compressed', 'camera1/image_compressed')]
+        ),
 
+        Node(
+        package='usb_cam', executable='usb_cam_node_exe', output='screen',
+        name='usb_cam_2',
+        # namespace=ns,
+        parameters=[params_path_2],
+        remappings=[('image_raw', 'camera2/image_raw'), 
+                    ('image_raw/compressed', 'camera2/image_compressed')]
+        )
+        
+    #    Node(
+    #    package='usb_cam', executable='usb_cam_node_exe', output='screen',
+    #    name=node_name,
+    #    # namespace=ns,
+    #    parameters=[params_path_3],
+    #    ),
+    
+    #    Node(
+    #    package='usb_cam', executable='usb_cam_node_exe', output='screen',
+    #    name=node_name,
+        # namespace=ns,
+    #    parameters=[params_path_4],
+    #    )
+    ])
+
+    ld.add_action(camera_group)
     return ld
