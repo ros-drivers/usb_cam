@@ -5,6 +5,7 @@ Original Authors
 Maintainers
 ------------
  * [Andrey Vukolov](https://github.com/twdragon) (andrey.vukolov@elettra.eu)
+ * [Shingo Kitagawa](https://github.com/knorth55)
  * [Evan Flynn](https://github.com/flynneva) - for ROS2 development branch
  * [Russell Toris](http://users.wpi.edu/~rctoris/) (rctoris@wpi.edu)
  * ROS Orphaned Package Maintainers
