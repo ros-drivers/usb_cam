@@ -37,6 +37,7 @@
 #define USB_CAM_USB_CAM_H
 
 #include <ros/forwards.h>
+#include "ros/service_server.h"
 #include "usb_cam/camera_driver.h"
 
 #include <ros/ros.h>
@@ -94,6 +95,11 @@ protected:
     static ros::ServiceServer* service_supported_controls;
     static bool service_supported_controls_callback(std_srvs::Trigger::Request& request,
                                                     std_srvs::Trigger::Response& response);
+
+    ros::ServiceServer _service_supported_hardware_decoders;
+    static ros::ServiceServer* service_supported_hardware_decoders;
+    static bool service_supported_hardware_decoders_callback(std_srvs::Trigger::Request& request,
+                                                             std_srvs::Trigger::Response& response);
 
     /* Node parameters */
     static std::string camera_name;

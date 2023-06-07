@@ -56,6 +56,7 @@ ros::ServiceServer* UsbCam::service_start = nullptr;
 ros::ServiceServer* UsbCam::service_stop = nullptr;
 ros::ServiceServer* UsbCam::service_supported_formats = nullptr;
 ros::ServiceServer* UsbCam::service_supported_controls = nullptr;
+ros::ServiceServer* UsbCam::service_supported_hardware_decoders = nullptr;
 image_transport::ImageTransport* UsbCam::image_transport = nullptr;
 
 /* Node parameters */
@@ -113,6 +114,23 @@ bool UsbCam::service_supported_controls_callback(std_srvs::Trigger::Request &req
     return true;
 }
 
+bool UsbCam::service_supported_hardware_decoders_callback(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+    if(!use_hardware_decoder)
+        ROS_WARN("Attempt to query available hardware decoders while it is not enabled in the configuration");
+    std::stringstream output_stream;
+    get_supported_hardware_decoders();
+    std::cout << "SUPPORTED HARDWARE DECODER DEVICES" << std::endl;
+    for(auto c: supported_hardware_decoders)
+    {
+        output_stream << " | " << c;
+        std::cout << "\t" << c << std::endl;
+    }
+    response.success = true;
+    response.message = output_stream.str();
+    return true;
+}
+
 UsbCam::UsbCam():
     AbstractV4LUSBCam(),
     node("~"),
@@ -127,6 +145,11 @@ UsbCam::UsbCam():
     node.getParam("io_method", io_method_name);
     node.getParam("pixel_format", pixel_format_name);
     node.getParam("color_format", color_format_name);
+    node.param<bool>("hardware_decoder/enable", use_hardware_decoder, false);
+    if(use_hardware_decoder)
+    {
+        node.getParam("hardware_decoder/name", hardware_decoder_name);
+    }
     node.param<bool>("create_suspended", create_suspended, false);
     node.param<bool>("full_ffmpeg_log", full_ffmpeg_log, false);
     node.getParam("camera_name", camera_name);
@@ -161,7 +184,7 @@ UsbCam::UsbCam():
         camera_info_msg.height = image_height;
         camera_info->setCameraInfo(camera_info_msg);
     }
-
+    ROS_INFO("Initializing decoder");
     if(!init())
     {
         ROS_ERROR("Initialization error or wrong parameters");
@@ -182,6 +205,9 @@ UsbCam::UsbCam():
     ROS_INFO("Advertising std_srvs::Trigger supported V4L controls information service under name 'supported_controls'");
     _service_supported_controls = node.advertiseService("supported_controls", &UsbCam::service_supported_controls_callback);
     service_supported_controls = &_service_supported_controls;
+    ROS_INFO("Advertising std_srvs::Trigger supported hardware decoder names information service under name 'supported_decoders'");
+    _service_supported_controls = node.advertiseService("supported_decoders", &UsbCam::service_supported_hardware_decoders_callback);
+    service_supported_hardware_decoders = &_service_supported_hardware_decoders;
 
     /* All parameters set, running frame grabber */
     if(!start())

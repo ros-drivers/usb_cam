@@ -2,6 +2,7 @@
 #include <linux/videodev2.h>
 #include <sstream>
 #include <string>
+#include <inttypes.h>
 
 #include "usb_cam/camera_driver.h"
 #include "usb_cam/converters.h"
@@ -35,6 +36,15 @@ struct SwsContext* AbstractV4LUSBCam::video_sws = nullptr;
 camera_image_t* AbstractV4LUSBCam::image = nullptr;
 bool AbstractV4LUSBCam::capturing = false;
 std::vector<capture_format_t> AbstractV4LUSBCam::supported_formats = std::vector<capture_format_t>();
+// Hardware decoder
+bool AbstractV4LUSBCam::use_hardware_decoder = false;
+AVHWDeviceType AbstractV4LUSBCam::hardware_decoder_type = AV_HWDEVICE_TYPE_NONE;
+std::string AbstractV4LUSBCam::hardware_decoder_name = "";
+const AVCodecHWConfig* AbstractV4LUSBCam::hardware_decoder_config = nullptr;
+AVPixelFormat AbstractV4LUSBCam::hardware_pixel_format = AV_PIX_FMT_NONE;
+AVBufferRef* AbstractV4LUSBCam::hardware_device_context = nullptr;
+SwsContext* AbstractV4LUSBCam::hardware_sws = nullptr;
+std::vector<std::string> AbstractV4LUSBCam::supported_hardware_decoders = std::vector<std::string>();
 
 /* V4L camera parameters */
 bool AbstractV4LUSBCam::streaming_status = false;
@@ -49,6 +59,20 @@ int AbstractV4LUSBCam::framerate = 10;
 std::vector<camera_control_t> AbstractV4LUSBCam::controls = std::vector<camera_control_t>();
 std::set<std::string> AbstractV4LUSBCam::ignore_controls = std::set<std::string>();
 
+
+AVPixelFormat AbstractV4LUSBCam::get_hardware_pixel_format(AVCodecContext *ctx, const AVPixelFormat *pix_fmts)
+{
+    const enum AVPixelFormat *p;
+
+    for (p = pix_fmts; *p != -1; p++)
+    {
+        if (*p == hardware_pixel_format)
+            return *p;
+    }
+
+    printf("Failed to get surface format for hardware decoder!\n");
+    return AV_PIX_FMT_NONE;
+}
 
 bool AbstractV4LUSBCam::init()
 {
@@ -231,6 +255,8 @@ AbstractV4LUSBCam::~AbstractV4LUSBCam()
     av_packet_free(&avpkt);
     if(video_sws)
         sws_freeContext(video_sws);
+    if(hardware_sws)
+        sws_freeContext(hardware_sws);
     video_sws = nullptr;
     if(avcodec_context)
     {
@@ -247,6 +273,8 @@ AbstractV4LUSBCam::~AbstractV4LUSBCam()
     if(image)
         free(image);
     image = nullptr;
+    if(use_hardware_decoder && (hardware_device_context != nullptr))
+        av_buffer_unref(&hardware_device_context);
 }
 
 bool AbstractV4LUSBCam::init_decoder()
@@ -272,7 +300,23 @@ bool AbstractV4LUSBCam::init_decoder()
         printf("Cannot find FFMPEG decoder for %s\n", pixel_format_name.c_str());
         return false;
     }
-    avcodec_context = avcodec_alloc_context3(avcodec);
+#if LIBAVCODEC_VERSION_MAJOR > 52
+    if(use_hardware_decoder)
+    {
+        printf("Attempting to use %s hardware accelerator for %s\n", hardware_decoder_name.c_str(), pixel_format_name.c_str());
+        if(!init_hardware_decoder())
+        {
+            printf("Cannot create %s hardware accelerator for %s, falling back to software decoder\n", hardware_decoder_name.c_str(), pixel_format_name.c_str());
+            use_hardware_decoder = false;
+            avcodec_context = avcodec_alloc_context3(avcodec);
+        }
+    }
+    else
+#else
+    printf("FFMPEG hardware-accelerated decoder is not supported for libavcodec versions less than 52. Please check your installation and available hwaccels!");
+    use_hardware_decoder = false;
+#endif
+        avcodec_context = avcodec_alloc_context3(avcodec);
     /* Suppress warnings of the following form:
      * [swscaler @ 0x############] deprecated pixel format used, make sure you did set range correctly
      * Or set this to AV_LOG_FATAL to additionally suppress occasional frame errors, e.g.:
@@ -280,10 +324,7 @@ bool AbstractV4LUSBCam::init_decoder()
      * [mjpeg @ 0x############] No JPEG data found in image
      * [ERROR] [##########.##########]: Error while decoding frame.
      */
-    if(!full_ffmpeg_log)
-        av_log_set_level(AV_LOG_ERROR);
-    else
-        av_log_set_level(AV_LOG_INFO);
+    av_log_set_level(full_ffmpeg_log ? AV_LOG_INFO : AV_LOG_ERROR);
 #if LIBAVCODEC_VERSION_MAJOR < 55
     avframe_camera = avcodec_alloc_frame();
     avframe_rgb = avcodec_alloc_frame();
@@ -369,6 +410,40 @@ bool AbstractV4LUSBCam::init_decoder()
                                    nullptr,
                                    nullptr);
     avpkt = av_packet_alloc();
+    return true;
+}
+
+bool AbstractV4LUSBCam::init_hardware_decoder()
+{
+    hardware_decoder_type = av_hwdevice_find_type_by_name(hardware_decoder_name.c_str());
+    if(hardware_decoder_type == AV_HWDEVICE_TYPE_NONE)
+    {
+        printf("Cannot retrieve hardware accelerator for the name %s! Please check if the hardware acceleration is available under this name\n", hardware_decoder_name.c_str());
+        return false;
+    }
+    for (int i = 0; ; i++)
+    {
+        hardware_decoder_config = avcodec_get_hw_config(avcodec, i);
+        if(!hardware_decoder_config)
+        {
+            printf("The hardware accelerator %s does not support decoder for %s\n", hardware_decoder_name.c_str(), avcodec->name);
+            return false;
+        }
+        if(hardware_decoder_config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
+            (hardware_decoder_config->device_type == hardware_decoder_type))
+        {
+            hardware_pixel_format = hardware_decoder_config->pix_fmt;
+            break;
+        }
+    }
+    avcodec_context = avcodec_alloc_context3(avcodec);
+    avcodec_context->get_format = get_hardware_pixel_format;
+    if(av_hwdevice_ctx_create(&hardware_device_context, hardware_decoder_type, NULL, NULL, 0) < 0)
+    {
+        printf("Cannot create device context!\n");
+        return false;
+    }
+    avcodec_context->hw_device_ctx = av_buffer_ref(hardware_device_context);
     return true;
 }
 
@@ -765,6 +840,11 @@ bool AbstractV4LUSBCam::decode_ffmpeg(const void *src, int len, camera_image_t *
     static int got_picture = 1;
     // clear the picture
     memset(RGB, 0, avframe_rgb_size);
+    // Set up sizes
+    int xsize = avcodec_context->width;
+    int ysize = avcodec_context->height;
+    int pic_size;
+    // Entering decoder
 #if LIBAVCODEC_VERSION_MAJOR > 52
     av_init_packet(avpkt);
     av_packet_from_data(avpkt, reinterpret_cast<unsigned char*>(MJPEG), len);
@@ -781,55 +861,133 @@ bool AbstractV4LUSBCam::decode_ffmpeg(const void *src, int len, camera_image_t *
         return;
     }
 #endif
-    if (avcodec_receive_frame(avcodec_context, avframe_camera) < 0)
+    /* HARDWARE DECODING ROUTINE */
+    if(use_hardware_decoder)
     {
-        printf("FFMPEG: error decoding frame\n");
-        return false;
+        static AVFrame* gpu_frame = nullptr;
+        static AVFrame* ram_frame = nullptr;
+        // Cleaning up the previously remaining parts of memory in case
+        if(gpu_frame != nullptr)
+        {
+            av_frame_free(&gpu_frame);
+            gpu_frame = nullptr;
+        }
+        if(ram_frame != nullptr)
+        {
+            av_frame_free(&ram_frame);
+            ram_frame = nullptr;
+        }
+        gpu_frame = av_frame_alloc();
+        ram_frame = av_frame_alloc();
+        if(!gpu_frame || !ram_frame)
+        {
+            printf("FFMPEG: memory allocation error\n");
+            return false;
+        }
+        // Frame retrieval
+        // https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/hw_decode.c
+        pic_size = avcodec_receive_frame(avcodec_context, gpu_frame);
+        if(pic_size < 0)
+        {
+            printf("FFMPEG: hardware decoder error\n");
+            return false;
+        }
+        else if(pic_size == AVERROR(EAGAIN))
+        { // Just repeat the frame
+            if(full_ffmpeg_log)
+                printf("FFMPEG: camera dropped frame");
+            return true;
+        }
+        // Decision about retrieval of the data from GPU
+        AVFrame* decoded_frame;
+        if(gpu_frame->format == hardware_pixel_format)
+        {   // Retrieval for decoding
+            if(av_hwframe_transfer_data(ram_frame, gpu_frame, 0) < 0)
+            {
+                printf("FFMPEG: VRAM data extraction error\n");
+                return false;
+            }
+            decoded_frame = ram_frame;
+        }
+        else // Direct transition
+            decoded_frame = gpu_frame;
+        // Format transposal
+        if(hardware_sws == nullptr)
+            hardware_sws = sws_getContext(decoded_frame->width, decoded_frame->height, static_cast<AVPixelFormat>(decoded_frame->format),
+                                          image_width, image_height, AV_PIX_FMT_RGB24,
+                                          0, 0, 0, 0);
+        if(sws_scale(hardware_sws, decoded_frame->data, decoded_frame->linesize, 0, decoded_frame->height, avframe_rgb->data, avframe_rgb->linesize) < image_height)
+        {
+            printf("FFMPEG: swscaler error\n");
+            return false;
+        }
+        pic_size = av_image_copy_to_buffer(reinterpret_cast<uint8_t *>(RGB),
+                                           avframe_rgb_size,
+                                           avframe_rgb->data,
+                                           avframe_rgb->linesize,
+                                           AV_PIX_FMT_RGB24,
+                                           image_width,
+                                           image_height,
+                                           1);
+        // Final cleanup
+        av_frame_free(&gpu_frame);
+        gpu_frame = nullptr;
+        av_frame_free(&ram_frame);
+        ram_frame = nullptr;
+        return true;
     }
-    if (!got_picture)
+    else    /* SOFTWARE DECODING ROUTINE */
     {
-        printf("FFMPEG: MJPEG frame data expected, but was not received\n");
-        return false;
-    }
-    int xsize = avcodec_context->width;
-    int ysize = avcodec_context->height;
+        if (avcodec_receive_frame(avcodec_context, avframe_camera) < 0)
+        {
+            printf("FFMPEG: error decoding frame\n");
+            return false;
+        }
+        if (!got_picture)
+        {
+            printf("FFMPEG: MJPEG frame data expected, but was not received\n");
+            return false;
+        }
+
+// TODO: Rewrite response routine, retrieve hardware-decoded frame
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
-    int pic_size = av_image_get_buffer_size(avcodec_context->pix_fmt, xsize, ysize, 1);
+        pic_size = av_image_get_buffer_size(avcodec_context->pix_fmt, xsize, ysize, 1);
 #else
-    // TODO(lucasw) avpicture_get_size corrupts the pix_fmt
-    int pic_size = avpicture_get_size(avcodec_context->pix_fmt, xsize, ysize);
+        // TODO(lucasw) avpicture_get_size corrupts the pix_fmt
+        pic_size = avpicture_get_size(avcodec_context->pix_fmt, xsize, ysize);
 #endif
-    // int pic_size = av_image_get_buffer_size(avcodec_context_->pix_fmt, xsize, ysize);
-    if (pic_size != avframe_camera_size)
-    {
-        printf("FFMPEG: MJPEG output buffer size mismatch: %i (%i expected)\n", avframe_camera_size, pic_size);
-        return false;
-    }
-    // YUV format conversion to RGB
-    sws_scale(video_sws, avframe_camera->data, avframe_camera->linesize, 0, ysize, avframe_rgb->data, avframe_rgb->linesize);
+        // int pic_size = av_image_get_buffer_size(avcodec_context_->pix_fmt, xsize, ysize);
+        if(pic_size != avframe_camera_size)
+        {
+            printf("FFMPEG: MJPEG output buffer size mismatch: %i (%i expected)\n", avframe_camera_size, pic_size);
+            return false;
+        }
+        // YUV format conversion to RGB
+        sws_scale(video_sws, avframe_camera->data, avframe_camera->linesize, 0, ysize, avframe_rgb->data, avframe_rgb->linesize);
 
 #if LIBAVCODEC_VERSION_MAJOR > 52
-    int size = av_image_copy_to_buffer(
-        reinterpret_cast<uint8_t *>(RGB),
-        avframe_rgb_size,
-        avframe_rgb->data,
-        avframe_rgb->linesize,
-        AV_PIX_FMT_RGB24,
-        xsize,
-        ysize,
-        1);
+        int size = av_image_copy_to_buffer(
+            reinterpret_cast<uint8_t *>(RGB),
+            avframe_rgb_size,
+            avframe_rgb->data,
+            avframe_rgb->linesize,
+            AV_PIX_FMT_RGB24,
+            xsize,
+            ysize,
+            1);
 #else
-    int size = avpicture_layout(
-        reinterpret_cast<AVPicture *>(avframe_rgb), AV_PIX_FMT_RGB24,
-        xsize, ysize, reinterpret_cast<uint8_t *>(RGB), avframe_rgb_size);
+        int size = avpicture_layout(
+            reinterpret_cast<AVPicture *>(avframe_rgb), AV_PIX_FMT_RGB24,
+            xsize, ysize, reinterpret_cast<uint8_t *>(RGB), avframe_rgb_size);
 #endif
-    if (size != avframe_rgb_size)
-    {
-        printf("FFMPEG: image layout mismatch: %i (%i expected)\n", size, avframe_rgb_size);
-        return false;
+        if (size != avframe_rgb_size)
+        {
+            printf("FFMPEG: image layout mismatch: %i (%i expected)\n", size, avframe_rgb_size);
+            return false;
+        }
+        return true;
     }
-    return true;
 }
 
 std::vector<capture_format_t> &AbstractV4LUSBCam::get_supported_formats()
@@ -872,6 +1030,15 @@ std::vector<capture_format_t> &AbstractV4LUSBCam::get_supported_formats()
         }  // size loop
     }  // fmt loop
     return supported_formats;
+}
+
+std::vector<std::string> &AbstractV4LUSBCam::get_supported_hardware_decoders()
+{
+    supported_hardware_decoders.clear();
+    AVHWDeviceType t = AV_HWDEVICE_TYPE_NONE;
+    while((t = av_hwdevice_iterate_types(t)) != AV_HWDEVICE_TYPE_NONE)
+        supported_hardware_decoders.push_back(std::string(av_hwdevice_get_type_name(t)));
+    return supported_hardware_decoders;
 }
 
 bool AbstractV4LUSBCam::process_image(const void *src, int len, camera_image_t *dest)
