@@ -206,7 +206,7 @@ UsbCam::UsbCam():
     _service_supported_controls = node.advertiseService("supported_controls", &UsbCam::service_supported_controls_callback);
     service_supported_controls = &_service_supported_controls;
     ROS_INFO("Advertising std_srvs::Trigger supported hardware decoder names information service under name 'supported_decoders'");
-    _service_supported_controls = node.advertiseService("supported_decoders", &UsbCam::service_supported_hardware_decoders_callback);
+    _service_supported_hardware_decoders = node.advertiseService("supported_decoders", &UsbCam::service_supported_hardware_decoders_callback);
     service_supported_hardware_decoders = &_service_supported_hardware_decoders;
 
     /* All parameters set, running frame grabber */
