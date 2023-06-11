@@ -2,8 +2,8 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>usb_cam</name>
-  <version>0.6.1</version>
-  <description>A ROS 2 Driver for V4L USB Cameras</description>
+  <version>0.4.2</version>
+  <description>A ROS2 Driver for V4L USB Cameras</description>
 
   <maintainer email="evanflynn.msu@gmail.com">Evan Flynn</maintainer>
 
@@ -13,11 +13,17 @@
   <url type="bugtracker">https://github.com/ros-drivers/usb_cam/issues</url>
   <url type="repository">https://github.com/ros-drivers/usb_cam</url>
 
-  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake_auto</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">rosidl_default_generators</buildtool_depend>
+
+  <build_depend condition="$ROS_VERSION == 1">roscpp</build_depend>
+
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
+  <depend condition="$ROS_VERSION == 2">rclcpp_components</depend>
 
   <depend>cv_bridge</depend>
-  <depend>rclcpp</depend>
-  <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>sensor_msgs</depend>
@@ -30,17 +36,16 @@
   <!-- Only required for MJPEG to RGB converison -->
   <depend>ffmpeg</depend>
 
-  <test_depend>ament_cmake_gtest</test_depend>
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">ament_cmake_gtest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">ament_lint_auto</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">ament_lint_common</test_depend>
 
+  <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
 
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
-
-  <member_of_group>rosidl_interface_packages</member_of_group>
+  <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type condition="$ROS_VERSION == 1">ament_cmake</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
   </export>
 </package>
