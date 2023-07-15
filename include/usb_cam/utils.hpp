@@ -87,9 +87,9 @@ inline time_t get_epoch_time_shift()
 }
 
 
-inline int xioctl(int fd, int request, void * arg)
+inline int xioctl(int fd, uint64_t request, void * arg)
 {
-  int r;
+  int r = 0;
 
   do {
     r = ioctl(fd, request, arg);
