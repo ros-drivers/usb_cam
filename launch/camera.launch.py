@@ -35,11 +35,27 @@ import argparse
 import os
 import sys
 
-from ament_index_python.packages import get_package_share_directory
+# Hack to get relative import of .camera_config file working
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path)
+
+from pathlib import Path
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import GroupAction
 
+from camera_config import CameraConfig, USB_CAM_DIR
+
+
+CAMERAS = []
+CAMERAS.append(
+    CameraConfig(
+        name="camera1",
+        param_path=Path(USB_CAM_DIR, "config", "params_1.yaml")
+    )
+    # Add more Camera's here and they will automatically be launched below
+)
 
 
 def generate_launch_description():
@@ -49,69 +65,18 @@ def generate_launch_description():
     parser.add_argument('-n', '--node-name', dest='node_name', type=str,
                         help='name for device', default='usb_cam')
 
-    args, unknown = parser.parse_known_args(sys.argv[4:])
-
-    usb_cam_dir = get_package_share_directory('usb_cam')
-
-    # get path to params file
-    params_path_1 = os.path.join(
-        usb_cam_dir,
-        'config',
-        'params_1.yaml'
-    )
-   
-    params_path_2 = os.path.join(
-        usb_cam_dir,
-        'config',
-        'params_2.yaml'
-    )
-
-   # params_path = os.path.join(
-   #     usb_cam_dir,
-   #     'config',
-   #     'params_3.yaml'
-   # )
-   # params_path = os.path.join(
-   #     usb_cam_dir,
-   #     'config',
-   #     'params_4.yaml'
-   # )
-
-    camera_group = GroupAction([
-
-
+    camera_nodes = [
         Node(
-        package='usb_cam', executable='usb_cam_node_exe', output='screen',
-        name="usb_cam_1",
-        # namespace=ns,
-        parameters=[params_path_1],
-        remappings=[('image_raw', 'camera1/image_raw'), 
-                    ('image_raw/compressed', 'camera1/image_compressed')]
-        ),
-
-        Node(
-        package='usb_cam', executable='usb_cam_node_exe', output='screen',
-        name='usb_cam_2',
-        # namespace=ns,
-        parameters=[params_path_2],
-        remappings=[('image_raw', 'camera2/image_raw'), 
-                    ('image_raw/compressed', 'camera2/image_compressed')]
+            package='usb_cam', executable='usb_cam_node_exe', output='screen',
+            name=camera.name,
+            namespace=camera.namespace,
+            parameters=[camera.param_path],
+            remappings=camera.remappings
         )
-        
-    #    Node(
-    #    package='usb_cam', executable='usb_cam_node_exe', output='screen',
-    #    name=node_name,
-    #    # namespace=ns,
-    #    parameters=[params_path_3],
-    #    ),
-    
-    #    Node(
-    #    package='usb_cam', executable='usb_cam_node_exe', output='screen',
-    #    name=node_name,
-        # namespace=ns,
-    #    parameters=[params_path_4],
-    #    )
-    ])
+        for camera in CAMERAS
+    ]
+
+    camera_group = GroupAction(camera_nodes)
 
     ld.add_action(camera_group)
     return ld
