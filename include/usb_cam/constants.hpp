@@ -42,6 +42,7 @@ namespace constants
 
 
 /// @brief image encodings duplicated from
+/// These are duplicated here so that the base usb_cam` class does not have any ROS-specific dependencies
 /// https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp
 const char RGB8[] = "rgb8";
 const char RGBA8[] = "rgba8";
@@ -94,12 +95,16 @@ const char BAYER_BGGR16[] = "bayer_bggr16";
 const char BAYER_GBRG16[] = "bayer_gbrg16";
 const char BAYER_GRBG16[] = "bayer_grbg16";
 
-// Miscellaneous
+// YUV formats
 // YUV 4:2:2 encodings with an 8-bit depth
-// UYUV version: http://www.fourcc.org/pixel-format/yuv-uyvy
-const char YUV422[] = "yuv422";
-// YUYV version: http://www.fourcc.org/pixel-format/yuv-yuy2/
-const char YUV422_YUY2[] = "yuv422_yuy2";
+// https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/pixfmt-packed-yuv.html#id1
+// fourcc: UYVY
+const char UYVY[] = "uyvy";
+const char YUV422[] = "yuv422";  // deprecated
+// fourcc: YUYV
+const char YUYV[] = "yuyv";
+const char YUV422_YUY2[] = "yuv422_yuy2";  // deprecated
+
 // YUV 4:2:0 encodings with an 8-bit depth
 // NV21: https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/pixfmt-yuv-planar.html
 const char NV21[] = "nv21";

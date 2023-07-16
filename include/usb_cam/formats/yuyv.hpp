@@ -48,7 +48,7 @@ public:
   : pixel_format_base(
       "yuyv",
       V4L2_PIX_FMT_YUYV,
-      usb_cam::constants::YUV422_YUY2,
+      usb_cam::constants::YUYV,
       2,
       8,
       false)
