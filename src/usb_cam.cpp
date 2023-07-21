@@ -135,8 +135,6 @@ void UsbCam::read_frame()
       // Get timestamp from V4L2 image buffer
       m_image.stamp = usb_cam::utils::calc_img_timestamp(buf.timestamp, m_epoch_time_shift_us);
 
-      std::cout << "sec: " << m_image.stamp.tv_sec << " nsec: " << m_image.stamp.tv_nsec << std::endl;
-
       assert(buf.index < m_number_of_buffers);
       process_image(m_buffers[buf.index].start, m_image.data, buf.bytesused);
 
