@@ -298,9 +298,6 @@ void UsbCam::uninit_device()
       // Should never get here, right?
       throw std::invalid_argument("IO method unknown");
   }
-
-  free(m_buffers);
-  free(m_image.data);
 }
 
 void UsbCam::init_read()
@@ -519,6 +516,9 @@ void UsbCam::init_device()
 
 void UsbCam::close_device()
 {
+  // Device is already closed
+  if (m_fd == -1) {return;}
+
   if (-1 == close(m_fd)) {
     throw strerror(errno);
   }
@@ -564,10 +564,6 @@ void UsbCam::configure(
   m_image.set_size_in_bytes();
   m_framerate = parameters.framerate;
 
-  // Allocate memory for the image
-  m_image.data = reinterpret_cast<char *>(calloc(m_image.size_in_bytes, sizeof(char *)));
-  memset(m_image.data, 0, m_image.size_in_bytes * sizeof(char *));
-
   init_device();
 }
 
@@ -581,9 +577,6 @@ void UsbCam::shutdown()
   stop_capturing();
   uninit_device();
   close_device();
-
-  free(m_image.data);
-  m_image.data = NULL;
 }
 
 /// @brief Grab new image from V4L2 device, return pointer to image
@@ -614,42 +607,47 @@ void UsbCam::get_image(char * destination)
 std::vector<capture_format_t> UsbCam::get_supported_formats()
 {
   m_supported_formats.clear();
-  struct v4l2_fmtdesc current_format;
-  current_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  current_format.index = 0;
-  for (current_format.index = 0;
-    usb_cam::utils::xioctl(
-      m_fd, static_cast<int>(VIDIOC_ENUM_FMT), &current_format) == 0;
-    ++current_format.index)
-  {
-    struct v4l2_frmsizeenum current_size;
-    current_size.index = 0;
-    current_size.pixel_format = current_format.pixelformat;
+  struct v4l2_fmtdesc * current_format = new v4l2_fmtdesc();
+  struct v4l2_frmsizeenum * current_size = new v4l2_frmsizeenum();
+  struct v4l2_frmivalenum * current_interval = new v4l2_frmivalenum();
 
-    for (current_size.index = 0;
+  current_format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  current_format->index = 0;
+  for (current_format->index = 0;
+    usb_cam::utils::xioctl(
+      m_fd, VIDIOC_ENUM_FMT, current_format) == 0;
+    ++current_format->index)
+  {
+    current_size->index = 0;
+    current_size->pixel_format = current_format->pixelformat;
+
+    for (current_size->index = 0;
       usb_cam::utils::xioctl(
-        m_fd, static_cast<int>(VIDIOC_ENUM_FRAMESIZES), &current_size) == 0;
-      ++current_size.index)
+        m_fd, VIDIOC_ENUM_FRAMESIZES, current_size) == 0;
+      ++current_size->index)
     {
-      struct v4l2_frmivalenum current_interval;
-      current_interval.index = 0;
-      current_interval.pixel_format = current_size.pixel_format;
-      current_interval.width = current_size.discrete.width;
-      current_interval.height = current_size.discrete.height;
-      for (current_interval.index = 0;
+      current_interval->index = 0;
+      current_interval->pixel_format = current_size->pixel_format;
+      current_interval->width = current_size->discrete.width;
+      current_interval->height = current_size->discrete.height;
+      for (current_interval->index = 0;
         usb_cam::utils::xioctl(
-          m_fd, static_cast<int>(VIDIOC_ENUM_FRAMEINTERVALS), &current_interval) == 0;
-        ++current_interval.index)
+          m_fd, VIDIOC_ENUM_FRAMEINTERVALS, current_interval) == 0;
+        ++current_interval->index)
       {
-        if (current_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
+        if (current_interval->type == V4L2_FRMIVAL_TYPE_DISCRETE) {
           capture_format_t capture_format;
-          capture_format.format = current_format;
-          capture_format.v4l2_fmt = current_interval;
+          capture_format.format = *current_format;
+          capture_format.v4l2_fmt = *current_interval;
           m_supported_formats.push_back(capture_format);
         }
       }  // interval loop
     }  // size loop
   }  // fmt loop
+
+  delete (current_format);
+  delete (current_size);
+  delete (current_interval);
 
   return m_supported_formats;
 }

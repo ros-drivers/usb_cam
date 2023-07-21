@@ -91,6 +91,11 @@ UsbCamNode::~UsbCamNode()
 {
   RCLCPP_WARN(this->get_logger(), "Shutting down");
   m_camera->shutdown();
+
+  m_image_msg.reset();
+  m_camera_info_msg.reset();
+
+  delete (m_camera);
 }
 
 void UsbCamNode::service_capture(
@@ -311,7 +316,7 @@ void UsbCamNode::set_v4l2_params()
 bool UsbCamNode::take_and_send_image()
 {
   // Only resize if required
-  if (m_image_msg->data.size() != m_camera->get_image_size()) {
+  if (sizeof(m_image_msg->data) != m_camera->get_image_size_in_bytes()) {
     m_image_msg->width = m_camera->get_image_width();
     m_image_msg->height = m_camera->get_image_height();
     m_image_msg->encoding = m_camera->get_pixel_format()->ros();
@@ -319,9 +324,9 @@ bool UsbCamNode::take_and_send_image()
     if (m_image_msg->step == 0) {
       // Some formats don't have a linesize specified by v4l2
       // Fall back to manually calculating it step = size / height
-      m_image_msg->step = m_camera->get_image_size() / m_image_msg->height;
+      m_image_msg->step = m_camera->get_image_size_in_bytes() / m_image_msg->height;
     }
-    m_image_msg->data.resize(m_camera->get_image_size());
+    m_image_msg->data.resize(m_camera->get_image_size_in_bytes());
   }
 
   // grab the image, pass image msg buffer to fill
