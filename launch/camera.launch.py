@@ -30,14 +30,30 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
 import argparse
 import os
+from pathlib import Path  # noqa: E402
 import sys
 
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch_ros.actions import Node
+# Hack to get relative import of .camera_config file working
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path)
+
+from camera_config import CameraConfig, USB_CAM_DIR  # noqa: E402
+
+from launch import LaunchDescription  # noqa: E402
+from launch.actions import GroupAction  # noqa: E402
+from launch_ros.actions import Node  # noqa: E402
+
+
+CAMERAS = []
+CAMERAS.append(
+    CameraConfig(
+        name='camera1',
+        param_path=Path(USB_CAM_DIR, 'config', 'params_1.yaml')
+    )
+    # Add more Camera's here and they will automatically be launched below
+)
 
 
 def generate_launch_description():
@@ -47,31 +63,18 @@ def generate_launch_description():
     parser.add_argument('-n', '--node-name', dest='node_name', type=str,
                         help='name for device', default='usb_cam')
 
-    args, unknown = parser.parse_known_args(sys.argv[4:])
+    camera_nodes = [
+        Node(
+            package='usb_cam', executable='usb_cam_node_exe', output='screen',
+            name=camera.name,
+            namespace=camera.namespace,
+            parameters=[camera.param_path],
+            remappings=camera.remappings
+        )
+        for camera in CAMERAS
+    ]
 
-    usb_cam_dir = get_package_share_directory('usb_cam')
+    camera_group = GroupAction(camera_nodes)
 
-    # get path to params file
-    params_path = os.path.join(
-        usb_cam_dir,
-        'config',
-        'params.yaml'
-    )
-
-    node_name = args.node_name
-
-    print(params_path)
-    ld.add_action(Node(
-        package='usb_cam', executable='usb_cam_node_exe', output='screen',
-        name=node_name,
-        # namespace=ns,
-        parameters=[params_path]
-        ))
-    ld.add_action(Node(
-        package='usb_cam', executable='show_image.py', output='screen',
-        # namespace=ns,
-        # arguments=[image_manip_dir + "/data/mosaic.jpg"])
-        # remappings=[('image_in', 'image_raw')]
-        ))
-
+    ld.add_action(camera_group)
     return ld

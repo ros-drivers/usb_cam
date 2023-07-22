@@ -1,0 +1,23 @@
+/**:
+    ros__parameters:
+      video_device: "/dev/video2"
+      framerate: 15.0
+      io_method: "mmap"
+      frame_id: "camera2"
+      pixel_format: "mjpeg2rgb"  # see usb_cam/supported_formats for list of supported formats
+      image_width: 640
+      image_height: 480
+      camera_name: "test_camera2"
+      # reusing same camera intrinsics only for demo, should really be unique for camera2"
+      camera_info_url: "package://usb_cam/config/camera_info.yaml"
+      brightness: -1
+      contrast: -1
+      saturation: -1
+      sharpness: -1
+      gain: -1
+      auto_white_balance: true
+      white_balance: 4000
+      autoexposure: true
+      exposure: 100
+      autofocus: false
+      focus: -1
