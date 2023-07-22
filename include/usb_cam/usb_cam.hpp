@@ -256,9 +256,9 @@ public:
     return m_is_capturing;
   }
 
-  inline time_t get_epoch_time_shift()
+  inline time_t get_epoch_time_shift_us()
   {
-    return m_epoch_time_shift;
+    return m_epoch_time_shift_us;
   }
 
   inline std::vector<capture_format_t> supported_formats()
@@ -347,10 +347,10 @@ private:
   AVDictionary * m_avoptions;
   AVCodecContext * m_avcodec_context;
 
-  int64_t m_buffer_time_s;
+  int64_t m_buffer_time_us;
   bool m_is_capturing;
   int m_framerate;
-  const time_t m_epoch_time_shift;
+  const time_t m_epoch_time_shift_us;
   std::vector<capture_format_t> m_supported_formats;
 };
 
