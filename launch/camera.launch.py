@@ -30,29 +30,27 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
 import argparse
 import os
+from pathlib import Path  # noqa: E402
 import sys
 
 # Hack to get relative import of .camera_config file working
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path)
 
-from pathlib import Path
+from camera_config import CameraConfig, USB_CAM_DIR  # noqa: E402
 
-from launch import LaunchDescription
-from launch_ros.actions import Node
-from launch.actions import GroupAction
-
-from camera_config import CameraConfig, USB_CAM_DIR
+from launch import LaunchDescription  # noqa: E402
+from launch.actions import GroupAction  # noqa: E402
+from launch_ros.actions import Node  # noqa: E402
 
 
 CAMERAS = []
 CAMERAS.append(
     CameraConfig(
-        name="camera1",
-        param_path=Path(USB_CAM_DIR, "config", "params_1.yaml")
+        name='camera1',
+        param_path=Path(USB_CAM_DIR, 'config', 'params_1.yaml')
     )
     # Add more Camera's here and they will automatically be launched below
 )
