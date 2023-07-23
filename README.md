@@ -135,6 +135,17 @@ Possible options for this driver today are:
 
 More formats and conversions can be added, contributions welcome!
 
+### Supported IO methods
+
+This driver supports three different IO methods as of today:
+
+1. `read`: copies the video frame between user and kernal space
+1. `mmap`: memory mapped buffers allocated in kernel space
+1. `userptr`: memory buffers allocated in the user space
+
+To read more on the different methods, check out [this article that provides a good overview
+of each](https://lwn.net/Articles/240667/)
+
 ## Compression
 
 Big thanks to [the `ros2_v4l2_camera` package](https://gitlab.com/boldhearts/ros2_v4l2_camera#usage-1) and their documentation on this topic.
@@ -147,7 +158,29 @@ Unfortunately `rviz2` and `show_image.py` do not support visualizing the compres
 ros2 run image_transport republish compressed raw --ros-args --remap in/compressed:=image_raw/compressed --remap out:=image_raw/uncompressed
 ```
 
-#### Documentation
+## Address and leak sanitizing
+
+Incorporated into the `CMakelists.txt` file to assist with memory leak and address sanitizing
+is a flag to add these compile commands to the targets.
+
+To enable them, pass in the `SANITIZE=1` flag:
+
+```
+colcon build --packages-select usb_cam --cmake-args -DSANITIZE=1
+```
+
+Once built, run the nodes executable directly and pass any `ASAN_OPTIONS` that are needed:
+
+```
+ASAN_OPTIONS=new_delete_type_mismatch=0 ./install/usb_cam/lib/usb_cam/usb_cam_node_exe 
+```
+
+After shutting down the executable with `Ctrl+C`, the sanitizer will report any memory leaks.
+
+By default this is turned off since compiling with the sanatizer turned on causes bloat and slows
+down performance.
+
+## Documentation
 
 [Doxygen](http://docs.ros.org/indigo/api/usb_cam/html/) files can be found on the ROS wiki.
 
