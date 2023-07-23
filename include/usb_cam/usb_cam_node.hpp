@@ -77,12 +77,12 @@ public:
 
   UsbCam * m_camera;
 
-  sensor_msgs::msg::Image::UniquePtr m_image_msg;
-  std::shared_ptr<image_transport::CameraPublisher> m_image_publisher;
+  sensor_msgs::msg::Image::SharedPtr m_image_msg;
+  image_transport::CameraPublisher m_image_publisher;
 
   parameters_t m_parameters;
 
-  sensor_msgs::msg::CameraInfo::UniquePtr m_camera_info_msg;
+  sensor_msgs::msg::CameraInfo::SharedPtr m_camera_info_msg;
   std::shared_ptr<camera_info_manager::CameraInfoManager> m_camera_info;
 
   rclcpp::TimerBase::SharedPtr m_timer;
