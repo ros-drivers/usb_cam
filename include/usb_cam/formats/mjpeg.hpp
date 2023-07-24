@@ -62,7 +62,7 @@ namespace formats
 class MJPEG2RGB : public pixel_format_base
 {
 public:
-  MJPEG2RGB(const int & width, const int & height)
+  MJPEG2RGB(const int & width, const int & height, const AVPixelFormat & avDeviceFormat)
   : pixel_format_base(
       "mjpeg2rgb",
       V4L2_PIX_FMT_MJPEG,
@@ -94,6 +94,7 @@ public:
     m_avframe_device->width = width;
     m_avframe_device->height = height;
     m_avframe_device->format = AV_PIX_FMT_YUV422P;
+    m_avframe_device->format = avDeviceFormat;
 
     m_avframe_rgb->width = width;
     m_avframe_rgb->height = height;
@@ -101,7 +102,7 @@ public:
 
     m_sws_context = sws_getContext(
       width, height, (AVPixelFormat)m_avframe_device->format,
-      width, height, AV_PIX_FMT_RGB24, SWS_FAST_BILINEAR,
+      width, height, (AVPixelFormat)m_avframe_rgb->format, SWS_FAST_BILINEAR,
       NULL, NULL, NULL);
 
     // Suppress warnings from ffmpeg libraries to avoid spamming the console
