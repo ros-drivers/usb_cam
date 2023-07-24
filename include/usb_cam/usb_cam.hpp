@@ -37,6 +37,7 @@ extern "C" {
 
 #include <chrono>
 #include <memory>
+#include <algorithm>
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -44,6 +45,7 @@ extern "C" {
 
 #include "usb_cam/utils.hpp"
 #include "usb_cam/formats/pixel_format_base.hpp"
+#include "usb_cam/formats/av_pixel_format_helper.hpp"
 
 #include "usb_cam/formats/mjpeg.hpp"
 #include "usb_cam/formats/mono.hpp"
@@ -79,6 +81,7 @@ typedef struct
   // to discover them,
   // or guvcview
   std::string pixel_format_name;
+  std::string av_device_format;
   int image_width;
   int image_height;
   int framerate;
@@ -273,9 +276,11 @@ public:
   /// @brief Get pixel format from string. Required to have logic within UsbCam object
   /// in case pixel format class requires additional information for conversion function
   /// (e.g. number of pixels, width, height, etc.)
-  /// @param str name of supported format (see `usb_cam/supported_formats.hpp`)
+  /// @param pixFmtStr name of supported format (see `usb_cam/supported_formats.hpp`)
+  /// @param avDevFmtStr name of av device format (only used for mjpeg stream)
   /// @return pixel format structure corresponding to a given name
-  inline std::shared_ptr<pixel_format_base> set_pixel_format_from_string(const std::string & str)
+  inline std::shared_ptr<pixel_format_base> set_pixel_format_from_string(const std::string & pixFmtStr,
+                                                                         const std::string & avDevFmtStr)
   {
     using usb_cam::formats::RGB8;
     using usb_cam::formats::YUYV;
@@ -288,36 +293,56 @@ public:
     using usb_cam::formats::MJPEG2RGB;
     using usb_cam::formats::M4202RGB;
 
-    if (str == "rgb8") {
+    if (pixFmtStr == "rgb8") {
       m_image.pixel_format = std::make_shared<RGB8>();
-    } else if (str == "yuyv") {
+    } else if (pixFmtStr == "yuyv") {
       m_image.pixel_format = std::make_shared<YUYV>();
-    } else if (str == "yuyv2rgb") {
+    } else if (pixFmtStr == "yuyv2rgb") {
       // number of pixels required for conversion method
       m_image.pixel_format = std::make_shared<YUYV2RGB>(m_image.number_of_pixels);
-    } else if (str == "uyvy") {
+    } else if (pixFmtStr == "uyvy") {
       m_image.pixel_format = std::make_shared<UYVY>();
-    } else if (str == "uyvy2rgb") {
+    } else if (pixFmtStr == "uyvy2rgb") {
       // number of pixels required for conversion method
       m_image.pixel_format = std::make_shared<UYVY2RGB>(m_image.number_of_pixels);
-    } else if (str == "mjpeg2rgb") {
+    } else if (pixFmtStr == "mjpeg2rgb") {
       m_image.pixel_format = std::make_shared<MJPEG2RGB>(
-        m_image.width, m_image.height);
-    } else if (str == "m4202rgb") {
+        m_image.width, m_image.height, get_av_pixel_format_from_string(avDevFmtStr));
+    } else if (pixFmtStr == "m4202rgb") {
       m_image.pixel_format = std::make_shared<M4202RGB>(
         m_image.width, m_image.height);
-    } else if (str == "mono8") {
+    } else if (pixFmtStr == "mono8") {
       m_image.pixel_format = std::make_shared<MONO8>();
-    } else if (str == "mono16") {
+    } else if (pixFmtStr == "mono16") {
       m_image.pixel_format = std::make_shared<MONO16>();
-    } else if (str == "y102mono8") {
+    } else if (pixFmtStr == "y102mono8") {
       m_image.pixel_format = std::make_shared<Y102MONO8>(m_image.number_of_pixels);
     } else {
-      throw std::invalid_argument("Unsupported pixel format specified: " + str);
+      throw std::invalid_argument("Unsupported pixel format specified: " + pixFmtStr);
     }
 
     return m_image.pixel_format;
   }
+
+  inline AVPixelFormat get_av_pixel_format_from_string (const std::string& str)
+  {
+    std::string upperCaseStr = str;
+    std::transform(upperCaseStr.begin(), upperCaseStr.end(), upperCaseStr.begin(), ::toupper);
+
+    std::string fullFmtStr;
+    if(upperCaseStr.rfind("AV_PIX_FMT_", 0) == std::string::npos)
+    {
+        // passed string does not start with 'AV_PIX_FMT_'
+        fullFmtStr = "AV_PIX_FMT_" + upperCaseStr;
+    }
+    else
+    {
+        fullFmtStr = upperCaseStr;
+    }
+
+    return usb_cam::formats::STR_2_AVPIXFMT.find(fullFmtStr)->second;
+  }
+
 
 private:
   void init_read();
