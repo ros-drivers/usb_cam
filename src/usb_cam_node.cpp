@@ -34,6 +34,7 @@
 #include "usb_cam/usb_cam_node.hpp"
 #include "usb_cam/utils.hpp"
 
+std::string BASE_TOPIC_NAME = "image_raw";
 
 namespace usb_cam
 {
@@ -42,9 +43,12 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
 : Node("usb_cam", node_options),
   m_camera(new usb_cam::UsbCam()),
   m_image_msg(new sensor_msgs::msg::Image()),
+  m_compressed_img_msg(nullptr),
   m_image_publisher(std::make_shared<image_transport::CameraPublisher>(
-      image_transport::create_camera_publisher(this, "image_raw",
+      image_transport::create_camera_publisher(this, BASE_TOPIC_NAME,
       rclcpp::QoS {100}.get_rmw_qos_profile()))),
+  m_compressed_image_publisher(nullptr),
+  m_compressed_cam_info_publisher(nullptr),
   m_parameters(),
   m_camera_info_msg(new sensor_msgs::msg::CameraInfo()),
   m_service_capture(
@@ -134,6 +138,20 @@ void UsbCamNode::init()
     m_camera_info_msg->width = m_parameters.image_width;
     m_camera_info_msg->height = m_parameters.image_height;
     m_camera_info->setCameraInfo(*m_camera_info_msg);
+  }
+
+  // if pixel format is equal to 'mjpeg', i.e. raw mjpeg stream, initialize compressed image message and publisher
+  if(m_parameters.pixel_format_name == "mjpeg")
+  {
+    m_compressed_img_msg.reset(new sensor_msgs::msg::CompressedImage());
+    m_compressed_img_msg->header.frame_id = m_parameters.frame_id;
+    m_compressed_image_publisher = 
+      this->create_publisher<sensor_msgs::msg::CompressedImage>(BASE_TOPIC_NAME + "/compressed", 
+        rclcpp::QoS(100));
+    m_compressed_cam_info_publisher = 
+      this->create_publisher<sensor_msgs::msg::CameraInfo>("camera_info", 
+        rclcpp::QoS(100));
+    
   }
 
   m_image_msg->header.frame_id = m_parameters.frame_id;
@@ -345,6 +363,29 @@ bool UsbCamNode::take_and_send_image()
   return true;
 }
 
+bool UsbCamNode::take_and_send_image_mjpeg()
+{
+  // Only resize if required
+  if (sizeof(m_compressed_img_msg->data) != m_camera->get_image_size_in_bytes()) {
+    m_compressed_img_msg->format = "jpeg";
+    m_compressed_img_msg->data.resize(m_camera->get_image_size_in_bytes());
+  }
+
+  // grab the image, pass image msg buffer to fill
+  m_camera->get_image(reinterpret_cast<char *>(&m_compressed_img_msg->data[0]));
+
+  auto stamp = m_camera->get_image_timestamp();
+  m_compressed_img_msg->header.stamp.sec = stamp.tv_sec;
+  m_compressed_img_msg->header.stamp.nanosec = stamp.tv_nsec;
+
+  *m_camera_info_msg = m_camera_info->getCameraInfo();
+  m_camera_info_msg->header = m_compressed_img_msg->header;
+
+  m_compressed_image_publisher->publish(*m_compressed_img_msg);
+  m_compressed_cam_info_publisher->publish(*m_camera_info_msg);
+  return true;
+}
+
 rcl_interfaces::msg::SetParametersResult UsbCamNode::parameters_callback(
   const std::vector<rclcpp::Parameter> & parameters)
 {
@@ -364,7 +405,10 @@ void UsbCamNode::update()
     // If the camera exposure longer higher than the framerate period
     // then that caps the framerate.
     // auto t0 = now();
-    if (!take_and_send_image()) {
+    bool isSuccessful = (m_parameters.pixel_format_name == "mjpeg") 
+      ? take_and_send_image_mjpeg()
+      : take_and_send_image();
+    if (!isSuccessful) {
       RCLCPP_WARN_ONCE(this->get_logger(), "USB camera did not respond in time.");
     }
     // auto diff = now() - t0;

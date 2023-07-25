@@ -290,6 +290,7 @@ public:
     using usb_cam::formats::MONO8;
     using usb_cam::formats::MONO16;
     using usb_cam::formats::Y102MONO8;
+    using usb_cam::formats::RAW_MJPEG;
     using usb_cam::formats::MJPEG2RGB;
     using usb_cam::formats::M4202RGB;
 
@@ -305,6 +306,8 @@ public:
     } else if (pixFmtStr == "uyvy2rgb") {
       // number of pixels required for conversion method
       m_image.pixel_format = std::make_shared<UYVY2RGB>(m_image.number_of_pixels);
+    } else if (pixFmtStr == "mjpeg") {
+      m_image.pixel_format = std::make_shared<RAW_MJPEG>(get_av_pixel_format_from_string(avDevFmtStr));
     } else if (pixFmtStr == "mjpeg2rgb") {
       m_image.pixel_format = std::make_shared<MJPEG2RGB>(
         m_image.width, m_image.height, get_av_pixel_format_from_string(avDevFmtStr));

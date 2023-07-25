@@ -59,6 +59,92 @@ namespace usb_cam
 namespace formats
 {
 
+class RAW_MJPEG : public pixel_format_base
+{
+public:
+  RAW_MJPEG(const AVPixelFormat & avDeviceFormat)
+  : pixel_format_base(
+      "raw_mjpeg",
+      V4L2_PIX_FMT_MJPEG,
+      usb_cam::constants::YUV422,
+      2,
+      8,
+      false)
+  {
+    switch(avDeviceFormat)
+    {      
+      default:
+      {
+        m_ros = usb_cam::constants::UNKNOWN;
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_RGB24:
+      {
+        m_ros = usb_cam::constants::RGB8;
+        m_channels = 3;
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_RGBA:
+      {
+        m_ros = usb_cam::constants::RGBA8;
+        m_channels = 4;
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_BGR24:
+      {
+        m_ros = usb_cam::constants::BGR8;
+        m_channels = 3;
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_BGRA:
+      {
+        m_ros = usb_cam::constants::BGRA8;
+        m_channels = 4;
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_GRAY8:
+      {
+        m_ros = usb_cam::constants::MONO8;
+        m_channels = 1;
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_GRAY16BE:
+      {
+        m_ros = usb_cam::constants::MONO16;
+        m_channels = 1;
+        m_bit_depth = 16;
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_YUV422P:
+      {
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_YUV420P:
+      {
+        m_ros = usb_cam::constants::NV21;
+        m_channels = 2;
+      }
+      break;
+
+      case AVPixelFormat::AV_PIX_FMT_YUV444P:
+      {
+        m_ros = usb_cam::constants::NV24;
+        m_channels = 2;
+      }
+      break;
+    }
+
+  }
+};
+
 class MJPEG2RGB : public pixel_format_base
 {
 public:
