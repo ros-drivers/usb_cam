@@ -45,7 +45,7 @@ protected:
     static color_format_t color_format;
     static bool monochrome;
     static int file_dev; // fd_
-    static const time_t epoch_time_shift;
+    static const time_t epoch_time_shift_us;
 
     /* FFMPEG */
     static bool full_ffmpeg_log;
