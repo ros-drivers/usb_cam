@@ -14,18 +14,18 @@ jobs:
       fail-fast: false
       matrix:
         ros_distribution:
-          - foxy
           - humble
+          - iron
           - rolling
         include:
-          # Foxy Fitzroy (June 2020 - May 2023)
-          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-latest
-            ros_distribution: foxy
-            ros_version: 2
           # Humble Hawksbill  (May 2022 - 2027
           - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
             ros_distribution: humble
-            ros_version: 2    
+            ros_version: 2
+          # Iron Irwini  (May 2023 - Nov 2024)
+          - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-iron-ros-base-latest
+            ros_distribution: iron
+            ros_version: 2
           # Rolling Ridley  (June 2020 - Present)
           - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-rolling-ros-base-latest
             ros_distribution: rolling
