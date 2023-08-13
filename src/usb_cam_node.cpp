@@ -42,9 +42,6 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
 : Node("usb_cam", node_options),
   m_camera(new usb_cam::UsbCam()),
   m_image_msg(new sensor_msgs::msg::Image()),
-  m_image_publisher(std::make_shared<image_transport::CameraPublisher>(
-      image_transport::create_camera_publisher(this, "image_raw",
-      rclcpp::QoS {100}.get_rmw_qos_profile()))),
   m_parameters(),
   m_camera_info_msg(new sensor_msgs::msg::CameraInfo()),
   m_service_capture(
@@ -57,6 +54,10 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
         std::placeholders::_2,
         std::placeholders::_3)))
 {
+  m_image_publisher = image_transport::create_camera_publisher(
+    this, "image_raw", rclcpp::QoS {100}.get_rmw_qos_profile()
+  );
+
   // declare params
   this->declare_parameter("camera_name", "default_cam");
   this->declare_parameter("camera_info_url", "");
@@ -90,10 +91,12 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
 UsbCamNode::~UsbCamNode()
 {
   RCLCPP_WARN(this->get_logger(), "Shutting down");
-  m_camera->shutdown();
-
   m_image_msg.reset();
   m_camera_info_msg.reset();
+  m_camera_info.reset();
+  m_timer.reset();
+  m_service_capture.reset();
+  m_parameters_callback_handle.reset();
 
   delete (m_camera);
 }
@@ -338,7 +341,7 @@ bool UsbCamNode::take_and_send_image()
 
   *m_camera_info_msg = m_camera_info->getCameraInfo();
   m_camera_info_msg->header = m_image_msg->header;
-  m_image_publisher->publish(*m_image_msg, *m_camera_info_msg);
+  m_image_publisher.publish(*m_image_msg, *m_camera_info_msg);
   return true;
 }
 
