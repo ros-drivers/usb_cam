@@ -187,11 +187,11 @@ public:
     // Pass src MJPEG image to decoder
     m_result = avcodec_send_packet(m_avcodec_context, m_avpacket);
 
-    av_packet_unref(m_avpacket);
     // If result is not 0, report what went wrong
     if (m_result != 0) {
       std::cerr << "Failed to send AVPacket to decode: ";
       print_av_error_string(m_result);
+      return;
     }
 
     m_result = avcodec_receive_frame(m_avcodec_context, m_avframe_device);
@@ -201,6 +201,7 @@ public:
     } else if (m_result < 0) {
       std::cerr << "Failed to recieve decoded frame from codec: ";
       print_av_error_string(m_result);
+      return;
     }
 
     sws_scale(
