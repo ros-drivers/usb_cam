@@ -145,6 +145,15 @@ public:
 
   ~MJPEG2RGB()
   {
+    if (m_averror_str) {
+      free(m_averror_str);
+    }
+    if (m_avoptions) {
+      free(m_avoptions);
+    }
+    if (m_avpacket) {
+      free(m_avpacket);
+    }
     if (m_avcodec_context) {
       avcodec_close(m_avcodec_context);
       avcodec_free_context(&m_avcodec_context);
@@ -154,10 +163,6 @@ public:
     }
     if (m_avframe_rgb) {
       av_frame_free(&m_avframe_rgb);
-    }
-    if (m_avpacket) {
-      av_packet_unref(m_avpacket);
-      av_packet_free(&m_avpacket);
     }
     if (m_avparser) {
       av_parser_close(m_avparser);
