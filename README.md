@@ -77,7 +77,7 @@ ros2 run usb_cam usb_cam_node_exe --ros-args --params-file /path/to/colcon_ws/sr
 
 # launch the usb_cam executable that loads parameters from the same `usb_cam/config/params.yaml` file as above
 # along with an additional image viewer node
-ros2 launch usb_cam demo_launch.py
+ros2 launch usb_cam camera.launch.py
 ```
 ## Launching Multiple usb_cam's
 
