@@ -64,6 +64,14 @@ rclcpp_components_register_node(${PROJECT_NAME}_node
   EXECUTABLE ${PROJECT_NAME}_node_exe
 )
 
+if(SANITIZE)
+  target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address -fsanitize=leak)
+  target_link_libraries(${PROJECT_NAME} -fsanitize=address -fsanitize=leak)
+  target_compile_options(${PROJECT_NAME}_node PUBLIC -fsanitize=address -fsanitize=leak)
+  target_link_libraries(${PROJECT_NAME}_node -fsanitize=address -fsanitize=leak)
+  target_link_libraries(${PROJECT_NAME}_node_exe -fsanitize=address -fsanitize=leak)
+endif()
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

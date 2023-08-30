@@ -224,7 +224,7 @@ public:
     return m_fd;
   }
 
-  inline usb_cam::utils::buffer * get_buffers()
+  inline std::shared_ptr<usb_cam::utils::buffer[]> get_buffers()
   {
     return m_buffers;
   }
@@ -361,8 +361,8 @@ private:
   std::string m_device_name;
   usb_cam::utils::io_method_t m_io;
   int m_fd;
-  usb_cam::utils::buffer * m_buffers;
   unsigned int m_number_of_buffers;
+  std::shared_ptr<usb_cam::utils::buffer[]> m_buffers;
   image_t m_image;
 
   AVFrame * m_avframe;

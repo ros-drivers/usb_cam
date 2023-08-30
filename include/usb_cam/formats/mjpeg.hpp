@@ -178,8 +178,6 @@ public:
     #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 133, 100)
     // deprecated: https://github.com/FFmpeg/FFmpeg/commit/f7db77bd8785d1715d3e7ed7e69bd1cc991f2d07
     av_init_packet(m_avpacket);
-    #else
-    av_new_packet(m_avpacket, bytes_used);
     #endif
 
     av_packet_from_data(
@@ -190,6 +188,7 @@ public:
     // Pass src MJPEG image to decoder
     m_result = avcodec_send_packet(m_avcodec_context, m_avpacket);
 
+    av_packet_unref(m_avpacket);
     // If result is not 0, report what went wrong
     if (m_result != 0) {
       std::cerr << "Failed to send AVPacket to decode: ";
