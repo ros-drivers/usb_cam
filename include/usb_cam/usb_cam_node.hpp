@@ -87,7 +87,7 @@ public:
 
   parameters_t m_parameters;
 
-  sensor_msgs::msg::CameraInfo::UniquePtr m_camera_info_msg;
+  sensor_msgs::msg::CameraInfo::SharedPtr m_camera_info_msg;
   std::shared_ptr<camera_info_manager::CameraInfoManager> m_camera_info;
 
   rclcpp::TimerBase::SharedPtr m_timer;
