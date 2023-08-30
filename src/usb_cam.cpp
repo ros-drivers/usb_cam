@@ -59,10 +59,9 @@ using utils::io_method_t;
 
 UsbCam::UsbCam()
 : m_device_name(), m_io(io_method_t::IO_METHOD_MMAP), m_fd(-1),
-  m_buffers(NULL), m_number_of_buffers(0), m_image(),
+  m_number_of_buffers(4), m_buffers(new usb_cam::utils::buffer[m_number_of_buffers]), m_image(),
   m_avframe(NULL), m_avcodec(NULL), m_avoptions(NULL),
-  m_avcodec_context(NULL),
-  m_is_capturing(false), m_framerate(0),
+  m_avcodec_context(NULL), m_is_capturing(false), m_framerate(0),
   m_epoch_time_shift_us(usb_cam::utils::get_epoch_time_shift_us()), m_supported_formats()
 {}
 
@@ -268,41 +267,16 @@ void UsbCam::start_capturing()
 
 void UsbCam::uninit_device()
 {
-  unsigned int i;
-
-  switch (m_io) {
-    case io_method_t::IO_METHOD_READ:
-      free(m_buffers[0].start);
-      break;
-    case io_method_t::IO_METHOD_MMAP:
-      for (i = 0; i < m_number_of_buffers; ++i) {
-        if (-1 == munmap(m_buffers[i].start, m_buffers[i].length)) {
-          // TODO(flynneva): is this the right error to throw here?
-          throw std::runtime_error("Unable to deallocate memory");
-        }
-      }
-      break;
-    case io_method_t::IO_METHOD_USERPTR:
-      for (i = 0; i < m_number_of_buffers; ++i) {
-        free(m_buffers[i].start);
-      }
-      break;
-    case io_method_t::IO_METHOD_UNKNOWN:
-      // Should never get here, right?
-      throw std::invalid_argument("IO method unknown");
-  }
+  m_buffers.reset();
 }
 
 void UsbCam::init_read()
 {
-  m_buffers = reinterpret_cast<usb_cam::utils::buffer *>(calloc(1, sizeof(*m_buffers)));
-
   if (!m_buffers) {
     throw std::overflow_error("Out of memory");
   }
 
   m_buffers[0].length = m_image.size_in_bytes;
-  m_buffers[0].start = reinterpret_cast<char *>(malloc(m_image.size_in_bytes));
 
   if (!m_buffers[0].start) {
     throw std::overflow_error("Out of memory");
@@ -315,7 +289,7 @@ void UsbCam::init_mmap()
 
   CLEAR(req);
 
-  req.count = 4;
+  req.count = m_number_of_buffers;
   req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   req.memory = V4L2_MEMORY_MMAP;
 
@@ -327,11 +301,9 @@ void UsbCam::init_mmap()
     }
   }
 
-  if (req.count < 2) {
+  if (req.count < m_number_of_buffers) {
     throw std::overflow_error("Insufficient buffer memory on device");
   }
-
-  m_buffers = reinterpret_cast<usb_cam::utils::buffer *>(calloc(req.count, sizeof(*m_buffers)));
 
   if (!m_buffers) {
     throw std::overflow_error("Out of memory");
@@ -360,7 +332,6 @@ void UsbCam::init_mmap()
       throw std::runtime_error("Unable to allocate memory for image buffers");
     }
   }
-  m_number_of_buffers = req.count;
 }
 
 void UsbCam::init_userp()
@@ -373,19 +344,17 @@ void UsbCam::init_userp()
 
   CLEAR(req);
 
-  req.count = 4;
+  req.count = m_number_of_buffers;
   req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   req.memory = V4L2_MEMORY_USERPTR;
 
-  if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_REQBUFS), &req)) {
+  if (-1 == usb_cam::utils::xioctl(m_fd, VIDIOC_REQBUFS, &req)) {
     if (EINVAL == errno) {
       throw std::invalid_argument("Device does not support user pointer i/o");
     } else {
       throw std::invalid_argument("Unable to initialize memory mapping");
     }
   }
-
-  m_buffers = reinterpret_cast<usb_cam::utils::buffer *>(calloc(req.count, sizeof(*m_buffers)));
 
   if (!m_buffers) {
     throw std::overflow_error("Out of memory");
@@ -552,8 +521,7 @@ void UsbCam::configure(
   m_image.set_number_of_pixels();
 
   // Do this before calling set_bytes_per_line and set_size_in_bytes
-  m_image.pixel_format = set_pixel_format_from_string(parameters.pixel_format_name,
-                                                      parameters.av_device_format);
+  m_image.pixel_format = set_pixel_format(parameters);
   m_image.set_bytes_per_line();
   m_image.set_size_in_bytes();
   m_framerate = parameters.framerate;

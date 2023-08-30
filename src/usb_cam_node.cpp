@@ -95,10 +95,13 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
 UsbCamNode::~UsbCamNode()
 {
   RCLCPP_WARN(this->get_logger(), "Shutting down");
-  m_camera->shutdown();
-
   m_image_msg.reset();
+  m_compressed_img_msg.reset();
   m_camera_info_msg.reset();
+  m_camera_info.reset();
+  m_timer.reset();
+  m_service_capture.reset();
+  m_parameters_callback_handle.reset();
 
   delete (m_camera);
 }

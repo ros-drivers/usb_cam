@@ -50,10 +50,14 @@ namespace utils
 using usb_cam::formats::pixel_format_base;
 
 
+/// @brief Read more on IO methods here: https://lwn.net/Articles/240667/
 typedef enum
 {
+  /// @brief read method copies the video frame between user and kernal space
   IO_METHOD_READ,
+  /// @brief memory mapped buffers allocated in kernel space
   IO_METHOD_MMAP,
+  /// @brief memory buffers allocated in the user space
   IO_METHOD_USERPTR,
   IO_METHOD_UNKNOWN,
 } io_method_t;
