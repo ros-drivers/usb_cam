@@ -188,7 +188,9 @@ public:
     // Pass src MJPEG image to decoder
     m_result = avcodec_send_packet(m_avcodec_context, m_avpacket);
 
+    #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(58, 133, 100)
     av_packet_unref(m_avpacket);
+    #endif
     // If result is not 0, report what went wrong
     if (m_result != 0) {
       std::cerr << "Failed to send AVPacket to decode: ";
