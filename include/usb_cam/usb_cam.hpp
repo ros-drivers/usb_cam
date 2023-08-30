@@ -273,14 +273,12 @@ public:
     return m_supported_formats;
   }
 
-  /// @brief Get pixel format from string. Required to have logic within UsbCam object
+  /// @brief Set pixel format from parameter list. Required to have logic within UsbCam object
   /// in case pixel format class requires additional information for conversion function
   /// (e.g. number of pixels, width, height, etc.)
-  /// @param pixFmtStr name of supported format (see `usb_cam/supported_formats.hpp`)
-  /// @param avDevFmtStr name of av device format (only used for mjpeg stream)
+  /// @param parameters list of parameters from which the pixel format is to be set
   /// @return pixel format structure corresponding to a given name
-  inline std::shared_ptr<pixel_format_base> set_pixel_format_from_string(const std::string & pixFmtStr,
-                                                                         const std::string & avDevFmtStr)
+  inline std::shared_ptr<pixel_format_base> set_pixel_format(const parameters_t & parameters)
   {
     using usb_cam::formats::RGB8;
     using usb_cam::formats::YUYV;
@@ -293,56 +291,38 @@ public:
     using usb_cam::formats::MJPEG2RGB;
     using usb_cam::formats::M4202RGB;
 
-    if (pixFmtStr == "rgb8") {
+    if (parameters.pixel_format_name == "rgb8") {
       m_image.pixel_format = std::make_shared<RGB8>();
-    } else if (pixFmtStr == "yuyv") {
+    } else if (parameters.pixel_format_name == "yuyv") {
       m_image.pixel_format = std::make_shared<YUYV>();
-    } else if (pixFmtStr == "yuyv2rgb") {
+    } else if (parameters.pixel_format_name == "yuyv2rgb") {
       // number of pixels required for conversion method
       m_image.pixel_format = std::make_shared<YUYV2RGB>(m_image.number_of_pixels);
-    } else if (pixFmtStr == "uyvy") {
+    } else if (parameters.pixel_format_name == "uyvy") {
       m_image.pixel_format = std::make_shared<UYVY>();
-    } else if (pixFmtStr == "uyvy2rgb") {
+    } else if (parameters.pixel_format_name == "uyvy2rgb") {
       // number of pixels required for conversion method
       m_image.pixel_format = std::make_shared<UYVY2RGB>(m_image.number_of_pixels);
-    } else if (pixFmtStr == "mjpeg2rgb") {
+    } else if (parameters.pixel_format_name == "mjpeg2rgb") {
       m_image.pixel_format = std::make_shared<MJPEG2RGB>(
-        m_image.width, m_image.height, get_av_pixel_format_from_string(avDevFmtStr));
-    } else if (pixFmtStr == "m4202rgb") {
+        m_image.width, m_image.height, 
+        formats::get_av_pixel_format_from_string(parameters.av_device_format));
+    } else if (parameters.pixel_format_name == "m4202rgb") {
       m_image.pixel_format = std::make_shared<M4202RGB>(
         m_image.width, m_image.height);
-    } else if (pixFmtStr == "mono8") {
+    } else if (parameters.pixel_format_name == "mono8") {
       m_image.pixel_format = std::make_shared<MONO8>();
-    } else if (pixFmtStr == "mono16") {
+    } else if (parameters.pixel_format_name == "mono16") {
       m_image.pixel_format = std::make_shared<MONO16>();
-    } else if (pixFmtStr == "y102mono8") {
+    } else if (parameters.pixel_format_name == "y102mono8") {
       m_image.pixel_format = std::make_shared<Y102MONO8>(m_image.number_of_pixels);
     } else {
-      throw std::invalid_argument("Unsupported pixel format specified: " + pixFmtStr);
+      throw std::invalid_argument("Unsupported pixel format specified: " + 
+                                  parameters.pixel_format_name);
     }
 
     return m_image.pixel_format;
   }
-
-  inline AVPixelFormat get_av_pixel_format_from_string (const std::string& str)
-  {
-    std::string upperCaseStr = str;
-    std::transform(upperCaseStr.begin(), upperCaseStr.end(), upperCaseStr.begin(), ::toupper);
-
-    std::string fullFmtStr;
-    if(upperCaseStr.rfind("AV_PIX_FMT_", 0) == std::string::npos)
-    {
-        // passed string does not start with 'AV_PIX_FMT_'
-        fullFmtStr = "AV_PIX_FMT_" + upperCaseStr;
-    }
-    else
-    {
-        fullFmtStr = upperCaseStr;
-    }
-
-    return usb_cam::formats::STR_2_AVPIXFMT.find(fullFmtStr)->second;
-  }
-
 
 private:
   void init_read();
