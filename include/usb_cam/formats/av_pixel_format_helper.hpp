@@ -31,6 +31,8 @@
 #define USB_CAM__FORMATS__AV_PX_FMT_HELPER_HPP_
 
 #include <unordered_map>
+#include <algorithm>
+#include <string>
 
 extern "C" {
 #define __STDC_CONSTANT_MACROS  // Required for libavutil
@@ -45,6 +47,7 @@ namespace usb_cam
 namespace formats
 {
 
+/// Map to associate string of pixel format name to actual pixel format enum
 const std::unordered_map<std::string, AVPixelFormat> STR_2_AVPIXFMT = {
     {stringify(AV_PIX_FMT_NONE), AV_PIX_FMT_NONE},
     {stringify(AV_PIX_FMT_YUV420P), AV_PIX_FMT_YUV420P},        ///< planar YUV 4:2:0, 12bpp, (1 Cr & Cb sample per 2x2 Y samples)
@@ -334,6 +337,29 @@ const std::unordered_map<std::string, AVPixelFormat> STR_2_AVPIXFMT = {
 
     {stringify(AV_PIX_FMT_NB), AV_PIX_FMT_NB},                          ///< number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
 };
+
+/// @brief Get AVPixelFormat from string. This string should correspond to the AVPixelFormat name. 
+/// The name can either be given with or without the 'AV_PIX_FMT_' prefix.
+/// @param str AVPixelFormat name
+/// @return Pixel format enum corresponding to a given name
+inline AVPixelFormat get_av_pixel_format_from_string (const std::string& str)
+{
+  std::string upperCaseStr = str;
+  std::transform(upperCaseStr.begin(), upperCaseStr.end(), upperCaseStr.begin(), ::toupper);
+
+  std::string fullFmtStr;
+  if(upperCaseStr.rfind("AV_PIX_FMT_", 0) == std::string::npos)
+  {
+      // passed string does not start with 'AV_PIX_FMT_'
+      fullFmtStr = "AV_PIX_FMT_" + upperCaseStr;
+  }
+  else
+  {
+      fullFmtStr = upperCaseStr;
+  }
+  
+  return STR_2_AVPIXFMT.find(fullFmtStr)->second;
+}
 
 }  // namespace formats
 }  // namespace usb_cam
