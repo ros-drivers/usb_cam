@@ -30,7 +30,27 @@ camera_transport_suffix: image_raw  # Suffix used by image_transport to generate
 camera_info_url: ""                 # URI for camera calibration data (likely a YML file obtained from camera_calibration)
 image_width: 640                    # Frame dimensions, should be supported by camera hardware
 image_height: 480
-framerate: 30                       # Camera polling frequency, Hz (integer)
+framerate: 10                       # Camera polling frequency, Hz (integer)
+
+# Hardware accelerated decoding (available only for FFMPEG-decoded pixel formats, especially for h264)
+    # The feature is supported only from libavcodec 52.00.100 built with --enable-vdpau --enable-cuvid --enable-nvenc or
+    # --enable-cuda options or any other options activating HWACCEL API like --enable-libdrm. 
+    # The exact list of the available hardware accelerators can be printed with command:
+    # ffmpeg -hwaccels
+    # then the obtained names would be used to activate the decoder.
+    # Known accelerators:
+    # - cuda - for any kind of CUDA/NVENC nVidia-powered accelerators
+    # - vdpau - libvdpau, nVidia PureVideo HD or AMD VCE on selected devices (mostly incompatible with 
+    #   modern H.264 hardware encoders, but decodes almost any flavour of MotionJPEG streams)
+    # - drm - libdrm, Direct Object Rendering on ARM Mali GPUs supporting OpenCL
+    # - nvdec - nVidia Codec SDK for AV1 on compatible GPU
+    # - dxva2 - DirectX Video Accelerator API for Windows
+    # - vaapi - Intel QuickSync or AMD UVD/VCE decoder on compatible Intel chipsets or AMD Radeon GPUs
+    # If the desired accelerated decoder is not available or FFMPEG does not respond correctly on the activation request,
+    # the node falls back automatically to the default software decoder.
+hardware_decoder:
+    enable: false                   # Instructs the node to try to use a hardware-accelerated video decoder
+    name: cuda                      # Name of the desired decoder from FFMPEG HWACCEL API
 
 # Auxiliary camera parameters provided by libv4l2.
     # Names for these parameters are generated automatically according to the intrinsic control names exported by the

@@ -1,6 +1,7 @@
 #ifndef USB_CAM_CAMERA_DRIVER_H
 #define USB_CAM_CAMERA_DRIVER_H
 
+#include "libavutil/pixfmt.h"
 #include <string>
 #include <iostream>
 #include <algorithm>
@@ -18,6 +19,7 @@ extern "C"
 #include <libavutil/imgutils.h>
 #include <libavutil/frame.h>
 #include <libavutil/mem.h>
+#include <libavutil/hwcontext.h>
 }
 
 #include <fcntl.h>  // for O_* constants
@@ -65,6 +67,17 @@ protected:
     static camera_image_t * image;
     static bool capturing;
     static std::vector<capture_format_t> supported_formats;
+    // Hardware decoder
+    static bool use_hardware_decoder;
+    static AVHWDeviceType hardware_decoder_type;
+    static std::string hardware_decoder_name;
+    static const AVCodecHWConfig* hardware_decoder_config;
+    static AVPixelFormat hardware_pixel_format;
+    static AVBufferRef* hardware_device_context;
+    static std::vector<std::string> supported_hardware_decoders;
+    static struct SwsContext* hardware_sws;
+    static enum AVPixelFormat get_hardware_pixel_format(AVCodecContext *ctx,
+                                                        const enum AVPixelFormat *pix_fmts);
 
     /* V4L camera parameters */
     static bool streaming_status;
@@ -95,6 +108,7 @@ protected:
     static bool init();
     static bool start();
     static bool init_decoder();
+    static bool init_hardware_decoder();
     static void run_grabber(unsigned int& buffer_size);
     static bool set_v4l_parameter(const std::string & param, const std::string & value);
     static inline bool set_v4l_parameter(const std::string & param, int value){return set_v4l_parameter(param, std::to_string(value));}
@@ -115,6 +129,7 @@ protected:
 public:
     virtual ~AbstractV4LUSBCam();
     static std::vector<capture_format_t>& get_supported_formats();
+    static std::vector<std::string>& get_supported_hardware_decoders();
 };
 
 } // namespace usb_cam
