@@ -1,0 +1,4 @@
+<launch>
+  <node name="camera1_node" pkg="usb_cam" type="camera1_publisher.py" output="screen" />
+  <node name="camera2_node" pkg="usb_cam" type="camera2_publisher.py" output="screen" />
+</launch>
