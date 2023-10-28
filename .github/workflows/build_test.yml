@@ -1,11 +1,11 @@
 name: ROS2 CI
 
 on:
-  workflow_dispatch:
   pull_request:
     branches:
       - 'ros2/*'
       - 'ros2'
+  workflow_dispatch:
 
 jobs:
   test_environment:
