@@ -189,14 +189,16 @@ public:
     }
 
     m_result = avcodec_receive_frame(m_avcodec_context, m_avframe_device);
-
-    if (m_result == AVERROR(EAGAIN) || m_result == AVERROR_EOF) {
+    if (m_result == AVERROR_EOF) {
       return;
     } else if (m_result < 0) {
       std::cerr << "Failed to recieve decoded frame from codec: ";
       print_av_error_string(m_result);
       return;
     }
+
+    // prepare the codec for receiving packets again in the next loop
+    avcodec_flush_buffers(m_avcodec_context);
 
     sws_scale(
       m_sws_context, m_avframe_device->data,
