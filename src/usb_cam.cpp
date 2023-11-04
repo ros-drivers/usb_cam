@@ -521,7 +521,7 @@ void UsbCam::configure(
   m_image.set_number_of_pixels();
 
   // Do this before calling set_bytes_per_line and set_size_in_bytes
-  m_image.pixel_format = set_pixel_format_from_string(parameters.pixel_format_name);
+  m_image.pixel_format = set_pixel_format(parameters);
   m_image.set_bytes_per_line();
   m_image.set_size_in_bytes();
   m_framerate = parameters.framerate;
