@@ -1,6 +1,9 @@
 name: Build and Test
 
 on:
+  push:
+    branches:
+      - 'ros2'
   pull_request:
     branches:
       - 'ros2/*'
