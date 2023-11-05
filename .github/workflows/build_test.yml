@@ -17,7 +17,7 @@ jobs:
           sudo apt-get -y install curl jq
       - name: Get active distributions
         run: |
-          wget https://raw.githubusercontent.com/flynneva/active_ros_distros/main/main.py -O active_ros_distros.py
+          wget https://raw.githubusercontent.com/flynneva/active_ros_distros/0.1.0/main.py -O active_ros_distros.py
           python3 -m pip install rosdistro
           python3 active_ros_distros.py --distribution-type ros2
       - name: Generate actions matrix
