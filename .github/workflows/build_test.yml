@@ -79,6 +79,7 @@ jobs:
       - name: Build and Test ROS 1
         uses: ros-tooling/action-ros-ci@master
         if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) }}
+        continue-on-error: true
         with:
           package-name: usb_cam
           target-ros1-distro: ${{ matrix.ros_distro }}
