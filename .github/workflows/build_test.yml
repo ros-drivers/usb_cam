@@ -35,9 +35,15 @@ jobs:
             docker_image=$(echo $RAW_DOCKER_JSON |
               jq -r --arg DISTRO "$distro" '.results[] | select(.tag_status=="active") | select(.name | contains("ros-base-latest")) | select(.name | contains($DISTRO)) | .name'  |
               sort -u)
+          
+            # Handle the case if two docker images were declared for one distro
+            # e.g. rolling moving from one Ubuntu Focal to Ubuntu Jammy
+            docker_image_arr=($docker_image)
+          
             DISTRO_STR+="\"${distro}\", "
-            MATRIX_STR+="{docker_image:\"${docker_image}\",ros_distro:\"${distro}\"}, "
+            MATRIX_STR+="{docker_image:\"${docker_image_arr[-1]}\",ros_distro:\"${distro}\"}, "
           done
+          
           # Remove trailing , at end
           DISTRO_STR=${DISTRO_STR%??}
           MATRIX_STR=${MATRIX_STR%??}
@@ -46,7 +52,6 @@ jobs:
           MATRIX_STR+="]"
           echo "DISTRO_STR: ${DISTRO_STR}"
           echo "MATRIX_STR: ${MATRIX_STR}"
-
           echo "series=$DISTRO_STR" >> $GITHUB_OUTPUT
           echo "matrix=$MATRIX_STR" >> $GITHUB_OUTPUT
     outputs:
