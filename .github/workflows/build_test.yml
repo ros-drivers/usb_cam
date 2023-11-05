@@ -23,7 +23,7 @@ jobs:
       - name: Generate actions matrix
         id: set-matrix
         run: |
-          ACTIVE_ROS_DISTROS=()
+          ACTIVE_ROS_DISTROS=(noetic)
           DOCKER_DISTRO_MATRIX=()
           RAW_DOCKER_JSON=$(curl -s "https://hub.docker.com/v2/repositories/rostooling/setup-ros-docker/tags?page_size=1000")
           while read distro; do
