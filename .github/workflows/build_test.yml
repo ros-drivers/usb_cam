@@ -1,6 +1,9 @@
 name: Build and Test
 
 on:
+  push:
+    branches:
+      - 'ros2'
   pull_request:
     branches:
       - 'ros2/*'
@@ -73,7 +76,7 @@ jobs:
       - name: Setup Directories
         run: mkdir -p ros_ws/src
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: ros_ws/src
       - name: Build and Test ROS 1

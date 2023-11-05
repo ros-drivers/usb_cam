@@ -13,6 +13,9 @@
   <url type="bugtracker">https://github.com/ros-drivers/usb_cam/issues</url>
   <url type="repository">https://github.com/ros-drivers/usb_cam</url>
 
+  <!-- Required so ROS build farms properly set ROS_VERSION -->
+  <build_depend>ros_environment</build_depend>
+
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
 
   <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake_auto</buildtool_depend>
