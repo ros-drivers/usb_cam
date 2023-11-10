@@ -139,6 +139,23 @@ void UsbCamNode::init()
     m_camera_info->setCameraInfo(*m_camera_info_msg);
   }
 
+  // Check if given device name is an available v4l2 device
+  auto available_devices = usb_cam::utils::available_devices();
+  if (available_devices.find(m_parameters.device_name) == available_devices.end()) {
+    RCLCPP_ERROR_STREAM(
+      this->get_logger(),
+      "Device specified is not available or is not a vaild V4L2 device: `"
+        << m_parameters.device_name << "`"
+    );
+    RCLCPP_INFO(this->get_logger(), "Available V4L2 devices are:");
+    for (const auto & device : available_devices) {
+      RCLCPP_INFO_STREAM(this->get_logger(), "    " << device.first);
+      RCLCPP_INFO_STREAM(this->get_logger(), "        " << device.second.card);
+    }
+    rclcpp::shutdown();
+    return;
+  }
+
   m_image_msg->header.frame_id = m_parameters.frame_id;
   RCLCPP_INFO(
     this->get_logger(), "Starting '%s' (%s) at %dx%d via %s (%s) at %i FPS",
@@ -365,13 +382,10 @@ void UsbCamNode::update()
 {
   if (m_camera->is_capturing()) {
     // If the camera exposure longer higher than the framerate period
-    // then that caps the framerate.
-    // auto t0 = now();
+    // then that caps the framerate
     if (!take_and_send_image()) {
       RCLCPP_WARN_ONCE(this->get_logger(), "USB camera did not respond in time.");
     }
-    // auto diff = now() - t0;
-    // INFO(diff.nanoseconds() / 1e6 << " " << int(t0.nanoseconds() / 1e9));
   }
 }
 }  // namespace usb_cam
