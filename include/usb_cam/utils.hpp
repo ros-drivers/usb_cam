@@ -41,6 +41,7 @@ extern "C" {
 #include <sstream>
 #include <string>
 #include <map>
+#include <unistd.h> // for access
 
 #include "linux/videodev2.h"
 
