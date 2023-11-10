@@ -35,18 +35,19 @@ extern "C" {
 
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <unistd.h>  // for access
 #include <cmath>
 #include <ctime>
 #include <cstring>
 #include <sstream>
 #include <string>
 #include <map>
-#include <unistd.h> // for access
 
 #include "linux/videodev2.h"
 
 #include "usb_cam/constants.hpp"
 #include "usb_cam/formats/pixel_format_base.hpp"
+
 
 namespace usb_cam
 {

@@ -38,6 +38,8 @@ extern "C" {
 #include "libavutil/pixfmt.h"
 }
 
+#include "usb_cam/constants.hpp"
+
 #define stringify(name) #name
 
 
@@ -956,6 +958,152 @@ inline AVPixelFormat get_av_pixel_format_from_string(const std::string & str)
   }
 
   return STR_2_AVPIXFMT.find(fullFmtStr)->second;
+}
+
+/// @brief Get ROS PixelFormat from AVPixelFormat.
+/// @param avPixelFormat AVPixelFormat
+/// @return String specifying the ROS pixel format.
+inline std::string get_ros_pixel_format_from_av_format(const AVPixelFormat & avPixelFormat)
+{
+  std::string ros_format = "";
+
+  switch (avPixelFormat) {
+    default:
+      {
+        ros_format = usb_cam::constants::UNKNOWN;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_RGB24:
+      {
+        ros_format = usb_cam::constants::RGB8;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_RGBA:
+      {
+        ros_format = usb_cam::constants::RGBA8;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_BGR24:
+      {
+        ros_format = usb_cam::constants::BGR8;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_BGRA:
+      {
+        ros_format = usb_cam::constants::BGRA8;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_GRAY8:
+      {
+        ros_format = usb_cam::constants::MONO8;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_GRAY16BE:
+      {
+        ros_format = usb_cam::constants::MONO16;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_YUV422P:
+      {
+        ros_format = usb_cam::constants::YUV422;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_YUV420P:
+      {
+        ros_format = usb_cam::constants::NV21;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_YUV444P:
+      {
+        ros_format = usb_cam::constants::NV24;
+      }
+      break;
+  }
+
+  return ros_format;
+}
+
+/// @brief Get the number of channels from AVPixelFormat.
+/// @param avPixelFormat AVPixelFormat
+/// @return Number of channels as uint8
+inline uint8_t get_channels_from_av_format(const AVPixelFormat & avPixelFormat)
+{
+  uint8_t channels = 1;
+
+  switch (avPixelFormat) {
+    default:
+    case AVPixelFormat::AV_PIX_FMT_GRAY8:
+    case AVPixelFormat::AV_PIX_FMT_GRAY16BE:
+      {
+        channels = 1;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_YUV422P:
+    case AVPixelFormat::AV_PIX_FMT_YUV420P:
+    case AVPixelFormat::AV_PIX_FMT_YUV444P:
+      {
+        channels = 2;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_RGB24:
+    case AVPixelFormat::AV_PIX_FMT_BGR24:
+      {
+        channels = 3;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_RGBA:
+    case AVPixelFormat::AV_PIX_FMT_BGRA:
+      {
+        channels = 4;
+      }
+      break;
+  }
+
+  return channels;
+}
+
+/// @brief Get the pixel bit depth from AVPixelFormat.
+/// @param avPixelFormat AVPixelFormat
+/// @return Bit depth as uint8
+inline uint8_t get_bit_depth_from_av_format(const AVPixelFormat & avPixelFormat)
+{
+  uint8_t bit_depth = 8;
+
+  switch (avPixelFormat) {
+    default:
+    case AVPixelFormat::AV_PIX_FMT_GRAY8:
+    case AVPixelFormat::AV_PIX_FMT_RGB24:
+    case AVPixelFormat::AV_PIX_FMT_BGR24:
+    case AVPixelFormat::AV_PIX_FMT_RGBA:
+    case AVPixelFormat::AV_PIX_FMT_BGRA:
+    case AVPixelFormat::AV_PIX_FMT_YUV422P:
+    case AVPixelFormat::AV_PIX_FMT_YUV420P:
+    case AVPixelFormat::AV_PIX_FMT_YUV444P:
+      {
+        bit_depth = 8;
+      }
+      break;
+
+    case AVPixelFormat::AV_PIX_FMT_GRAY16BE:
+      {
+        bit_depth = 16;
+      }
+      break;
+  }
+
+  return bit_depth;
 }
 
 }  // namespace formats
