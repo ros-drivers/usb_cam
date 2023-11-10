@@ -309,7 +309,7 @@ public:
         formats::get_av_pixel_format_from_string(parameters.av_device_format));
     } else if (parameters.pixel_format_name == "mjpeg2rgb") {
       m_image.pixel_format = std::make_shared<MJPEG2RGB>(
-        m_image.width, m_image.height, 
+        m_image.width, m_image.height,
         formats::get_av_pixel_format_from_string(parameters.av_device_format));
     } else if (parameters.pixel_format_name == "m4202rgb") {
       m_image.pixel_format = std::make_shared<M4202RGB>(
@@ -321,8 +321,9 @@ public:
     } else if (parameters.pixel_format_name == "y102mono8") {
       m_image.pixel_format = std::make_shared<Y102MONO8>(m_image.number_of_pixels);
     } else {
-      throw std::invalid_argument("Unsupported pixel format specified: " + 
-                                  parameters.pixel_format_name);
+      throw std::invalid_argument(
+              "Unsupported pixel format specified: " +
+              parameters.pixel_format_name);
     }
 
     return m_image.pixel_format;

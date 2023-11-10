@@ -2,10 +2,36 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.0 (2023-08-30)
+------------------
+* Fix mjpeg invalid ptr and mjpeg memory leak
+* Allocate unique avpacket for each frame
+* Fix some minor memorly leaks for mjpeg
+  Relates to `#262 <https://github.com/ros-drivers/usb_cam/issues/262>`_
+* Update docs to new launch file name
+  Closes `#277 <https://github.com/ros-drivers/usb_cam/issues/277>`_
+* Only unref packet in destructor
+  Closes `#274 <https://github.com/ros-drivers/usb_cam/issues/274>`_ `#275 <https://github.com/ros-drivers/usb_cam/issues/275>`_
+* Enable manaul trigger of ROS 2 CI, add Iron, deprecate Foxy
+* Add Iron to CI, remove Foxy
+* Enable manaul trigger of ROS 2 CI
+* Fix memory leaks in mjpeg2rgb conversion
+* Add SANITIZE option to package to help with debugging, document it
+* Fix memory leaks caused by buffer allocation by using smart pointers
+* Fix linter errors
+* Update params2 file for second camera
+* Fixed wrong image timestamp due to missing handling of microseconds in epoch time shift
+* Removed debug output of timestamp
+* Fixed wring image timestamp due to missing handling of microseconds in epoch time shift.
+* Address multiple memory leak issues after ros2 rewrite
+* Remove EOL Galactic distro from CI
+* Address multiple memory leak issues after ros2 rewrite
+* Create CameraConfig class, use it in launch file
+* imports no longer needed.
+* Multiple cameras + compression
+* Remove debug print accidentally added
 * Clean up ROS 2 node, update parameter logic
-* Contributors: Evan Flynn
+* Contributors: Boitumelo Ruf, Brendon Cintas, Evan Flynn
 
 0.6.0 (2023-04-02)
 ------------------
