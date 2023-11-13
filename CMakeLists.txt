@@ -30,6 +30,7 @@ endif()
 find_package(OpenCV REQUIRED)
 
 find_package(PkgConfig REQUIRED)
+pkg_check_modules(avcodec REQUIRED libavcodec)
 pkg_check_modules(avutil REQUIRED libavutil)
 pkg_check_modules(swscale REQUIRED libswscale)
 

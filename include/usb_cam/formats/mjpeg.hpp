@@ -52,12 +52,28 @@ extern "C" {
 #include "usb_cam/usb_cam.hpp"
 #include "usb_cam/formats/pixel_format_base.hpp"
 #include "usb_cam/formats/utils.hpp"
+#include "usb_cam/formats/av_pixel_format_helper.hpp"
 
 
 namespace usb_cam
 {
 namespace formats
 {
+
+class RAW_MJPEG : public pixel_format_base
+{
+public:
+  explicit RAW_MJPEG(const AVPixelFormat & avDeviceFormat)
+  : pixel_format_base(
+      "raw_mjpeg",
+      V4L2_PIX_FMT_MJPEG,
+      get_ros_pixel_format_from_av_format(avDeviceFormat),
+      get_channels_from_av_format(avDeviceFormat),
+      get_bit_depth_from_av_format(avDeviceFormat),
+      false)
+  {
+  }
+};
 
 class MJPEG2RGB : public pixel_format_base
 {

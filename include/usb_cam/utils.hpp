@@ -35,6 +35,7 @@ extern "C" {
 
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <unistd.h>  // for access
 #include <cmath>
 #include <ctime>
 #include <cstring>
@@ -46,6 +47,7 @@ extern "C" {
 
 #include "usb_cam/constants.hpp"
 #include "usb_cam/formats/pixel_format_base.hpp"
+
 
 namespace usb_cam
 {
