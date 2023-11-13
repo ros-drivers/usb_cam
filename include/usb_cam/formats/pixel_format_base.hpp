@@ -79,6 +79,9 @@ public:
   /// @return
   inline uint8_t bit_depth() {return m_bit_depth;}
 
+  /// @brief Number of bytes per channel
+  inline uint8_t byte_depth() {return m_bit_depth / 8;}
+
   /// @brief True if the current pixel format requires a call to the `convert` method
   /// Used in the usb_cam library logic to determine if a plain `memcopy` call can be
   /// used instead of a call to the `convert` method of this class.

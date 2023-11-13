@@ -117,12 +117,12 @@ typedef struct
   }
   size_t set_bytes_per_line()
   {
-    bytes_per_line = width * pixel_format->channels();
+    bytes_per_line = width * pixel_format->byte_depth() * pixel_format->channels();
     return bytes_per_line;
   }
   size_t set_size_in_bytes()
   {
-    size_in_bytes = width * height * pixel_format->channels();
+    size_in_bytes = height * bytes_per_line;
     return size_in_bytes;
   }
 

@@ -64,7 +64,7 @@ public:
       "uyvy2rgb",
       V4L2_PIX_FMT_UYVY,
       usb_cam::constants::RGB8,
-      2,
+      3,
       8,
       true),
     m_number_of_pixels(number_of_pixels)
