@@ -1,0 +1,21 @@
+<launch>
+  <arg name="left_camera" default="true" />
+  <arg name="right_camera" default="true" />
+
+  <group if="$(arg left_camera)">
+    <node name="left_usb_cam" pkg="usb_cam" respawn="false" type="usb_cam_node" output="screen">
+      <rosparam command="load" file="$(find usb_cam)/config/left_usb_cam.yml"/>
+      <remap from="image" to="/camera/left/image_raw"/>
+      <param name="autosize" value="true" />  
+    </node>
+  </group>
+
+  <group if="$(arg right_camera)">
+    <node name="right_usb_cam" pkg="usb_cam" respawn="false" type="usb_cam_node" output="screen">
+      <rosparam command="load" file="$(find usb_cam)/config/right_usb_cam.yml"/>
+      <remap from="image" to="/camera/right/image_raw"/>
+      <param name="autosize" value="true" />  
+    </node>
+  </group>
+
+</launch>
