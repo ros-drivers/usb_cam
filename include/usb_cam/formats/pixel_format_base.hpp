@@ -35,7 +35,7 @@
 #include "linux/videodev2.h"
 
 #include "usb_cam/constants.hpp"
-
+#include "usb_cam/conversions.hpp"
 
 namespace usb_cam
 {
@@ -79,8 +79,12 @@ public:
   inline std::string name() {return m_name;}
 
   /// @brief Integer value of V4L2 capture pixel format
-  /// @return
+  /// @return uint32_t V4L2 capture pixel format
   inline uint32_t v4l2() {return m_v4l2;}
+
+  /// @brief String value of V4L2 capture pixel format
+  /// @return std::string V4L2 capture pixel format
+  inline std::string v4l2_str() { return usb_cam::conversions::FCC2S(m_v4l2); }
 
   /// @brief Name of output pixel (encoding) format to ROS
   /// @return

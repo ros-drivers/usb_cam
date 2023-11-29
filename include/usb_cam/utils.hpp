@@ -46,15 +46,12 @@ extern "C" {
 #include "linux/videodev2.h"
 
 #include "usb_cam/constants.hpp"
-#include "usb_cam/formats/pixel_format_base.hpp"
 
 
 namespace usb_cam
 {
 namespace utils
 {
-
-using usb_cam::formats::pixel_format_base;
 
 
 /// @brief Read more on IO methods here: https://lwn.net/Articles/240667/
