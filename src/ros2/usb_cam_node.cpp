@@ -189,19 +189,9 @@ void UsbCamNode::init()
     rclcpp::shutdown();
     return;
   }
+
   // configure the camera
   m_camera->configure(m_parameters, io_method);
-
-  RCLCPP_INFO(this->get_logger(), "This devices supproted formats:");
-  for (auto fmt : m_camera->supported_formats()) {
-    RCLCPP_INFO(
-      this->get_logger(),
-      "\t%s: %d x %d (%d Hz)",
-      fmt.format.description,
-      fmt.v4l2_fmt.width,
-      fmt.v4l2_fmt.height,
-      fmt.v4l2_fmt.discrete.denominator / fmt.v4l2_fmt.discrete.numerator);
-  }
 
   set_v4l2_params();
 

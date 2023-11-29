@@ -84,7 +84,7 @@ public:
 
   /// @brief String value of V4L2 capture pixel format
   /// @return std::string V4L2 capture pixel format
-  inline std::string v4l2_str() { return usb_cam::conversions::FCC2S(m_v4l2); }
+  inline std::string v4l2_str() {return usb_cam::conversions::FCC2S(m_v4l2);}
 
   /// @brief Name of output pixel (encoding) format to ROS
   /// @return
