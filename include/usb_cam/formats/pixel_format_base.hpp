@@ -43,6 +43,21 @@ namespace formats
 {
 
 
+/// @brief Helper structure to standardize all pixel_format_base
+/// constructors, so that they all have the same argument type.
+///
+/// This should also be easily extendable in the future if we need to add additional
+/// arguments for future pixel format(s) that are added.
+typedef struct
+{
+  std::string name = "";
+  int width = 640;
+  int height = 480;
+  size_t pixels = 640 * 480;
+  std::string av_device_format_str = "AV_PIX_FMT_YUV422P";
+} format_arguments_t;
+
+
 /// @brief Base pixel format class. Provide all necessary information for converting between
 /// V4L2 and ROS formats. Meant to be overridden if conversion function is required.
 class pixel_format_base

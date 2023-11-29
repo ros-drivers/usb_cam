@@ -960,6 +960,7 @@ inline AVPixelFormat get_av_pixel_format_from_string(const std::string & str)
   return STR_2_AVPIXFMT.find(fullFmtStr)->second;
 }
 
+
 /// @brief Get ROS PixelFormat from AVPixelFormat.
 /// @param avPixelFormat AVPixelFormat
 /// @return String specifying the ROS pixel format.
@@ -1032,6 +1033,17 @@ inline std::string get_ros_pixel_format_from_av_format(const AVPixelFormat & avP
   return ros_format;
 }
 
+
+/// @brief Overload to support av pixel formats being passed as strings
+/// @param avPixelFormat AvPixelFormat as string
+/// @return String specifying the ROS pixel format.
+inline std::string get_ros_pixel_format_from_av_format(const std::string avPixelFormatStr)
+{
+  auto fmt = get_av_pixel_format_from_string(avPixelFormatStr);
+  return get_ros_pixel_format_from_av_format(fmt);
+}
+
+
 /// @brief Get the number of channels from AVPixelFormat.
 /// @param avPixelFormat AVPixelFormat
 /// @return Number of channels as uint8
@@ -1074,6 +1086,17 @@ inline uint8_t get_channels_from_av_format(const AVPixelFormat & avPixelFormat)
   return channels;
 }
 
+
+/// @brief Overload of function below to support av pixel formats as strings
+/// @param avPixelFormatStr AvPixelFormat as string
+/// @return Number of channels as uint8_t
+inline uint8_t get_channels_from_av_format(const std::string & avPixelFormatStr)
+{
+  auto fmt = get_av_pixel_format_from_string(avPixelFormatStr);
+  return get_channels_from_av_format(fmt);
+}
+
+
 /// @brief Get the pixel bit depth from AVPixelFormat.
 /// @param avPixelFormat AVPixelFormat
 /// @return Bit depth as uint8
@@ -1104,6 +1127,16 @@ inline uint8_t get_bit_depth_from_av_format(const AVPixelFormat & avPixelFormat)
   }
 
   return bit_depth;
+}
+
+
+/// @brief Overload of function below to support passing av pixel formats as strings
+/// @param avPixelFormatStr AVPixelFormat as string
+/// @return Bit depth as uint8
+inline uint8_t get_bit_depth_from_av_format(const std::string & avPixelFormatStr)
+{
+  auto fmt = get_av_pixel_format_from_string(avPixelFormatStr);
+  return get_bit_depth_from_av_format(fmt);
 }
 
 }  // namespace formats

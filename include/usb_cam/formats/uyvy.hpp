@@ -44,7 +44,7 @@ namespace formats
 class UYVY : public pixel_format_base
 {
 public:
-  UYVY()
+  explicit UYVY(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "uyvy",
       V4L2_PIX_FMT_UYVY,
@@ -52,14 +52,16 @@ public:
       2,
       8,
       false)
-  {}
+  {
+    (void)args;
+  }
 };
 
 
 class UYVY2RGB : public pixel_format_base
 {
 public:
-  explicit UYVY2RGB(const int & number_of_pixels)
+  explicit UYVY2RGB(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "uyvy2rgb",
       V4L2_PIX_FMT_UYVY,
@@ -67,7 +69,7 @@ public:
       2,
       8,
       true),
-    m_number_of_pixels(number_of_pixels)
+    m_number_of_pixels(args.pixels)
   {}
 
   /// @brief In this format each four bytes is two pixels.
