@@ -44,7 +44,7 @@ namespace formats
 class RGB8 : public pixel_format_base
 {
 public:
-  RGB8()
+  explicit RGB8(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "rgb8",
       V4L2_PIX_FMT_RGB332,
@@ -52,7 +52,9 @@ public:
       3,
       8,
       false)
-  {}
+  {
+    (void)args;
+  }
 };
 
 }  // namespace formats

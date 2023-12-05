@@ -46,7 +46,7 @@ namespace formats
 class M4202RGB : public pixel_format_base
 {
 public:
-  M4202RGB(const int & width, const int & height)
+  explicit M4202RGB(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "m4202rgb",
       V4L2_PIX_FMT_M420,
@@ -54,8 +54,8 @@ public:
       3,
       8,
       true),
-    m_width(width),
-    m_height(height)
+    m_width(args.width),
+    m_height(args.height)
   {}
 
   /// @brief Convert a YUV420 (aka M420) image to RGB8

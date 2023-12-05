@@ -44,7 +44,7 @@ namespace formats
 class MONO8 : public pixel_format_base
 {
 public:
-  MONO8()
+  explicit MONO8(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "mono8",
       V4L2_PIX_FMT_GREY,
@@ -52,14 +52,16 @@ public:
       1,
       8,
       false)
-  {}
+  {
+    (void)args;
+  }
 };
 
 
 class MONO16 : public pixel_format_base
 {
 public:
-  MONO16()
+  explicit MONO16(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "mono16",
       V4L2_PIX_FMT_Y16,
@@ -67,7 +69,9 @@ public:
       1,
       16,
       false)
-  {}
+  {
+    (void)args;
+  }
 };
 
 
@@ -75,7 +79,7 @@ public:
 class Y102MONO8 : public pixel_format_base
 {
 public:
-  explicit Y102MONO8(const int & number_of_pixels)
+  explicit Y102MONO8(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "y102mono8",
       V4L2_PIX_FMT_Y10,
@@ -83,7 +87,7 @@ public:
       1,
       8,
       true),
-    m_number_of_pixels(number_of_pixels)
+    m_number_of_pixels(args.pixels)
   {}
 
   /// @brief Convert a Y10 (MONO10) image to MONO8

@@ -63,22 +63,21 @@ namespace formats
 class RAW_MJPEG : public pixel_format_base
 {
 public:
-  explicit RAW_MJPEG(const AVPixelFormat & avDeviceFormat)
+  explicit RAW_MJPEG(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "raw_mjpeg",
       V4L2_PIX_FMT_MJPEG,
-      get_ros_pixel_format_from_av_format(avDeviceFormat),
-      get_channels_from_av_format(avDeviceFormat),
-      get_bit_depth_from_av_format(avDeviceFormat),
+      get_ros_pixel_format_from_av_format(args.av_device_format_str),
+      get_channels_from_av_format(args.av_device_format_str),
+      get_bit_depth_from_av_format(args.av_device_format_str),
       false)
-  {
-  }
+  {}
 };
 
 class MJPEG2RGB : public pixel_format_base
 {
 public:
-  MJPEG2RGB(const int & width, const int & height, const AVPixelFormat & avDeviceFormat)
+  explicit MJPEG2RGB(const format_arguments_t & args = format_arguments_t())
   : pixel_format_base(
       "mjpeg2rgb",
       V4L2_PIX_FMT_MJPEG,
@@ -103,18 +102,18 @@ public:
 
     m_avcodec_context = avcodec_alloc_context3(m_avcodec);
 
-    m_avframe_device->width = width;
-    m_avframe_device->height = height;
+    m_avframe_device->width = args.width;
+    m_avframe_device->height = args.height;
     m_avframe_device->format = AV_PIX_FMT_YUV422P;
-    m_avframe_device->format = avDeviceFormat;
+    m_avframe_device->format = formats::get_av_pixel_format_from_string(args.av_device_format_str);
 
-    m_avframe_rgb->width = width;
-    m_avframe_rgb->height = height;
+    m_avframe_rgb->width = args.width;
+    m_avframe_rgb->height = args.height;
     m_avframe_rgb->format = AV_PIX_FMT_RGB24;
 
     m_sws_context = sws_getContext(
-      width, height, (AVPixelFormat)m_avframe_device->format,
-      width, height, (AVPixelFormat)m_avframe_rgb->format, SWS_FAST_BILINEAR,
+      args.width, args.height, (AVPixelFormat)m_avframe_device->format,
+      args.width, args.height, (AVPixelFormat)m_avframe_rgb->format, SWS_FAST_BILINEAR,
       NULL, NULL, NULL);
 
     // Suppress warnings from ffmpeg libraries to avoid spamming the console
@@ -122,8 +121,8 @@ public:
     av_log_set_flags(AV_LOG_SKIP_REPEATED);
     // av_log_set_flags(AV_LOG_PRINT_LEVEL);
 
-    m_avcodec_context->width = width;
-    m_avcodec_context->height = height;
+    m_avcodec_context->width = args.width;
+    m_avcodec_context->height = args.height;
     m_avcodec_context->pix_fmt = (AVPixelFormat)m_avframe_device->format;
     m_avcodec_context->codec_type = AVMEDIA_TYPE_VIDEO;
 
