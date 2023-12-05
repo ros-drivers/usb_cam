@@ -2,6 +2,64 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.0 (2023-12-04)
+------------------
+* Bump for release 0.8.0, update docs
+* Merge pull request `#300 <https://github.com/ros-drivers/usb_cam/issues/300>`_ from ros-drivers/263-check-if-specified-pixel-format-is-supported
+  263 check if specified pixel format is supported
+* Check if specified pixel format is supported by driver and by device
+  - Also fix typo in params_2 yaml file
+  - fix linter errors too
+* Add v4l2_str method to pixel_format_base class
+* Add common arguments strut to pixel format classes
+  - Use common arguments struct in all format classes
+* Merge pull request `#292 <https://github.com/ros-drivers/usb_cam/issues/292>`_ from ros-drivers/288-fix-uyvy2rgb-size
+  288 fix uyvy2rgb size
+* Merge pull request `#270 <https://github.com/ros-drivers/usb_cam/issues/270>`_ from boitumeloruf/raw-mjpeg-stream
+  Publish raw mjpeg stream directly via compressed image topic
+* Introduced funtions get\_..._from_av_format, fixed code style errors
+* Merge branch 'ros2' into raw-mjpeg-stream
+* fixed minor build issues
+* Merge branch 'ros2' into raw-mjpeg-stream
+* Merge branch 'ros2' of https://github.com/boitumeloruf/usb_cam into ros2
+* Merge pull request `#295 <https://github.com/ros-drivers/usb_cam/issues/295>`_ from ros-drivers/run-ci-on-ros2-branch-too
+  Run CI on ros2 branch pushes too
+* Bump checkout action to latest
+* Ensure ROS_VERSION is set for ROS build farms
+* Run CI on ros2 branch pushes too
+* Merge pull request `#294 <https://github.com/ros-drivers/usb_cam/issues/294>`_ from ros-drivers/291-auto-generate-ci-matrix
+  Auto generate ci matrix
+* Continue on error for ROS 1 build and test job
+* Hard-code noetic to actions matrix step until 2025
+* Handle rolling case where two docker images are listed
+* Switch to tagged version of the active_ros_distros script
+* Add basic ROS 1 node, update CMakelists and package.xml
+* Update CI to automatically generate distro matrix
+* Merge pull request `#293 <https://github.com/ros-drivers/usb_cam/issues/293>`_ from ros-drivers/add-mjpeg-device-format-param
+  Add mjpeg device format param
+* fixed cppcheck and uncrustify errors
+* Refactored use of av_device_format
+* Updated example YAML files to av_device_format
+* Added av_device_format parameter
+* Fix bytes per line logic for base image class
+* Fix number of channels for uyvy2rgb format
+* Merge pull request `#286 <https://github.com/ros-drivers/usb_cam/issues/286>`_ from ros-drivers/285-handle-unavailable-device
+  285 handle unavailable device, list available v4l2 devices
+* Fix manual triggering of CI pipelines
+* Check if given v4l2 device exists before opening it
+* fixed cppcheck and uncrustify errors
+* Merge pull request `#282 <https://github.com/ros-drivers/usb_cam/issues/282>`_ from flynneva/ros2-prepare-release
+  Bump to 0.7.0, generate CHANGELOG
+* Merge branch 'ros2' into raw-mjpeg-stream
+* Fix seg fault when unref av_packet using av_codec < 58.133.100
+* Merge branch 'ros2' into raw-mjpeg-stream
+* Refactored use of av_device_format
+* Merge branch 'ros-drivers:ros2' into ros2
+* Added feature to access raw mjpeg stream and publish directly on compressed image topic
+* Updated example YAML files to av_device_format
+* Added av_device_format parameter
+* Contributors: Boitumelo Ruf, Evan Flynn
+
 0.7.0 (2023-08-30)
 ------------------
 * Fix mjpeg invalid ptr and mjpeg memory leak

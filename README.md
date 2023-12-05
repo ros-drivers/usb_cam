@@ -18,7 +18,7 @@ For either MacOS or Windows - if you would like to try and get it working please
 
 Assuming you have a supported ROS 2 distro installed, run the following command to install the binary release:
 
-```bash
+```shell
 sudo apt-get install ros-<ros2-distro>-usb-cam
 ```
 
@@ -30,7 +30,7 @@ If for some reason you cannot install the binaries, follow the directions below 
 
 Clone/Download the source code into your workspace:
 
-```
+```shell
 cd /path/to/colcon_ws/src
 git clone https://github.com/ros-drivers/usb_cam.git
 ```
@@ -39,14 +39,14 @@ Or click on the green "Download zip" button on the repo's github webpage.
 
 Once downloaded and ensuring you have sourced your ROS 2 underlay, go ahead and install the dependencies:
 
-```
+```shell
 cd /path/to/colcon_ws
 rosdep install --from-paths src --ignore-src -y
 ```
 
 From there you should have all the necessary dependencies installed to compile the `usb_cam` package:
 
-```
+```shell
 cd /path/to/colcon_ws
 colcon build
 source /path/to/colcon_ws/install/setup.bash
@@ -68,7 +68,7 @@ The commands to run each of these different ways of starting the node are shown 
 
 **NOTE: you only need to run ONE of the commands below to run the node**
 
-```
+```shell
 # run the executable with default settings (without params file)
 ros2 run usb_cam usb_cam_node_exe
 
@@ -83,7 +83,7 @@ ros2 launch usb_cam camera.launch.py
 
 To launch multiple nodes at once, simply remap the namespace of each one:
 
-```
+```shell
 ros2 run usb_cam usb_cam_node_exe --remap __ns:=/usb_cam_0 --params-file /path/to/usb_cam/config/params_0.yaml
 ros2 run usb_cam usb_cam_node_exe --remap __ns:=/usb_cam_1 --params-file /path/to/usb_cam/config/params_1.yaml
 ```
@@ -96,20 +96,20 @@ To see a connected devices supported formats, run the `usb_cam_node` and observe
 
 An example output is:
 
-```
-[INFO] [1680452417.506838265] [usb_cam]: This devices supproted formats:
-[INFO] [1680452417.507199183] [usb_cam]:        Motion-JPEG: 1280 x 720 (30 Hz)
-[INFO] [1680452417.507225494] [usb_cam]:        Motion-JPEG: 960 x 540 (30 Hz)
-[INFO] [1680452417.507239725] [usb_cam]:        Motion-JPEG: 848 x 480 (30 Hz)
-[INFO] [1680452417.507252414] [usb_cam]:        Motion-JPEG: 640 x 480 (30 Hz)
-[INFO] [1680452417.507269112] [usb_cam]:        Motion-JPEG: 640 x 360 (30 Hz)
-[INFO] [1680452417.507281981] [usb_cam]:        YUYV 4:2:2: 640 x 480 (30 Hz)
-[INFO] [1680452417.507296745] [usb_cam]:        YUYV 4:2:2: 1280 x 720 (10 Hz)
-[INFO] [1680452417.507311292] [usb_cam]:        YUYV 4:2:2: 640 x 360 (30 Hz)
-[INFO] [1680452417.507325806] [usb_cam]:        YUYV 4:2:2: 424 x 240 (30 Hz)
-[INFO] [1680452417.507339344] [usb_cam]:        YUYV 4:2:2: 320 x 240 (30 Hz)
-[INFO] [1680452417.507354164] [usb_cam]:        YUYV 4:2:2: 320 x 180 (30 Hz)
-[INFO] [1680452417.507368658] [usb_cam]:        YUYV 4:2:2: 160 x 120 (30 Hz)
+```log
+This devices supproted formats:
+       Motion-JPEG: 1280 x 720 (30 Hz)
+       Motion-JPEG: 960 x 540 (30 Hz)
+       Motion-JPEG: 848 x 480 (30 Hz)
+       Motion-JPEG: 640 x 480 (30 Hz)
+       Motion-JPEG: 640 x 360 (30 Hz)
+       YUYV 4:2:2: 640 x 480 (30 Hz)
+       YUYV 4:2:2: 1280 x 720 (10 Hz)
+       YUYV 4:2:2: 640 x 360 (30 Hz)
+       YUYV 4:2:2: 424 x 240 (30 Hz)
+       YUYV 4:2:2: 320 x 240 (30 Hz)
+       YUYV 4:2:2: 320 x 180 (30 Hz)
+       YUYV 4:2:2: 160 x 120 (30 Hz)
 ```
 
 ### Driver supported formats
@@ -120,18 +120,14 @@ for details.
 After observing [the devices supported formats](#device-supported-formats), specify which
 format to use via [the parameters file](config/params.yaml) with the `pixel_format` parameter.
 
-Possible options for this driver today are:
+To see a list of all currently supported driver formats, run the following command:
 
-- `yuyv2rgb`: V4L2 capture format of YUYV, ROS image encoding of RGB8
-- `uyvy2rgb`: V4L2 capture format of UYVY, ROS image encoding of RGB8
-- `mjpeg2rgb`: V4L2 capture format of MJPEG, ROS image encoding of RGB8
-- `rgb8`: V4L2 capture format and ROS image encoding format of RGB8
-- `yuyv`: V4L2 capture format and ROS image encoding format of YUYV
-- `uyvy`: V4L2 capture format and ROS image encoding format of UYVY
-- `m4202rgb8`: V4L2 capture format of M420 (aka YUV420), ROS image encoding of RGB8
-- `mono8`: V4L2 capture format and ROS image encoding format of MONO8
-- `mono16`: V4L2 capture format and ROS image encoding format of MONO16
-- `y102mono8`: V4L2 capture format of Y10 (aka MONO10), ROS image encoding of MONO8
+```shell
+ros2 run usb_cam usb_cam_node_exe --ros-args -p pixel_format:="test"
+```
+
+Note: "test" here could be replaced with any non-supported pixel format string. The driver
+will detect if the given pixel format is supported or not.
 
 More formats and conversions can be added, contributions welcome!
 
@@ -154,7 +150,7 @@ The `usb_cam` should support compression by default since it uses `image_transpo
 
 Unfortunately `rviz2` and `show_image.py` do not support visualizing the compressed images just yet so you will need to republish the compressed image downstream to uncompress it:
 
-```
+```shell
 ros2 run image_transport republish compressed raw --ros-args --remap in/compressed:=image_raw/compressed --remap out:=image_raw/uncompressed
 ```
 
@@ -165,13 +161,13 @@ is a flag to add these compile commands to the targets.
 
 To enable them, pass in the `SANITIZE=1` flag:
 
-```
+```shell
 colcon build --packages-select usb_cam --cmake-args -DSANITIZE=1
 ```
 
 Once built, run the nodes executable directly and pass any `ASAN_OPTIONS` that are needed:
 
-```
+```shell
 ASAN_OPTIONS=new_delete_type_mismatch=0 ./install/usb_cam/lib/usb_cam/usb_cam_node_exe 
 ```
 
@@ -185,7 +181,9 @@ down performance.
 [Doxygen](http://docs.ros.org/indigo/api/usb_cam/html/) files can be found on the ROS wiki.
 
 ### License
+
 usb_cam is released with a BSD license. For full terms and conditions, see the [LICENSE](LICENSE) file.
 
 ### Authors
+
 See the [AUTHORS](AUTHORS.md) file for a full list of contributors.
