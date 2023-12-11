@@ -49,6 +49,10 @@ from launch_ros.actions import Node  # noqa: E402
 How to check available webcams from the command line?
     $ sudo apt-get install v4l-utils
     $ v4l2-ctl --list-devices
+
+    $ sudo apt-get install ros-foxy-image-transport-plugins
+    $ sudo apt-get install ros-foxy-camera-info-manager
+    $ pip3 install pydantic
 '''
 
 CAMERAS = []
