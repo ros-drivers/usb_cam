@@ -45,23 +45,37 @@ from launch import LaunchDescription  # noqa: E402
 from launch.actions import GroupAction  # noqa: E402
 from launch_ros.actions import Node  # noqa: E402
 
+'''
+How to check available webcams from the command line?
+    $ sudo apt-get install v4l-utils
+    $ v4l2-ctl --list-devices
+'''
 
 CAMERAS = []
 CAMERAS.append(
     CameraConfig(
         name='camera1',
-        param_path=Path(USB_CAM_DIR, 'config', 'params_1.yaml')
+        param_path=Path(USB_CAM_DIR, 'config', 'params_1.yaml'),
+        remappings=None,
+        namespace=None
     )
-    # Add more Camera's here and they will automatically be launched below
+)
+CAMERAS.append(
+    CameraConfig(
+        name='camera2',
+        param_path=Path(USB_CAM_DIR, 'config', 'params_2.yaml'),
+        remappings=None,
+        namespace=None
+    )
 )
 
 
 def generate_launch_description():
     ld = LaunchDescription()
 
-    parser = argparse.ArgumentParser(description='usb_cam demo')
-    parser.add_argument('-n', '--node-name', dest='node_name', type=str,
-                        help='name for device', default='usb_cam')
+    # parser = argparse.ArgumentParser(description='usb_cam demo')
+    # parser.add_argument('-n', '--node-name', dest='node_name', type=str,
+    #                     help='name for device', default='usb_cam')
 
     camera_nodes = [
         Node(

@@ -48,7 +48,7 @@ class CameraConfig(BaseModel):
             raise FileNotFoundError(f'Could not find parameter file: {value}')
         return value
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_root(cls, values):
         name = values.get('name')
         remappings = values.get('remappings')
