@@ -2,3 +2,8 @@
 .project
 .settings
 **__pycache__
+
+
+# documentation
+docs/xml
+site/
