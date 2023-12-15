@@ -108,30 +108,6 @@ jobs:
         with:
           name: ${{ env.DOXYBOOK_ARTIFACT }}
           path: ${{ env.WORKSPACE_PATH }}/docs/api-reference
-      - name: Download Foxy reports
-        continue-on-error: true  # Still publish docs even if reports are not available
-        uses: actions/download-artifact@v3
-        with:
-          name: autoware_benchmark_reports_foxy
-          path: ${{ env.WORKSPACE_PATH }}/docs/reports/foxy
-      - name: Download Galactic reports
-        continue-on-error: true  # Still publish docs even if reports are not available
-        uses: actions/download-artifact@v3
-        with:
-          name: autoware_benchmark_reports_galactic
-          path: ${{ env.WORKSPACE_PATH }}/docs/reports/galactic
-      - name: Download Humble reports
-        continue-on-error: true  # Still publish docs even if reports are not available
-        uses: actions/download-artifact@v3
-        with:
-          name: autoware_benchmark_reports_humble
-          path: ${{ env.WORKSPACE_PATH }}/docs/reports/humble
-      - name: Download Rolling reports
-        continue-on-error: true  # Still publish docs even if reports are not available
-        uses: actions/download-artifact@v3
-        with:
-          name: autoware_benchmark_reports_rolling
-          path: ${{ env.WORKSPACE_PATH }}/docs/reports/rolling
       - name: Deploy mkdocs site
         shell: bash
         run: |
