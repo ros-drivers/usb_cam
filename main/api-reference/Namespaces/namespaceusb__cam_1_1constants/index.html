@@ -1,0 +1,2118 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Evan Flynn">
+      
+      
+        <link rel="canonical" href="https://ros-drivers.github.io/usb_cam/main/api-reference/Namespaces/namespaceusb__cam_1_1constants/">
+      
+      
+        <link rel="prev" href="../namespaceusb__cam/">
+      
+      
+        <link rel="next" href="../namespaceusb__cam_1_1conversions/">
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
+    
+    
+      
+        <title>usb_cam::constants - usb_cam Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.26e3688c.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#usb_camconstants" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="usb_cam Documentation" class="md-header__button md-logo" aria-label="usb_cam Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            usb_cam Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              usb_cam::constants
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ros-drivers/usb_cam.git" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="usb_cam Documentation" class="md-nav__button md-logo" aria-label="usb_cam Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    usb_cam Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ros-drivers/usb_cam.git" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../Classes/">Classes</a>
+          
+            <label for="__nav_2_1">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          Classes
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1UsbCam/" class="md-nav__link">
+        usb_cam::UsbCam
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1UsbCamNode/" class="md-nav__link">
+        usb_cam::UsbCamNode
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1M4202RGB/" class="md-nav__link">
+        usb_cam::formats::M4202RGB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1MJPEG2RGB/" class="md-nav__link">
+        usb_cam::formats::MJPEG2RGB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1MONO16/" class="md-nav__link">
+        usb_cam::formats::MONO16
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1MONO8/" class="md-nav__link">
+        usb_cam::formats::MONO8
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1RAW__MJPEG/" class="md-nav__link">
+        usb_cam::formats::RAW_MJPEG
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1RGB8/" class="md-nav__link">
+        usb_cam::formats::RGB8
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1UYVY/" class="md-nav__link">
+        usb_cam::formats::UYVY
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1UYVY2RGB/" class="md-nav__link">
+        usb_cam::formats::UYVY2RGB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1Y102MONO8/" class="md-nav__link">
+        usb_cam::formats::Y102MONO8
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1YUYV/" class="md-nav__link">
+        usb_cam::formats::YUYV
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1YUYV2RGB/" class="md-nav__link">
+        usb_cam::formats::YUYV2RGB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1default__pixel__format/" class="md-nav__link">
+        usb_cam::formats::default_pixel_format
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/classusb__cam_1_1formats_1_1pixel__format__base/" class="md-nav__link">
+        usb_cam::formats::pixel_format_base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/structusb__cam_1_1capture__format__t/" class="md-nav__link">
+        usb_cam::capture_format_t
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/structusb__cam_1_1formats_1_1format__arguments__t/" class="md-nav__link">
+        usb_cam::formats::format_arguments_t
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/structusb__cam_1_1image__t/" class="md-nav__link">
+        usb_cam::image_t
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/structusb__cam_1_1parameters__t/" class="md-nav__link">
+        usb_cam::parameters_t
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Classes/structusb__cam_1_1utils_1_1buffer/" class="md-nav__link">
+        usb_cam::utils::buffer
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../Modules/">Modules</a>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          Modules
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">Namespaces</a>
+          
+            <label for="__nav_2_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Namespaces
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespacerclcpp/" class="md-nav__link">
+        rclcpp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespaceusb__cam/" class="md-nav__link">
+        usb_cam
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          usb_cam::constants
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        usb_cam::constants
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attributes-documentation" class="md-nav__link">
+    Attributes Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-uchar_clipping_table" class="md-nav__link">
+    variable uchar_clipping_table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-clipping_table_offset" class="md-nav__link">
+    variable clipping_table_offset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-yuv422_yuy2" class="md-nav__link">
+    variable YUV422_YUY2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-yuv422" class="md-nav__link">
+    variable YUV422
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-unknown" class="md-nav__link">
+    variable UNKNOWN
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8uc4" class="md-nav__link">
+    variable TYPE_8UC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8uc3" class="md-nav__link">
+    variable TYPE_8UC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8uc2" class="md-nav__link">
+    variable TYPE_8UC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8uc1" class="md-nav__link">
+    variable TYPE_8UC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8sc4" class="md-nav__link">
+    variable TYPE_8SC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8sc3" class="md-nav__link">
+    variable TYPE_8SC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8sc2" class="md-nav__link">
+    variable TYPE_8SC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8sc1" class="md-nav__link">
+    variable TYPE_8SC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_64fc4" class="md-nav__link">
+    variable TYPE_64FC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_64fc3" class="md-nav__link">
+    variable TYPE_64FC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_64fc2" class="md-nav__link">
+    variable TYPE_64FC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_64fc1" class="md-nav__link">
+    variable TYPE_64FC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32sc4" class="md-nav__link">
+    variable TYPE_32SC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32sc3" class="md-nav__link">
+    variable TYPE_32SC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32sc2" class="md-nav__link">
+    variable TYPE_32SC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32sc1" class="md-nav__link">
+    variable TYPE_32SC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32fc4" class="md-nav__link">
+    variable TYPE_32FC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32fc3" class="md-nav__link">
+    variable TYPE_32FC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32fc2" class="md-nav__link">
+    variable TYPE_32FC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32fc1" class="md-nav__link">
+    variable TYPE_32FC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16uc4" class="md-nav__link">
+    variable TYPE_16UC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16uc3" class="md-nav__link">
+    variable TYPE_16UC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16uc2" class="md-nav__link">
+    variable TYPE_16UC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16uc1" class="md-nav__link">
+    variable TYPE_16UC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16sc4" class="md-nav__link">
+    variable TYPE_16SC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16sc3" class="md-nav__link">
+    variable TYPE_16SC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16sc2" class="md-nav__link">
+    variable TYPE_16SC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16sc1" class="md-nav__link">
+    variable TYPE_16SC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-rgba8" class="md-nav__link">
+    variable RGBA8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-rgba16" class="md-nav__link">
+    variable RGBA16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-rgb8" class="md-nav__link">
+    variable RGB8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-rgb16" class="md-nav__link">
+    variable RGB16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-nv24" class="md-nav__link">
+    variable NV24
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-nv21" class="md-nav__link">
+    variable NV21
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-mono8" class="md-nav__link">
+    variable MONO8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-mono16" class="md-nav__link">
+    variable MONO16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bgra8" class="md-nav__link">
+    variable BGRA8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bgra16" class="md-nav__link">
+    variable BGRA16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bgr8" class="md-nav__link">
+    variable BGR8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bgr16" class="md-nav__link">
+    variable BGR16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_rggb8" class="md-nav__link">
+    variable BAYER_RGGB8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_rggb16" class="md-nav__link">
+    variable BAYER_RGGB16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_grbg8" class="md-nav__link">
+    variable BAYER_GRBG8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_grbg16" class="md-nav__link">
+    variable BAYER_GRBG16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_gbrg8" class="md-nav__link">
+    variable BAYER_GBRG8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_gbrg16" class="md-nav__link">
+    variable BAYER_GBRG16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_bggr8" class="md-nav__link">
+    variable BAYER_BGGR8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_bggr16" class="md-nav__link">
+    variable BAYER_BGGR16
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespaceusb__cam_1_1conversions/" class="md-nav__link">
+        usb_cam::conversions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespaceusb__cam_1_1formats/" class="md-nav__link">
+        usb_cam::formats
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespaceusb__cam_1_1utils/" class="md-nav__link">
+        usb_cam::utils
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attributes-documentation" class="md-nav__link">
+    Attributes Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-uchar_clipping_table" class="md-nav__link">
+    variable uchar_clipping_table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-clipping_table_offset" class="md-nav__link">
+    variable clipping_table_offset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-yuv422_yuy2" class="md-nav__link">
+    variable YUV422_YUY2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-yuv422" class="md-nav__link">
+    variable YUV422
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-unknown" class="md-nav__link">
+    variable UNKNOWN
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8uc4" class="md-nav__link">
+    variable TYPE_8UC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8uc3" class="md-nav__link">
+    variable TYPE_8UC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8uc2" class="md-nav__link">
+    variable TYPE_8UC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8uc1" class="md-nav__link">
+    variable TYPE_8UC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8sc4" class="md-nav__link">
+    variable TYPE_8SC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8sc3" class="md-nav__link">
+    variable TYPE_8SC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8sc2" class="md-nav__link">
+    variable TYPE_8SC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_8sc1" class="md-nav__link">
+    variable TYPE_8SC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_64fc4" class="md-nav__link">
+    variable TYPE_64FC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_64fc3" class="md-nav__link">
+    variable TYPE_64FC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_64fc2" class="md-nav__link">
+    variable TYPE_64FC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_64fc1" class="md-nav__link">
+    variable TYPE_64FC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32sc4" class="md-nav__link">
+    variable TYPE_32SC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32sc3" class="md-nav__link">
+    variable TYPE_32SC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32sc2" class="md-nav__link">
+    variable TYPE_32SC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32sc1" class="md-nav__link">
+    variable TYPE_32SC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32fc4" class="md-nav__link">
+    variable TYPE_32FC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32fc3" class="md-nav__link">
+    variable TYPE_32FC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32fc2" class="md-nav__link">
+    variable TYPE_32FC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_32fc1" class="md-nav__link">
+    variable TYPE_32FC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16uc4" class="md-nav__link">
+    variable TYPE_16UC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16uc3" class="md-nav__link">
+    variable TYPE_16UC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16uc2" class="md-nav__link">
+    variable TYPE_16UC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16uc1" class="md-nav__link">
+    variable TYPE_16UC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16sc4" class="md-nav__link">
+    variable TYPE_16SC4
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16sc3" class="md-nav__link">
+    variable TYPE_16SC3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16sc2" class="md-nav__link">
+    variable TYPE_16SC2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-type_16sc1" class="md-nav__link">
+    variable TYPE_16SC1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-rgba8" class="md-nav__link">
+    variable RGBA8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-rgba16" class="md-nav__link">
+    variable RGBA16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-rgb8" class="md-nav__link">
+    variable RGB8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-rgb16" class="md-nav__link">
+    variable RGB16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-nv24" class="md-nav__link">
+    variable NV24
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-nv21" class="md-nav__link">
+    variable NV21
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-mono8" class="md-nav__link">
+    variable MONO8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-mono16" class="md-nav__link">
+    variable MONO16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bgra8" class="md-nav__link">
+    variable BGRA8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bgra16" class="md-nav__link">
+    variable BGRA16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bgr8" class="md-nav__link">
+    variable BGR8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bgr16" class="md-nav__link">
+    variable BGR16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_rggb8" class="md-nav__link">
+    variable BAYER_RGGB8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_rggb16" class="md-nav__link">
+    variable BAYER_RGGB16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_grbg8" class="md-nav__link">
+    variable BAYER_GRBG8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_grbg16" class="md-nav__link">
+    variable BAYER_GRBG16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_gbrg8" class="md-nav__link">
+    variable BAYER_GBRG8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_gbrg16" class="md-nav__link">
+    variable BAYER_GBRG16
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_bggr8" class="md-nav__link">
+    variable BAYER_BGGR8
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-bayer_bggr16" class="md-nav__link">
+    variable BAYER_BGGR16
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="usb_camconstants">usb_cam::constants</h1>
+<h2 id="attributes">Attributes</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>const std::vector&lt; unsigned char &gt;</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-uchar-clipping-table">uchar_clipping_table</a></strong></td>
+</tr>
+<tr>
+<td>const int</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-clipping-table-offset">clipping_table_offset</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-yuv422-yuy2">YUV422_YUY2</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-yuv422">YUV422</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-unknown">UNKNOWN</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-8uc4">TYPE_8UC4</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-8uc3">TYPE_8UC3</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-8uc2">TYPE_8UC2</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-8uc1">TYPE_8UC1</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-8sc4">TYPE_8SC4</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-8sc3">TYPE_8SC3</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-8sc2">TYPE_8SC2</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-8sc1">TYPE_8SC1</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-64fc4">TYPE_64FC4</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-64fc3">TYPE_64FC3</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-64fc2">TYPE_64FC2</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-64fc1">TYPE_64FC1</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-32sc4">TYPE_32SC4</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-32sc3">TYPE_32SC3</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-32sc2">TYPE_32SC2</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-32sc1">TYPE_32SC1</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-32fc4">TYPE_32FC4</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-32fc3">TYPE_32FC3</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-32fc2">TYPE_32FC2</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-32fc1">TYPE_32FC1</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-16uc4">TYPE_16UC4</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-16uc3">TYPE_16UC3</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-16uc2">TYPE_16UC2</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-16uc1">TYPE_16UC1</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-16sc4">TYPE_16SC4</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-16sc3">TYPE_16SC3</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-16sc2">TYPE_16SC2</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-type-16sc1">TYPE_16SC1</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-rgba8">RGBA8</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-rgba16">RGBA16</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-rgb8">RGB8</a></strong> <br>image encodings duplicated from <a href="https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp">https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp</a></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-rgb16">RGB16</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-nv24">NV24</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-nv21">NV21</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-mono8">MONO8</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-mono16">MONO16</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bgra8">BGRA8</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bgra16">BGRA16</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bgr8">BGR8</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bgr16">BGR16</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bayer-rggb8">BAYER_RGGB8</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bayer-rggb16">BAYER_RGGB16</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bayer-grbg8">BAYER_GRBG8</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bayer-grbg16">BAYER_GRBG16</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bayer-gbrg8">BAYER_GBRG8</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bayer-gbrg16">BAYER_GBRG16</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bayer-bggr8">BAYER_BGGR8</a></strong></td>
+</tr>
+<tr>
+<td>const char</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Namespaces/namespaceusb__cam_1_1constants/#variable-bayer-bggr16">BAYER_BGGR16</a></strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="attributes-documentation">Attributes Documentation</h2>
+<h3 id="variable-uchar_clipping_table">variable uchar_clipping_table</h3>
+<pre><code class="language-cpp">const std::vector&lt; unsigned char &gt; uchar_clipping_table;
+</code></pre>
+<h3 id="variable-clipping_table_offset">variable clipping_table_offset</h3>
+<pre><code class="language-cpp">const int clipping_table_offset = 128;
+</code></pre>
+<h3 id="variable-yuv422_yuy2">variable YUV422_YUY2</h3>
+<pre><code class="language-cpp">const char YUV422_YUY2 = &quot;yuv422_yuy2&quot;;
+</code></pre>
+<h3 id="variable-yuv422">variable YUV422</h3>
+<pre><code class="language-cpp">const char YUV422 = &quot;yuv422&quot;;
+</code></pre>
+<h3 id="variable-unknown">variable UNKNOWN</h3>
+<pre><code class="language-cpp">const char UNKNOWN = &quot;unknown&quot;;
+</code></pre>
+<h3 id="variable-type_8uc4">variable TYPE_8UC4</h3>
+<pre><code class="language-cpp">const char TYPE_8UC4 = &quot;8UC4&quot;;
+</code></pre>
+<h3 id="variable-type_8uc3">variable TYPE_8UC3</h3>
+<pre><code class="language-cpp">const char TYPE_8UC3 = &quot;8UC3&quot;;
+</code></pre>
+<h3 id="variable-type_8uc2">variable TYPE_8UC2</h3>
+<pre><code class="language-cpp">const char TYPE_8UC2 = &quot;8UC2&quot;;
+</code></pre>
+<h3 id="variable-type_8uc1">variable TYPE_8UC1</h3>
+<pre><code class="language-cpp">const char TYPE_8UC1 = &quot;8UC1&quot;;
+</code></pre>
+<h3 id="variable-type_8sc4">variable TYPE_8SC4</h3>
+<pre><code class="language-cpp">const char TYPE_8SC4 = &quot;8SC4&quot;;
+</code></pre>
+<h3 id="variable-type_8sc3">variable TYPE_8SC3</h3>
+<pre><code class="language-cpp">const char TYPE_8SC3 = &quot;8SC3&quot;;
+</code></pre>
+<h3 id="variable-type_8sc2">variable TYPE_8SC2</h3>
+<pre><code class="language-cpp">const char TYPE_8SC2 = &quot;8SC2&quot;;
+</code></pre>
+<h3 id="variable-type_8sc1">variable TYPE_8SC1</h3>
+<pre><code class="language-cpp">const char TYPE_8SC1 = &quot;8SC1&quot;;
+</code></pre>
+<h3 id="variable-type_64fc4">variable TYPE_64FC4</h3>
+<pre><code class="language-cpp">const char TYPE_64FC4 = &quot;64FC4&quot;;
+</code></pre>
+<h3 id="variable-type_64fc3">variable TYPE_64FC3</h3>
+<pre><code class="language-cpp">const char TYPE_64FC3 = &quot;64FC3&quot;;
+</code></pre>
+<h3 id="variable-type_64fc2">variable TYPE_64FC2</h3>
+<pre><code class="language-cpp">const char TYPE_64FC2 = &quot;64FC2&quot;;
+</code></pre>
+<h3 id="variable-type_64fc1">variable TYPE_64FC1</h3>
+<pre><code class="language-cpp">const char TYPE_64FC1 = &quot;64FC1&quot;;
+</code></pre>
+<h3 id="variable-type_32sc4">variable TYPE_32SC4</h3>
+<pre><code class="language-cpp">const char TYPE_32SC4 = &quot;32SC4&quot;;
+</code></pre>
+<h3 id="variable-type_32sc3">variable TYPE_32SC3</h3>
+<pre><code class="language-cpp">const char TYPE_32SC3 = &quot;32SC3&quot;;
+</code></pre>
+<h3 id="variable-type_32sc2">variable TYPE_32SC2</h3>
+<pre><code class="language-cpp">const char TYPE_32SC2 = &quot;32SC2&quot;;
+</code></pre>
+<h3 id="variable-type_32sc1">variable TYPE_32SC1</h3>
+<pre><code class="language-cpp">const char TYPE_32SC1 = &quot;32SC1&quot;;
+</code></pre>
+<h3 id="variable-type_32fc4">variable TYPE_32FC4</h3>
+<pre><code class="language-cpp">const char TYPE_32FC4 = &quot;32FC4&quot;;
+</code></pre>
+<h3 id="variable-type_32fc3">variable TYPE_32FC3</h3>
+<pre><code class="language-cpp">const char TYPE_32FC3 = &quot;32FC3&quot;;
+</code></pre>
+<h3 id="variable-type_32fc2">variable TYPE_32FC2</h3>
+<pre><code class="language-cpp">const char TYPE_32FC2 = &quot;32FC2&quot;;
+</code></pre>
+<h3 id="variable-type_32fc1">variable TYPE_32FC1</h3>
+<pre><code class="language-cpp">const char TYPE_32FC1 = &quot;32FC1&quot;;
+</code></pre>
+<h3 id="variable-type_16uc4">variable TYPE_16UC4</h3>
+<pre><code class="language-cpp">const char TYPE_16UC4 = &quot;16UC4&quot;;
+</code></pre>
+<h3 id="variable-type_16uc3">variable TYPE_16UC3</h3>
+<pre><code class="language-cpp">const char TYPE_16UC3 = &quot;16UC3&quot;;
+</code></pre>
+<h3 id="variable-type_16uc2">variable TYPE_16UC2</h3>
+<pre><code class="language-cpp">const char TYPE_16UC2 = &quot;16UC2&quot;;
+</code></pre>
+<h3 id="variable-type_16uc1">variable TYPE_16UC1</h3>
+<pre><code class="language-cpp">const char TYPE_16UC1 = &quot;16UC1&quot;;
+</code></pre>
+<h3 id="variable-type_16sc4">variable TYPE_16SC4</h3>
+<pre><code class="language-cpp">const char TYPE_16SC4 = &quot;16SC4&quot;;
+</code></pre>
+<h3 id="variable-type_16sc3">variable TYPE_16SC3</h3>
+<pre><code class="language-cpp">const char TYPE_16SC3 = &quot;16SC3&quot;;
+</code></pre>
+<h3 id="variable-type_16sc2">variable TYPE_16SC2</h3>
+<pre><code class="language-cpp">const char TYPE_16SC2 = &quot;16SC2&quot;;
+</code></pre>
+<h3 id="variable-type_16sc1">variable TYPE_16SC1</h3>
+<pre><code class="language-cpp">const char TYPE_16SC1 = &quot;16SC1&quot;;
+</code></pre>
+<h3 id="variable-rgba8">variable RGBA8</h3>
+<pre><code class="language-cpp">const char RGBA8 = &quot;rgba8&quot;;
+</code></pre>
+<h3 id="variable-rgba16">variable RGBA16</h3>
+<pre><code class="language-cpp">const char RGBA16 = &quot;rgba16&quot;;
+</code></pre>
+<h3 id="variable-rgb8">variable RGB8</h3>
+<pre><code class="language-cpp">const char RGB8 = &quot;rgb8&quot;;
+</code></pre>
+<p>image encodings duplicated from <a href="https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp">https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp</a></p>
+<h3 id="variable-rgb16">variable RGB16</h3>
+<pre><code class="language-cpp">const char RGB16 = &quot;rgb16&quot;;
+</code></pre>
+<h3 id="variable-nv24">variable NV24</h3>
+<pre><code class="language-cpp">const char NV24 = &quot;nv24&quot;;
+</code></pre>
+<h3 id="variable-nv21">variable NV21</h3>
+<pre><code class="language-cpp">const char NV21 = &quot;nv21&quot;;
+</code></pre>
+<h3 id="variable-mono8">variable MONO8</h3>
+<pre><code class="language-cpp">const char MONO8 = &quot;mono8&quot;;
+</code></pre>
+<h3 id="variable-mono16">variable MONO16</h3>
+<pre><code class="language-cpp">const char MONO16 = &quot;mono16&quot;;
+</code></pre>
+<h3 id="variable-bgra8">variable BGRA8</h3>
+<pre><code class="language-cpp">const char BGRA8 = &quot;bgra8&quot;;
+</code></pre>
+<h3 id="variable-bgra16">variable BGRA16</h3>
+<pre><code class="language-cpp">const char BGRA16 = &quot;bgra16&quot;;
+</code></pre>
+<h3 id="variable-bgr8">variable BGR8</h3>
+<pre><code class="language-cpp">const char BGR8 = &quot;bgr8&quot;;
+</code></pre>
+<h3 id="variable-bgr16">variable BGR16</h3>
+<pre><code class="language-cpp">const char BGR16 = &quot;bgr16&quot;;
+</code></pre>
+<h3 id="variable-bayer_rggb8">variable BAYER_RGGB8</h3>
+<pre><code class="language-cpp">const char BAYER_RGGB8 = &quot;bayer_rggb8&quot;;
+</code></pre>
+<h3 id="variable-bayer_rggb16">variable BAYER_RGGB16</h3>
+<pre><code class="language-cpp">const char BAYER_RGGB16 = &quot;bayer_rggb16&quot;;
+</code></pre>
+<h3 id="variable-bayer_grbg8">variable BAYER_GRBG8</h3>
+<pre><code class="language-cpp">const char BAYER_GRBG8 = &quot;bayer_grbg8&quot;;
+</code></pre>
+<h3 id="variable-bayer_grbg16">variable BAYER_GRBG16</h3>
+<pre><code class="language-cpp">const char BAYER_GRBG16 = &quot;bayer_grbg16&quot;;
+</code></pre>
+<h3 id="variable-bayer_gbrg8">variable BAYER_GBRG8</h3>
+<pre><code class="language-cpp">const char BAYER_GBRG8 = &quot;bayer_gbrg8&quot;;
+</code></pre>
+<h3 id="variable-bayer_gbrg16">variable BAYER_GBRG16</h3>
+<pre><code class="language-cpp">const char BAYER_GBRG16 = &quot;bayer_gbrg16&quot;;
+</code></pre>
+<h3 id="variable-bayer_bggr8">variable BAYER_BGGR8</h3>
+<pre><code class="language-cpp">const char BAYER_BGGR8 = &quot;bayer_bggr8&quot;;
+</code></pre>
+<h3 id="variable-bayer_bggr16">variable BAYER_BGGR16</h3>
+<pre><code class="language-cpp">const char BAYER_BGGR16 = &quot;bayer_bggr16&quot;;
+</code></pre>
+<hr />
+<p>Updated on 2023-12-15 at 22:45:38 +0000</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.tracking"], "search": "../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.b425cdc4.min.js"></script>
+      
+    
+  </body>
+</html>

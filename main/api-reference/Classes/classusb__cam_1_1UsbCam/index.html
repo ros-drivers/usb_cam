@@ -1,0 +1,1756 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Evan Flynn">
+      
+      
+        <link rel="canonical" href="https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1UsbCam/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../classusb__cam_1_1UsbCamNode/">
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
+    
+    
+      
+        <title>usb_cam::UsbCam - usb_cam Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.26e3688c.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#usb_camusbcam" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="usb_cam Documentation" class="md-header__button md-logo" aria-label="usb_cam Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            usb_cam Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              usb_cam::UsbCam
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ros-drivers/usb_cam.git" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="usb_cam Documentation" class="md-nav__button md-logo" aria-label="usb_cam Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    usb_cam Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ros-drivers/usb_cam.git" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">Classes</a>
+          
+            <label for="__nav_2_1">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          Classes
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          usb_cam::UsbCam
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        usb_cam::UsbCam
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions" class="md-nav__link">
+    Public Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions-documentation" class="md-nav__link">
+    Public Functions Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Functions Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-usbcam" class="md-nav__link">
+    function ~UsbCam
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-supported_formats" class="md-nav__link">
+    function supported_formats
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-stop_capturing" class="md-nav__link">
+    function stop_capturing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-start_capturing" class="md-nav__link">
+    function start_capturing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-start" class="md-nav__link">
+    function start
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-shutdown" class="md-nav__link">
+    function shutdown
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_v4l_parameter" class="md-nav__link">
+    function set_v4l_parameter
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_v4l_parameter_1" class="md-nav__link">
+    function set_v4l_parameter
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_pixel_format" class="md-nav__link">
+    function set_pixel_format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_pixel_format_1" class="md-nav__link">
+    function set_pixel_format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_auto_focus" class="md-nav__link">
+    function set_auto_focus
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-number_of_buffers" class="md-nav__link">
+    function number_of_buffers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-is_capturing" class="md-nav__link">
+    function is_capturing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_supported_formats" class="md-nav__link">
+    function get_supported_formats
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_pixel_format" class="md-nav__link">
+    function get_pixel_format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_io_method" class="md-nav__link">
+    function get_io_method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_width" class="md-nav__link">
+    function get_image_width
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_timestamp" class="md-nav__link">
+    function get_image_timestamp
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_step" class="md-nav__link">
+    function get_image_step
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_size_in_pixels" class="md-nav__link">
+    function get_image_size_in_pixels
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_size_in_bytes" class="md-nav__link">
+    function get_image_size_in_bytes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_height" class="md-nav__link">
+    function get_image_height
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image" class="md-nav__link">
+    function get_image
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_1" class="md-nav__link">
+    function get_image
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_fd" class="md-nav__link">
+    function get_fd
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_epoch_time_shift_us" class="md-nav__link">
+    function get_epoch_time_shift_us
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_device_name" class="md-nav__link">
+    function get_device_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_buffers" class="md-nav__link">
+    function get_buffers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_avoptions" class="md-nav__link">
+    function get_avoptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_avframe" class="md-nav__link">
+    function get_avframe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_avcodec_context" class="md-nav__link">
+    function get_avcodec_context
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_avcodec" class="md-nav__link">
+    function get_avcodec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-configure" class="md-nav__link">
+    function configure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-usbcam_1" class="md-nav__link">
+    function UsbCam
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1UsbCamNode/" class="md-nav__link">
+        usb_cam::UsbCamNode
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1M4202RGB/" class="md-nav__link">
+        usb_cam::formats::M4202RGB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1MJPEG2RGB/" class="md-nav__link">
+        usb_cam::formats::MJPEG2RGB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1MONO16/" class="md-nav__link">
+        usb_cam::formats::MONO16
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1MONO8/" class="md-nav__link">
+        usb_cam::formats::MONO8
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1RAW__MJPEG/" class="md-nav__link">
+        usb_cam::formats::RAW_MJPEG
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1RGB8/" class="md-nav__link">
+        usb_cam::formats::RGB8
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1UYVY/" class="md-nav__link">
+        usb_cam::formats::UYVY
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1UYVY2RGB/" class="md-nav__link">
+        usb_cam::formats::UYVY2RGB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1Y102MONO8/" class="md-nav__link">
+        usb_cam::formats::Y102MONO8
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1YUYV/" class="md-nav__link">
+        usb_cam::formats::YUYV
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1YUYV2RGB/" class="md-nav__link">
+        usb_cam::formats::YUYV2RGB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1default__pixel__format/" class="md-nav__link">
+        usb_cam::formats::default_pixel_format
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classusb__cam_1_1formats_1_1pixel__format__base/" class="md-nav__link">
+        usb_cam::formats::pixel_format_base
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structusb__cam_1_1capture__format__t/" class="md-nav__link">
+        usb_cam::capture_format_t
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structusb__cam_1_1formats_1_1format__arguments__t/" class="md-nav__link">
+        usb_cam::formats::format_arguments_t
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structusb__cam_1_1image__t/" class="md-nav__link">
+        usb_cam::image_t
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structusb__cam_1_1parameters__t/" class="md-nav__link">
+        usb_cam::parameters_t
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structusb__cam_1_1utils_1_1buffer/" class="md-nav__link">
+        usb_cam::utils::buffer
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../Modules/">Modules</a>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          Modules
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../Namespaces/">Namespaces</a>
+          
+            <label for="__nav_2_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Namespaces
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Namespaces/namespacerclcpp/" class="md-nav__link">
+        rclcpp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Namespaces/namespaceusb__cam/" class="md-nav__link">
+        usb_cam
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Namespaces/namespaceusb__cam_1_1constants/" class="md-nav__link">
+        usb_cam::constants
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Namespaces/namespaceusb__cam_1_1conversions/" class="md-nav__link">
+        usb_cam::conversions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Namespaces/namespaceusb__cam_1_1formats/" class="md-nav__link">
+        usb_cam::formats
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Namespaces/namespaceusb__cam_1_1utils/" class="md-nav__link">
+        usb_cam::utils
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions" class="md-nav__link">
+    Public Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions-documentation" class="md-nav__link">
+    Public Functions Documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Functions Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-usbcam" class="md-nav__link">
+    function ~UsbCam
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-supported_formats" class="md-nav__link">
+    function supported_formats
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-stop_capturing" class="md-nav__link">
+    function stop_capturing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-start_capturing" class="md-nav__link">
+    function start_capturing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-start" class="md-nav__link">
+    function start
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-shutdown" class="md-nav__link">
+    function shutdown
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_v4l_parameter" class="md-nav__link">
+    function set_v4l_parameter
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_v4l_parameter_1" class="md-nav__link">
+    function set_v4l_parameter
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_pixel_format" class="md-nav__link">
+    function set_pixel_format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_pixel_format_1" class="md-nav__link">
+    function set_pixel_format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-set_auto_focus" class="md-nav__link">
+    function set_auto_focus
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-number_of_buffers" class="md-nav__link">
+    function number_of_buffers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-is_capturing" class="md-nav__link">
+    function is_capturing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_supported_formats" class="md-nav__link">
+    function get_supported_formats
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_pixel_format" class="md-nav__link">
+    function get_pixel_format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_io_method" class="md-nav__link">
+    function get_io_method
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_width" class="md-nav__link">
+    function get_image_width
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_timestamp" class="md-nav__link">
+    function get_image_timestamp
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_step" class="md-nav__link">
+    function get_image_step
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_size_in_pixels" class="md-nav__link">
+    function get_image_size_in_pixels
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_size_in_bytes" class="md-nav__link">
+    function get_image_size_in_bytes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_height" class="md-nav__link">
+    function get_image_height
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image" class="md-nav__link">
+    function get_image
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_image_1" class="md-nav__link">
+    function get_image
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_fd" class="md-nav__link">
+    function get_fd
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_epoch_time_shift_us" class="md-nav__link">
+    function get_epoch_time_shift_us
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_device_name" class="md-nav__link">
+    function get_device_name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_buffers" class="md-nav__link">
+    function get_buffers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_avoptions" class="md-nav__link">
+    function get_avoptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_avframe" class="md-nav__link">
+    function get_avframe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_avcodec_context" class="md-nav__link">
+    function get_avcodec_context
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-get_avcodec" class="md-nav__link">
+    function get_avcodec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-configure" class="md-nav__link">
+    function configure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-usbcam_1" class="md-nav__link">
+    function UsbCam
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="usb_camusbcam">usb_cam::UsbCam</h1>
+<h2 id="public-functions">Public Functions</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-~usbcam">~UsbCam</a></strong>()</td>
+</tr>
+<tr>
+<td>std::vector&lt; <a href="/usb_cam/latest/api-reference/Classes/structusb__cam_1_1capture__format__t/">capture_format_t</a> &gt;</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-supported-formats">supported_formats</a></strong>()</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-stop-capturing">stop_capturing</a></strong>()</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-start-capturing">start_capturing</a></strong>()</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-start">start</a></strong>()<br>Start the configured device.</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-shutdown">shutdown</a></strong>(void )<br>shutdown camera</td>
+</tr>
+<tr>
+<td>bool</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-set-v4l-parameter">set_v4l_parameter</a></strong>(const std::string &amp; param, int value)</td>
+</tr>
+<tr>
+<td>bool</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-set-v4l-parameter">set_v4l_parameter</a></strong>(const std::string &amp; param, const std::string &amp; value)</td>
+</tr>
+<tr>
+<td>bool</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-set-pixel-format">set_pixel_format</a></strong>(const <a href="/usb_cam/latest/api-reference/Classes/structusb__cam_1_1formats_1_1format__arguments__t/">formats::format_arguments_t</a> &amp; args)<br>Check if the given format is supported by this device If it is supported, set the m_pixel_format variable to it.</td>
+</tr>
+<tr>
+<td>std::shared_ptr&lt; <a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1formats_1_1pixel__format__base/">pixel_format_base</a> &gt;</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-set-pixel-format">set_pixel_format</a></strong>(const <a href="/usb_cam/latest/api-reference/Classes/structusb__cam_1_1parameters__t/">parameters_t</a> &amp; parameters)<br>Set pixel format from parameter list. Required to have logic within <a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/">UsbCam</a> object in case pixel format class requires additional information for conversion function (e.g. number of pixels, width, height, etc.)</td>
+</tr>
+<tr>
+<td>bool</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-set-auto-focus">set_auto_focus</a></strong>(int value)</td>
+</tr>
+<tr>
+<td>unsigned int</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-number-of-buffers">number_of_buffers</a></strong>()</td>
+</tr>
+<tr>
+<td>bool</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-is-capturing">is_capturing</a></strong>()</td>
+</tr>
+<tr>
+<td>std::vector&lt; <a href="/usb_cam/latest/api-reference/Classes/structusb__cam_1_1capture__format__t/">capture_format_t</a> &gt;</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-supported-formats">get_supported_formats</a></strong>()</td>
+</tr>
+<tr>
+<td>std::shared_ptr&lt; <a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1formats_1_1pixel__format__base/">pixel_format_base</a> &gt;</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-pixel-format">get_pixel_format</a></strong>()</td>
+</tr>
+<tr>
+<td>usb_cam::utils::io_method_t</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-io-method">get_io_method</a></strong>()</td>
+</tr>
+<tr>
+<td>size_t</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-image-width">get_image_width</a></strong>()</td>
+</tr>
+<tr>
+<td>timespec</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-image-timestamp">get_image_timestamp</a></strong>()</td>
+</tr>
+<tr>
+<td>unsigned int</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-image-step">get_image_step</a></strong>()<br>Get number of bytes per line in image.</td>
+</tr>
+<tr>
+<td>size_t</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-image-size-in-pixels">get_image_size_in_pixels</a></strong>()</td>
+</tr>
+<tr>
+<td>size_t</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-image-size-in-bytes">get_image_size_in_bytes</a></strong>()</td>
+</tr>
+<tr>
+<td>size_t</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-image-height">get_image_height</a></strong>()</td>
+</tr>
+<tr>
+<td>char *</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-image">get_image</a></strong>()<br>Take a new image with device and return it To copy the returned image to another format: sensor_msgs::msg::Image image_msg; auto new_image = <a href="">get_image()</a>; image_msg.data.resize(step * height); memcpy(&amp;image_msg.data[0], new_image-&gt;frame.base, image_msg.data.size());.</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-image">get_image</a></strong>(char * destination)<br>Overload of get_image to allow users to pass in an image pointer to fill in.</td>
+</tr>
+<tr>
+<td>int</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-fd">get_fd</a></strong>()</td>
+</tr>
+<tr>
+<td>time_t</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-epoch-time-shift-us">get_epoch_time_shift_us</a></strong>()</td>
+</tr>
+<tr>
+<td>std::string</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-device-name">get_device_name</a></strong>()</td>
+</tr>
+<tr>
+<td>std::shared_ptr&lt; <a href="/usb_cam/latest/api-reference/Classes/structusb__cam_1_1utils_1_1buffer/">usb_cam::utils::buffer</a>[]&gt;</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-buffers">get_buffers</a></strong>()</td>
+</tr>
+<tr>
+<td>AVDictionary *</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-avoptions">get_avoptions</a></strong>()</td>
+</tr>
+<tr>
+<td>AVFrame *</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-avframe">get_avframe</a></strong>()</td>
+</tr>
+<tr>
+<td>AVCodecContext *</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-avcodec-context">get_avcodec_context</a></strong>()</td>
+</tr>
+<tr>
+<td>AVCodec *</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-get-avcodec">get_avcodec</a></strong>()</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-configure">configure</a></strong>(<a href="/usb_cam/latest/api-reference/Classes/structusb__cam_1_1parameters__t/">parameters_t</a> &amp; parameters, const io_method_t &amp; io_method)<br>Configure device, should be called before start.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/#function-usbcam">UsbCam</a></strong>()</td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-functions-documentation">Public Functions Documentation</h2>
+<h3 id="function-usbcam">function ~UsbCam</h3>
+<pre><code class="language-cpp">~UsbCam()
+</code></pre>
+<h3 id="function-supported_formats">function supported_formats</h3>
+<pre><code class="language-cpp">inline std::vector&lt; capture_format_t &gt; supported_formats()
+</code></pre>
+<h3 id="function-stop_capturing">function stop_capturing</h3>
+<pre><code class="language-cpp">void stop_capturing()
+</code></pre>
+<h3 id="function-start_capturing">function start_capturing</h3>
+<pre><code class="language-cpp">void start_capturing()
+</code></pre>
+<h3 id="function-start">function start</h3>
+<pre><code class="language-cpp">void start()
+</code></pre>
+<p>Start the configured device. </p>
+<h3 id="function-shutdown">function shutdown</h3>
+<pre><code class="language-cpp">void shutdown(
+    void 
+)
+</code></pre>
+<p>shutdown camera </p>
+<h3 id="function-set_v4l_parameter">function set_v4l_parameter</h3>
+<pre><code class="language-cpp">bool set_v4l_parameter(
+    const std::string &amp; param,
+    int value
+)
+</code></pre>
+<h3 id="function-set_v4l_parameter_1">function set_v4l_parameter</h3>
+<pre><code class="language-cpp">bool set_v4l_parameter(
+    const std::string &amp; param,
+    const std::string &amp; value
+)
+</code></pre>
+<h3 id="function-set_pixel_format">function set_pixel_format</h3>
+<pre><code class="language-cpp">inline bool set_pixel_format(
+    const formats::format_arguments_t &amp; args
+)
+</code></pre>
+<p>Check if the given format is supported by this device If it is supported, set the m_pixel_format variable to it. </p>
+<p><strong>Parameters</strong>: </p>
+<ul>
+<li><strong>format</strong> the format to check if it is supported </li>
+</ul>
+<p><strong>Return</strong>: bool true if the given format is supported, false otherwise </p>
+<h3 id="function-set_pixel_format_1">function set_pixel_format</h3>
+<pre><code class="language-cpp">inline std::shared_ptr&lt; pixel_format_base &gt; set_pixel_format(
+    const parameters_t &amp; parameters
+)
+</code></pre>
+<p>Set pixel format from parameter list. Required to have logic within <a href="/usb_cam/latest/api-reference/Classes/classusb__cam_1_1UsbCam/">UsbCam</a> object in case pixel format class requires additional information for conversion function (e.g. number of pixels, width, height, etc.) </p>
+<p><strong>Parameters</strong>: </p>
+<ul>
+<li><strong>parameters</strong> list of parameters from which the pixel format is to be set </li>
+</ul>
+<p><strong>Return</strong>: pixel format structure corresponding to a given name </p>
+<h3 id="function-set_auto_focus">function set_auto_focus</h3>
+<pre><code class="language-cpp">bool set_auto_focus(
+    int value
+)
+</code></pre>
+<h3 id="function-number_of_buffers">function number_of_buffers</h3>
+<pre><code class="language-cpp">inline unsigned int number_of_buffers()
+</code></pre>
+<h3 id="function-is_capturing">function is_capturing</h3>
+<pre><code class="language-cpp">inline bool is_capturing()
+</code></pre>
+<h3 id="function-get_supported_formats">function get_supported_formats</h3>
+<pre><code class="language-cpp">std::vector&lt; capture_format_t &gt; get_supported_formats()
+</code></pre>
+<h3 id="function-get_pixel_format">function get_pixel_format</h3>
+<pre><code class="language-cpp">inline std::shared_ptr&lt; pixel_format_base &gt; get_pixel_format()
+</code></pre>
+<h3 id="function-get_io_method">function get_io_method</h3>
+<pre><code class="language-cpp">inline usb_cam::utils::io_method_t get_io_method()
+</code></pre>
+<h3 id="function-get_image_width">function get_image_width</h3>
+<pre><code class="language-cpp">inline size_t get_image_width()
+</code></pre>
+<h3 id="function-get_image_timestamp">function get_image_timestamp</h3>
+<pre><code class="language-cpp">inline timespec get_image_timestamp()
+</code></pre>
+<h3 id="function-get_image_step">function get_image_step</h3>
+<pre><code class="language-cpp">inline unsigned int get_image_step()
+</code></pre>
+<p>Get number of bytes per line in image. </p>
+<p><strong>Return</strong>: number of bytes per line in image </p>
+<h3 id="function-get_image_size_in_pixels">function get_image_size_in_pixels</h3>
+<pre><code class="language-cpp">inline size_t get_image_size_in_pixels()
+</code></pre>
+<h3 id="function-get_image_size_in_bytes">function get_image_size_in_bytes</h3>
+<pre><code class="language-cpp">inline size_t get_image_size_in_bytes()
+</code></pre>
+<h3 id="function-get_image_height">function get_image_height</h3>
+<pre><code class="language-cpp">inline size_t get_image_height()
+</code></pre>
+<h3 id="function-get_image">function get_image</h3>
+<pre><code class="language-cpp">char * get_image()
+</code></pre>
+<p>Take a new image with device and return it To copy the returned image to another format: sensor_msgs::msg::Image image_msg; auto new_image = <a href="">get_image()</a>; image_msg.data.resize(step * height); memcpy(&amp;image_msg.data[0], new_image-&gt;frame.base, image_msg.data.size());. </p>
+<h3 id="function-get_image_1">function get_image</h3>
+<pre><code class="language-cpp">void get_image(
+    char * destination
+)
+</code></pre>
+<p>Overload of get_image to allow users to pass in an image pointer to fill in. </p>
+<h3 id="function-get_fd">function get_fd</h3>
+<pre><code class="language-cpp">inline int get_fd()
+</code></pre>
+<h3 id="function-get_epoch_time_shift_us">function get_epoch_time_shift_us</h3>
+<pre><code class="language-cpp">inline time_t get_epoch_time_shift_us()
+</code></pre>
+<h3 id="function-get_device_name">function get_device_name</h3>
+<pre><code class="language-cpp">inline std::string get_device_name()
+</code></pre>
+<h3 id="function-get_buffers">function get_buffers</h3>
+<pre><code class="language-cpp">inline std::shared_ptr&lt; usb_cam::utils::buffer[]&gt; get_buffers()
+</code></pre>
+<h3 id="function-get_avoptions">function get_avoptions</h3>
+<pre><code class="language-cpp">inline AVDictionary * get_avoptions()
+</code></pre>
+<h3 id="function-get_avframe">function get_avframe</h3>
+<pre><code class="language-cpp">inline AVFrame * get_avframe()
+</code></pre>
+<h3 id="function-get_avcodec_context">function get_avcodec_context</h3>
+<pre><code class="language-cpp">inline AVCodecContext * get_avcodec_context()
+</code></pre>
+<h3 id="function-get_avcodec">function get_avcodec</h3>
+<pre><code class="language-cpp">inline AVCodec * get_avcodec()
+</code></pre>
+<h3 id="function-configure">function configure</h3>
+<pre><code class="language-cpp">void configure(
+    parameters_t &amp; parameters,
+    const io_method_t &amp; io_method
+)
+</code></pre>
+<p>Configure device, should be called before start. </p>
+<h3 id="function-usbcam_1">function UsbCam</h3>
+<pre><code class="language-cpp">UsbCam()
+</code></pre>
+<hr />
+<p>Updated on 2023-12-15 at 22:45:38 +0000</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.tracking"], "search": "../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.b425cdc4.min.js"></script>
+      
+    
+  </body>
+</html>
