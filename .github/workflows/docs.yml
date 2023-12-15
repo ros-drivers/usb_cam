@@ -1,13 +1,10 @@
 name: Build Documentation
 
 on:
-  workflow_run:
-    workflows: [Build and Test]
-    types: [completed]
+  push:
     branches: [ros2]
   pull_request:
-    branches:
-      - ros2
+    branches: [ros2]
   workflow_dispatch:
 
 env:
