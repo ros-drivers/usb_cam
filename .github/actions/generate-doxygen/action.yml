@@ -1,0 +1,32 @@
+name: Generate doxygen documentation and upload as artifact
+description: Build doxygen documentation with given configuration
+inputs:
+  working-directory:
+    required: true
+    description: Working directory to run doxygen from
+  doxyfile-path:
+    required: true
+    description: The path to checkout the given repository too
+  artifact-path:
+    required: true
+    description: Path to directory to upload as artifact
+  artifact-name:
+    required: true
+    description: Name of the artifact to upload
+  artifact-retention-days:
+    required: true
+    description: Number of days to keep the artifact for
+runs:
+  using: composite
+  steps:
+    - name: Run doxygen on source
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        working-directory: ${{ inputs.working-directory }}
+        doxyfile-path: ${{ inputs.doxyfile-path }}
+    - name: Upload Doxygen XML
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.artifact-path }}
+        retention-days: ${{ inputs.artifact-retention-days }}

@@ -1,0 +1,59 @@
+name: Generate doxybook2
+description: Generate markdown using doxybook2 with given configuration
+inputs:
+  input-doxygen-artifact:
+    required: true
+    description: Name of input doxygen artifact to download
+  doxygen-artifact-extraction-path:
+    required: true
+    description: Path to extract input doxygen artifact to
+  doxybook2-version:
+    required: true  # TODO: make this optional
+    description: Version of doxybook2 to download and use
+  output-path:
+    required: true
+    description: The path to generate the doxybook2 markdown to
+  doxybook2-config-path:
+    required: true  # TODO: make this optional with smart default
+    description: Path to the doxybook2 configuration file (including .json extension)
+  base-url:
+    required: true  # TODO: make this optional by adding logic below
+    description: Base URL to overwrite the default with
+  artifact-path:
+    required: true
+    description: Path to directory to upload as artifact
+  artifact-name:
+    required: true
+    description: Name of the artifact to upload
+  artifact-retention-days:
+    required: true
+    description: Number of days to keep the artifact for
+runs:
+  using: composite
+  steps:
+    - name: Download Doxygen XML
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.input-doxygen-artifact }}
+        path: ${{ inputs.doxygen-artifact-extraction-path }}
+    - name: Build API Reference
+      shell: bash
+      run: |
+        # ensure output directory exists
+        mkdir -p ${{ inputs.output-path }}
+        export DOXYBOOK_URL=https://github.com/matusnovak/doxybook2/releases/download
+        export DOXYBOOK_URL=${DOXYBOOK_URL}/${{ inputs.doxybook2-version }}
+        export DOXYBOOK_ZIP=doxybook2-linux-amd64-${{ inputs.doxybook2-version }}.zip
+        wget ${DOXYBOOK_URL}/${DOXYBOOK_ZIP}
+        sudo apt-get install unzip
+        unzip ${DOXYBOOK_ZIP}
+        ./bin/doxybook2 --input ${{ inputs.doxygen-artifact-extraction-path }} \
+          --output ${{ inputs.output-path }} \
+          --config ${{ inputs.doxybook2-config-path }} \
+          --config-data '{"baseUrl": "${{ inputs.base-url }}"}'
+    - name: Upload API reference
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.artifact-path }}
+        retention-days: ${{ inputs.artifact-retention-days }}

@@ -1,0 +1,157 @@
+name: Build Documentation
+
+on:
+  workflow_run:
+    workflows: [Build and Test]
+    types: [completed]
+    branches: [ros2]
+  pull_request:
+    branches:
+      - ros2
+  workflow_dispatch:
+
+env:
+  WORKSPACE_PATH: ros_ws/src/usb_cam
+  DOXYGEN_ARTIFACT: doxygen_xml
+  DOXYBOOK_ARTIFACT: api_reference
+  DOXYBOOK_VERSION: v1.4.0
+
+# only run one build doc workflow at a time, cancel any running ones
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-doxygen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make sure output directory exists
+        run: mkdir -p ${{ env.WORKSPACE_PATH }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.WORKSPACE_PATH }}
+      - name: Generate doxygen and upload as artifact
+        # TODO: figure out way to use WORKSPACE_PATH var here
+        uses: ./ros_ws/src/usb_cam/.github/actions/generate-doxygen
+        with:
+          working-directory: ${{ env.WORKSPACE_PATH }}
+          doxyfile-path: 'docs/doxygen.config'
+          artifact-path: ${{ env.WORKSPACE_PATH }}/docs/xml
+          artifact-name: ${{ env.DOXYGEN_ARTIFACT }}
+          artifact-retention-days: 30
+  generate-doxybook2:
+    runs-on: ubuntu-latest
+    needs: generate-doxygen
+    steps:
+      - name: Make sure output directory exists
+        run: mkdir -p ${{ env.WORKSPACE_PATH }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.WORKSPACE_PATH }}
+      - name: Generate API reference and upload as artifact
+        # TODO: figure out way to use WORKSPACE_PATH var here
+        uses: ./ros_ws/src/usb_cam/.github/actions/generate-doxybook
+        with:
+          input-doxygen-artifact: ${{ env.DOXYGEN_ARTIFACT }}
+          doxygen-artifact-extraction-path: ${{ env.WORKSPACE_PATH }}/docs/xml
+          doxybook2-version: ${{ env.DOXYBOOK_VERSION }}
+          doxybook2-config-path: ${{ env.WORKSPACE_PATH }}/docs/doxybook2_config.json
+          output-path: ${{ env.WORKSPACE_PATH }}/docs/api-reference
+          base-url: /usb_cam/latest/api-reference/
+          artifact-path: ${{ env.WORKSPACE_PATH }}/docs/api-reference
+          artifact-name: ${{ env.DOXYBOOK_ARTIFACT }}
+          artifact-retention-days: 30
+  build-mkdocs:
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/ros2'
+    needs: generate-doxybook2
+    steps:
+      - name: Make sure output directory exists
+        run: mkdir -p ${{ env.WORKSPACE_PATH }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.WORKSPACE_PATH }}
+      - name: Download API Reference
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.DOXYBOOK_ARTIFACT }}
+          path: ${{ env.WORKSPACE_PATH }}/docs/api-reference
+      - name: Build mkdocs site
+        run: |
+          cd ${{ env.WORKSPACE_PATH }}
+          # ensure gh-pages git history is fetched
+          git fetch origin gh-pages --depth=1
+          sudo apt-get update -y
+          # install mkdocs dependencies
+          python3 -m pip install -r docs/requirements.txt
+          # build site
+          mkdocs build
+      - name: Upload docs site
+        uses: actions/upload-artifact@v3
+        with:
+          name: usb_cam_site
+          path: ${{ env.WORKSPACE_PATH }}/site
+  deploy_docs:
+    runs-on: ubuntu-latest
+    # only run on main ros2 branch after jobs listed in `needs` have finished (successful or not)
+    if: github.ref == 'refs/heads/ros2' && always()
+    needs: [build-mkdocs]
+    steps:
+      - name: Make sure output directory exists
+        run: mkdir -p ${{ env.WORKSPACE_PATH }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.WORKSPACE_PATH }}
+      - name: Download API reference
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.DOXYBOOK_ARTIFACT }}
+          path: ${{ env.WORKSPACE_PATH }}/docs/api-reference
+      - name: Download Foxy reports
+        continue-on-error: true  # Still publish docs even if reports are not available
+        uses: actions/download-artifact@v3
+        with:
+          name: autoware_benchmark_reports_foxy
+          path: ${{ env.WORKSPACE_PATH }}/docs/reports/foxy
+      - name: Download Galactic reports
+        continue-on-error: true  # Still publish docs even if reports are not available
+        uses: actions/download-artifact@v3
+        with:
+          name: autoware_benchmark_reports_galactic
+          path: ${{ env.WORKSPACE_PATH }}/docs/reports/galactic
+      - name: Download Humble reports
+        continue-on-error: true  # Still publish docs even if reports are not available
+        uses: actions/download-artifact@v3
+        with:
+          name: autoware_benchmark_reports_humble
+          path: ${{ env.WORKSPACE_PATH }}/docs/reports/humble
+      - name: Download Rolling reports
+        continue-on-error: true  # Still publish docs even if reports are not available
+        uses: actions/download-artifact@v3
+        with:
+          name: autoware_benchmark_reports_rolling
+          path: ${{ env.WORKSPACE_PATH }}/docs/reports/rolling
+      - name: Deploy mkdocs site
+        shell: bash
+        run: |
+          cd ${{ env.WORKSPACE_PATH }}
+          # ensure gh-pages git history is fetched
+          git fetch origin gh-pages --depth=1
+          sudo apt-get update -y
+          # install docs dependencies
+          python3 -m pip install -r docs/requirements.txt
+          # TODO: mike rebuilds entire site, instead we should
+          # skip the build and download site artifact from previous workflow
+          if [ -z ${{ github.event.release.tag_name }}]; then
+            export NEW_VERSION=main
+          else
+            export NEW_VERSION=${{ github.event.release.tag_name }}
+          fi
+          git config user.name doc-bot
+          git config user.email doc-bot@usb_cam.com
+          mike deploy --push --update-aliases $NEW_VERSION latest
+
