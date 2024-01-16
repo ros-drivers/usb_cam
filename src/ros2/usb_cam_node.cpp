@@ -123,7 +123,7 @@ void UsbCamNode::service_capture(
 
 std::string resolve_device_path(const std::string& path){
   if(std::filesystem::is_symlink(path)){
-    //For some reason read_symlink only returns videox
+    // For some reason read_symlink only returns videox
     return "/dev/" + std::string(std::filesystem::read_symlink(path));
   }
   return path;
