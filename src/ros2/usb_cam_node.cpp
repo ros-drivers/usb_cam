@@ -30,7 +30,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+#include <filesystem>
 #include "usb_cam/usb_cam_node.hpp"
 #include "usb_cam/utils.hpp"
 
@@ -119,6 +119,15 @@ void UsbCamNode::service_capture(
     m_camera->stop_capturing();
     response->message = "Stop Capturing";
   }
+}
+
+std::string resolve_device_path(const std::string & path)
+{
+  if (std::filesystem::is_symlink(path)) {
+    // For some reason read_symlink only returns videox
+    return "/dev/" + std::string(std::filesystem::read_symlink(path));
+  }
+  return path;
 }
 
 void UsbCamNode::init()
@@ -246,7 +255,7 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
     } else if (parameter.get_name() == "av_device_format") {
       m_parameters.av_device_format = parameter.value_to_string();
     } else if (parameter.get_name() == "video_device") {
-      m_parameters.device_name = parameter.value_to_string();
+      m_parameters.device_name = resolve_device_path(parameter.value_to_string());
     } else if (parameter.get_name() == "brightness") {
       m_parameters.brightness = parameter.as_int();
     } else if (parameter.get_name() == "contrast") {
