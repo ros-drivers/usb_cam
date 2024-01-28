@@ -4,7 +4,8 @@
       framerate: 30.0
       io_method: "mmap"
       frame_id: "camera"
-      pixel_format: "mjpeg2rgb"  # see usb_cam/supported_formats for list of supported formats
+      pixel_format: "mjpeg2rgb"
+      skip_format_check: false  # not recommended for use, but might be useful in corner cases (e.g. camera firmware bug)
       av_device_format: "YUV422P"
       image_width: 640
       image_height: 480

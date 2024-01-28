@@ -115,6 +115,7 @@ typedef struct
   // to discover them,
   // or guvcview
   std::string pixel_format_name;
+  bool skip_format_check;
   std::string av_device_format;
   int image_width;
   int image_height;
@@ -369,11 +370,15 @@ public:
       });
 
     // Look for specified pixel format
-    if (!this->set_pixel_format(format_args)) {
+    if (!this->set_pixel_format(format_args) && !parameters.skip_format_check) {
       throw std::invalid_argument(
               "Specified format `" + parameters.pixel_format_name + "` is unsupported by the " +
               "selected device `" + parameters.device_name + "`"
       );
+    } else if (parameters.skip_format_check) {
+      // print out a warning to users that the `skip_format_check` is on in case they didnt mean it
+      std::cout << "Skipping format check because the `skip_format_check` variable is `true`";
+      std::cout << std::endl;
     }
 
     return m_image.pixel_format;

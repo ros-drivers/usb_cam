@@ -70,6 +70,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("image_width", 640);
   this->declare_parameter("io_method", "mmap");
   this->declare_parameter("pixel_format", "yuyv");
+  this->declare_parameter("skip_format_check", false);
   this->declare_parameter("av_device_format", "YUV422P");
   this->declare_parameter("video_device", "/dev/video0");
   this->declare_parameter("brightness", 50);  // 0-255, -1 "leave alone"
@@ -222,9 +223,9 @@ void UsbCamNode::get_params()
   auto parameters = parameters_client->get_parameters(
     {
       "camera_name", "camera_info_url", "frame_id", "framerate", "image_height", "image_width",
-      "io_method", "pixel_format", "av_device_format", "video_device", "brightness", "contrast",
-      "saturation", "sharpness", "gain", "auto_white_balance", "white_balance", "autoexposure",
-      "exposure", "autofocus", "focus"
+      "io_method", "pixel_format", "skip_format_check", "av_device_format", "video_device",
+      "brightness", "contrast", "saturation", "sharpness", "gain", "auto_white_balance",
+      "white_balance", "autoexposure", "exposure", "autofocus", "focus"
     }
   );
 
@@ -252,6 +253,8 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       m_parameters.io_method_name = parameter.value_to_string();
     } else if (parameter.get_name() == "pixel_format") {
       m_parameters.pixel_format_name = parameter.value_to_string();
+    } else if (parameter.get_name() == "skip_format_check") {
+      m_parameters.skip_format_check = parameter.as_bool();
     } else if (parameter.get_name() == "av_device_format") {
       m_parameters.av_device_format = parameter.value_to_string();
     } else if (parameter.get_name() == "video_device") {
