@@ -80,7 +80,7 @@ jobs:
         with:
           path: ros_ws/src
       - name: Build and Test ROS 1
-        uses: ros-tooling/action-ros-ci@master
+        uses: ros-tooling/action-ros-ci@0.3.6
         if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) }}
         continue-on-error: true
         with:
@@ -89,7 +89,7 @@ jobs:
           vcs-repo-file-url: ""
       - name: Build and Test ROS 2
         id: build_and_test_step
-        uses: ros-tooling/action-ros-ci@master
+        uses: ros-tooling/action-ros-ci@0.3.6
         if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) == false }}
         with:
           package-name: usb_cam
