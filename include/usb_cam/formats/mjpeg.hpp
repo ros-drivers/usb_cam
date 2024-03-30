@@ -233,7 +233,7 @@ private:
     std::cerr << m_averror_str << std::endl;
   }
 
-  AVCodec * m_avcodec;
+  const AVCodec * m_avcodec;
   AVCodecContext * m_avcodec_context;
   AVCodecParserContext * m_avparser;
   AVFrame * m_avframe_device;
