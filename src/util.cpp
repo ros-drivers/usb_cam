@@ -17,7 +17,7 @@ time_t util::get_epoch_time_shift_us()
             epoch_time.tv_sec * 1000 + static_cast<int64_t>(
                 std::round(epoch_time.tv_usec / 1000.0));
 
-    return static_cast<time_t>((epoch_ms - uptime_ms) / 1000);
+    return static_cast<time_t>((epoch_ms - uptime_ms) * 1000);
 }
 
 timespec util::calc_img_timestamp(const timeval & buffer_time, const time_t & epoch_time_shift_us)
