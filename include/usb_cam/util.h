@@ -13,13 +13,7 @@ namespace util
 /// @brief Get epoch time shift
 /// @details Run this at start of process to calculate epoch time shift
 /// @ref https://stackoverflow.com/questions/10266451/where-does-v4l2-buffer-timestamp-value-starts-counting
-time_t get_epoch_time_shift_us();
-
-/// @brief Calculate image timestamp from buffer time and epoch time shift.
-/// In this, the buffer time is first converted into microseconds before the epoch time shift,
-/// which is to be given in microseconds is added to it. Afterwards it is split into seconds
-/// and nanoseconds for the image timestamp.
-timespec calc_img_timestamp(const timeval & buffer_time, const time_t & epoch_time_shift_us);
+time_t get_epoch_time_shift();
 
 int xioctl(int fd, int request, void * arg);
 

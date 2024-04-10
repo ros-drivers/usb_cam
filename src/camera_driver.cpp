@@ -16,7 +16,7 @@ pixel_format_t AbstractV4LUSBCam::pixel_format = PIXEL_FORMAT_UNKNOWN;
 color_format_t AbstractV4LUSBCam::color_format = COLOR_FORMAT_UNKNOWN;
 bool AbstractV4LUSBCam::monochrome = false;
 int AbstractV4LUSBCam::file_dev = -1;
-const time_t AbstractV4LUSBCam::epoch_time_shift_us = util::get_epoch_time_shift_us();
+const time_t AbstractV4LUSBCam::epoch_time_shift = util::get_epoch_time_shift();
 
 /* FFMPEG */
 bool AbstractV4LUSBCam::full_ffmpeg_log = false;
@@ -527,7 +527,7 @@ camera_image_t *AbstractV4LUSBCam::read_frame()
     unsigned int i;
     int len;
     struct timespec stamp;
-    int64_t buffer_time_us;
+    int64_t buffer_time_s;
     switch(io_method)
     {
     case IO_METHOD_READ:
@@ -560,8 +560,9 @@ camera_image_t *AbstractV4LUSBCam::read_frame()
                 return nullptr;
             }
         }
-        image->stamp = util::calc_img_timestamp(buf.timestamp, epoch_time_shift_us);
-        timespec_get(&image->stamp, TIME_UTC);
+        buffer_time_s = buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
+        stamp.tv_sec = static_cast<time_t>(round(buffer_time_s)) + epoch_time_shift;
+        stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec * 1000.0);
         assert(buf.index < buffers_count);
         len = buf.bytesused;
         // Process image
@@ -569,7 +570,8 @@ camera_image_t *AbstractV4LUSBCam::read_frame()
         {
             printf("Unable to exchange buffer with driver (%i)\n", errno);
             return nullptr;
-        } 
+        }
+        image->stamp = stamp;
         break;
     case IO_METHOD_USERPTR:
         CLEAR(buf);
@@ -586,8 +588,10 @@ camera_image_t *AbstractV4LUSBCam::read_frame()
                 return nullptr;
             }
         }
-        image->stamp = util::calc_img_timestamp(buf.timestamp, epoch_time_shift_us);
-        timespec_get(&image->stamp, TIME_UTC);
+        buffer_time_s = buf.timestamp.tv_sec + static_cast<int64_t>(round(buf.timestamp.tv_usec / 1000000.0));
+
+        stamp.tv_sec = static_cast<time_t>(round(buffer_time_s)) + epoch_time_shift;
+        stamp.tv_nsec = static_cast<int64_t>(buf.timestamp.tv_usec / 1000.0);
 
         for(i = 0; i < buffers_count; ++i)
             if(buf.m.userptr == reinterpret_cast<uint64_t>(buffers[i].start) && buf.length == buffers[i].length)
@@ -599,7 +603,8 @@ camera_image_t *AbstractV4LUSBCam::read_frame()
         {
             printf("Unable to exchange buffer with driver (%i)\n", errno);
             return nullptr;
-        } 
+        }
+        image->stamp = stamp;
         break;
     default:
         printf("Attempt to grab the frame via unknown I/O method (%i)\n", errno);
