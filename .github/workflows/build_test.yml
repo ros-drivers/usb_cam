@@ -40,7 +40,7 @@ jobs:
               sort -u)
           
             # Handle the case if two docker images were declared for one distro
-            # e.g. rolling moving from one Ubuntu Focal to Ubuntu Jammy
+            # e.g. rolling moving from one Ubuntu Jammy to Ubuntu Noble
             docker_image_arr=($docker_image)
           
             DISTRO_STR+="\"${distro}\", "
