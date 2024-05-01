@@ -2,6 +2,34 @@
 Changelog for package usb_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.1 (2024-05-01)
+------------------
+* Merge pull request `#330 <https://github.com/ros-drivers/usb_cam/issues/330>`_ from ros-drivers/fix-rolling-builds
+  Update comment in CI from Jammy to Noble
+* Fix linter error in uyvy file
+  - Update comment in CI from Jammy to Noble
+* Merge pull request `#324 <https://github.com/ros-drivers/usb_cam/issues/324>`_ from clalancette/clalancette/const-avcodec
+  Switch to a const AVCodec *.
+* Switch to a const AVCodec *.
+  This is because newer versions of avcodec return a const AVCodec *.
+* Merge pull request `#313 <https://github.com/ros-drivers/usb_cam/issues/313>`_ from ros-drivers/v4l2-devices-might-not-be-named-video
+  V4l2 devices might not be named video
+* Use /sys/class/video4linux/ to get list of v4l2 devices
+* Merge pull request `#311 <https://github.com/ros-drivers/usb_cam/issues/311>`_ from firesurfer/ros2
+  Resolve Symlinks
+* Update usb_cam_node.cpp
+  Fix formatting
+* try to fix formatting issue
+* resolve symlinks
+* Merge pull request `#305 <https://github.com/ros-drivers/usb_cam/issues/305>`_ from ros-drivers/fix-docs-deployment
+* Remove unnecessary steps from docs CI
+* Merge pull request `#304 <https://github.com/ros-drivers/usb_cam/issues/304>`_ from ros-drivers/fix-docs-ci
+  Fix docs ci
+* Trigger docs CI on every push to ros2 branch
+* Merge pull request `#303 <https://github.com/ros-drivers/usb_cam/issues/303>`_ from ros-drivers/add-mkdocs-documentation
+* Standup basic mkdocs documentation site
+* Contributors: Chris Lalancette, Evan Flynn, Lennart Nachtigall
+
 0.8.0 (2023-12-04)
 ------------------
 * Bump for release 0.8.0, update docs
