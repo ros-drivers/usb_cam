@@ -2,152 +2,152 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1UsbCam/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1UsbCamNode/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1M4202RGB/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1MJPEG2RGB/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1MONO16/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1MONO8/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1RAW__MJPEG/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1RGB8/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1UYVY/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1UYVY2RGB/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1Y102MONO8/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1YUYV/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1YUYV2RGB/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1default__pixel__format/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/classusb__cam_1_1formats_1_1pixel__format__base/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/structusb__cam_1_1capture__format__t/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/structusb__cam_1_1formats_1_1format__arguments__t/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/structusb__cam_1_1image__t/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/structusb__cam_1_1parameters__t/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Classes/structusb__cam_1_1utils_1_1buffer/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Modules/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Namespaces/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Namespaces/namespacerclcpp/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Namespaces/namespaceusb__cam/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Namespaces/namespaceusb__cam_1_1constants/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Namespaces/namespaceusb__cam_1_1conversions/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Namespaces/namespaceusb__cam_1_1formats/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ros-drivers.github.io/usb_cam/main/api-reference/Namespaces/namespaceusb__cam_1_1utils/</loc>
-         <lastmod>2024-03-30</lastmod>
+         <lastmod>2024-05-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
