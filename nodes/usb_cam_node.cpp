@@ -62,6 +62,9 @@ const int WAIT_CHANGING_AUTO_EXPOSURE_SEC = 2;
 //! \brief Timer period in seconds between calls to reset camera exposure setting
 const double AUTO_RESET_EXPOSURE_PERIOD = 60.0;
 
+//! \brief Timer period in seconds between calls to reset camera exposure setting
+const double ONE_SHOT_RESET_EXPOSURE_WAIT = 5.0;
+
 class UsbCamNode
 {
   misocpp::DiagnosticHeartbeat heartbeat_;
@@ -141,7 +144,7 @@ public:
     node_.param("focus", focus_, -1); //0-255, -1 "leave alone"
     // enable/disable autoexposure
     node_.param("autoexposure", autoexposure_, true);
-    node_.param("auto_reset_exposure_period", auto_reset_exposure_period_, AUTO_RESET_EXPOSURE_PERIOD);
+    node_.param("auto_reset_exposure_period", auto_reset_exposure_period_, AUTO_RESET_EXPOSURE_PERIOD); // No reset if < 0
     node_.param("exposure", exposure_, 100);
     node_.param("gain", gain_, -1); //0-100?, -1 "leave alone"
     // enable/disable auto white balance temperature
@@ -326,9 +329,12 @@ public:
     ROS_ASSERT(diag_freq_camera_info_);
 
     enable_auto_reset_exposure_ = true;
+    bool timer_oneshot = auto_reset_exposure_period_ <= 0;
+    double timer_period = timer_oneshot ? ONE_SHOT_RESET_EXPOSURE_WAIT : auto_reset_exposure_period_;
     auto_reset_exposure_timer_ = node_.createTimer(
-      ros::Duration(auto_reset_exposure_period_),
-      boost::bind(&UsbCamNode::checkAutoResetExposure, this, _1)
+      ros::Duration(timer_period),
+      boost::bind(&UsbCamNode::checkAutoResetExposure, this, _1),
+      timer_oneshot
     );
   }
 
