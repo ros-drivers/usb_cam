@@ -273,11 +273,11 @@ public:
     // check auto white balance
     if (auto_white_balance_)
     {
-      cam_.set_v4l_parameter("white_balance_temperature_auto", 1);
+      cam_.set_v4l_parameter("white_balance_automatic", 1);
     }
     else
     {
-      cam_.set_v4l_parameter("white_balance_temperature_auto", 0);
+      cam_.set_v4l_parameter("white_balance_automatic", 0);
       cam_.set_v4l_parameter("white_balance_temperature", white_balance_);
     }
 
@@ -285,15 +285,15 @@ public:
     if (!autoexposure_)
     {
       // turn off exposure control
-      cam_.set_v4l_parameter("exposure_auto", AUTO_EXPOSURE_MANUAL_MODE);
+      cam_.set_v4l_parameter("auto_exposure", AUTO_EXPOSURE_MANUAL_MODE);
       // change the exposure level
-      cam_.set_v4l_parameter("exposure_absolute", exposure_);
+      cam_.set_v4l_parameter("exposure_time_absolute", exposure_);
     }
     else
     {
       // turn on exposure auto control
       cam_.set_v4l_parameter(
-        "exposure_auto",
+        "auto_exposure",
         AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
       );
     }
@@ -364,14 +364,14 @@ public:
   {
     cam_.is_changing_config(true);
     cam_.set_v4l_parameter(
-      "exposure_auto",
+      "auto_exposure",
       AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
     );
     std::this_thread::sleep_for(
       std::chrono::seconds{ WAIT_CHANGING_AUTO_EXPOSURE_SEC }
     );
-    cam_.set_v4l_parameter("exposure_auto", AUTO_EXPOSURE_MANUAL_MODE);
-    cam_.set_v4l_parameter("exposure_absolute", exposure_);
+    cam_.set_v4l_parameter("auto_exposure", AUTO_EXPOSURE_MANUAL_MODE);
+    cam_.set_v4l_parameter("exposure_time_absolute", exposure_);
     cam_.is_changing_config(false);
   }
 
