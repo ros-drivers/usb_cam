@@ -221,6 +221,11 @@ public:
     return m_image.size_in_bytes;
   }
 
+  inline void reset_image_size_in_bytes()
+  {
+    m_image.set_size_in_bytes();
+  }
+
   inline size_t get_image_size_in_pixels()
   {
     return m_image.number_of_pixels;

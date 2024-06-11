@@ -171,7 +171,7 @@ void UsbCamNode::init()
 
   // if pixel format is equal to 'mjpeg', i.e. raw mjpeg stream, initialize compressed image message
   // and publisher
-  if (m_parameters.pixel_format_name == "mjpeg") {
+  if (m_parameters.pixel_format_name == "raw_mjpeg") {
     m_compressed_img_msg.reset(new sensor_msgs::msg::CompressedImage());
     m_compressed_img_msg->header.frame_id = m_parameters.frame_id;
     m_compressed_image_publisher =
@@ -391,6 +391,8 @@ bool UsbCamNode::take_and_send_image_mjpeg()
 
   // grab the image, pass image msg buffer to fill
   m_camera->get_image(reinterpret_cast<char *>(&m_compressed_img_msg->data[0]));
+  m_compressed_img_msg->data.resize(m_camera->get_image_size_in_bytes());
+  m_camera->reset_image_size_in_bytes(); // reset for next grab
 
   auto stamp = m_camera->get_image_timestamp();
   m_compressed_img_msg->header.stamp.sec = stamp.tv_sec;
@@ -423,7 +425,7 @@ void UsbCamNode::update()
     // If the camera exposure longer higher than the framerate period
     // then that caps the framerate.
     // auto t0 = now();
-    bool isSuccessful = (m_parameters.pixel_format_name == "mjpeg") ?
+    bool isSuccessful = (m_parameters.pixel_format_name == "raw_mjpeg") ?
       take_and_send_image_mjpeg() :
       take_and_send_image();
     if (!isSuccessful) {
