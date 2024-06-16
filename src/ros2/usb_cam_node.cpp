@@ -46,7 +46,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   m_compressed_img_msg(nullptr),
   m_image_publisher(std::make_shared<image_transport::CameraPublisher>(
       image_transport::create_camera_publisher(this, BASE_TOPIC_NAME,
-      rclcpp::QoS {100}.get_rmw_qos_profile()))),
+      rclcpp::SensorDataQoS().get_rmw_qos_profile()))),
   m_compressed_image_publisher(nullptr),
   m_compressed_cam_info_publisher(nullptr),
   m_parameters(),
@@ -169,6 +169,9 @@ void UsbCamNode::init()
     return;
   }
 
+  // Note: these are only used to skip using the typical image_transport
+  // plugin and only publish the compressed image topic
+  //
   // if pixel format is equal to 'mjpeg', i.e. raw mjpeg stream, initialize compressed image message
   // and publisher
   if (m_parameters.pixel_format_name == "mjpeg") {
@@ -176,10 +179,10 @@ void UsbCamNode::init()
     m_compressed_img_msg->header.frame_id = m_parameters.frame_id;
     m_compressed_image_publisher =
       this->create_publisher<sensor_msgs::msg::CompressedImage>(
-      std::string(BASE_TOPIC_NAME) + "/compressed", rclcpp::QoS(100));
+      std::string(BASE_TOPIC_NAME) + "/compressed", rclcpp::SensorDataQoS());
     m_compressed_cam_info_publisher =
       this->create_publisher<sensor_msgs::msg::CameraInfo>(
-      "camera_info", rclcpp::QoS(100));
+      "camera_info", rclcpp::SensorDataQoS());
   }
 
   m_image_msg->header.frame_id = m_parameters.frame_id;
