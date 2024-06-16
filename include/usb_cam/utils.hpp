@@ -94,7 +94,7 @@ inline time_t get_epoch_time_shift_us()
     monotonic_time.tv_sec * 1000000 + static_cast<int64_t>(
     std::round(monotonic_time.tv_nsec / 1000.0));
   const int64_t epoch_us =
-    epoch_time.tv_sec * 1000000 + epoch_time.tv_usec / 1000.0;
+    epoch_time.tv_sec * 1000000 + epoch_time.tv_usec;
 
   return static_cast<time_t>(epoch_us - uptime_us);
 }
