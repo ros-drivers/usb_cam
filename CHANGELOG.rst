@@ -23,6 +23,17 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+1.0.0 (2024-06-20)
+------------------
+* Merge pull request `#56 <https://github.com/MisoRobotics/usb_cam/issues/56>`_ from MisoRobotics/user/hjoe72/feature/make-auto-exposure-reset-optional
+  F3-2048: Make periodic auto exposure reset optional
+* Make periodic auto exposure reset optional
+  Make periodic auto exposure reset optional since
+  it stops streaming images when resetting.
+* Merge pull request `#53 <https://github.com/MisoRobotics/usb_cam/issues/53>`_ from MisoRobotics/master
+  Backmerge master into develop for flippy-0.8.4
+* Contributors: Hendry Joe, Zach Zweig Vinegar
+
 0.8.4 (2022-10-31)
 ------------------
 * Merge pull request `#51 <https://github.com/MisoRobotics/usb_cam/issues/51>`_ from MisoRobotics/user/hungrh/fix/autobin-auto-reset-exposure-setting
