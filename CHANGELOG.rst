@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+1.0.1 (2024-07-03)
+------------------
 * Merge pull request `#57 <https://github.com/MisoRobotics/usb_cam/issues/57>`_ from MisoRobotics/user/hjoe72/fix/usb-cam-param
   F3-2084: Update USB cam param name
 * Update USB cam param name
