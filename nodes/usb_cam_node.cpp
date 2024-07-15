@@ -362,24 +362,33 @@ public:
 
   void resetExposureSettings()
   {
-    cam_.is_changing_config(true);
+    // Set auto exposure to on
     cam_.set_v4l_parameter(
       "auto_exposure",
       AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
     );
+
     std::this_thread::sleep_for(
       std::chrono::seconds{ WAIT_CHANGING_AUTO_EXPOSURE_SEC }
     );
+
+    // Set exposure time to off
     cam_.set_v4l_parameter("auto_exposure", AUTO_EXPOSURE_MANUAL_MODE);
+
+    std::this_thread::sleep_for(
+      std::chrono::seconds{ WAIT_CHANGING_AUTO_EXPOSURE_SEC }
+    );
+
+    // Set the manual exposure level
     cam_.set_v4l_parameter("exposure_time_absolute", exposure_);
-    cam_.is_changing_config(false);
   }
 
   void checkAutoResetExposure(const ros::TimerEvent&)
   {
     if (enable_auto_reset_exposure_)
     {
-      resetExposureSettings();
+      std::thread t1(&UsbCamNode::resetExposureSettings, this);
+      t1.detach();
     }
   }
 
