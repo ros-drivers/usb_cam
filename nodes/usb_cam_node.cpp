@@ -93,7 +93,7 @@ public:
 
   UsbCam cam_;
 
-  ros::ServiceServer service_start_, service_stop_, service_auto_reset_exposure_;
+  ros::ServiceServer service_start_, service_stop_, service_auto_reset_exposure_, reset_exposure_;
 
   bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
@@ -101,6 +101,11 @@ public:
     return true;
   }
 
+  bool reset_exposure_call(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
+  {
+    resetExposureSettings();
+    return true;
+  }
 
   bool service_stop_cap( std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
@@ -163,6 +168,7 @@ public:
     // create Services
     service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
     service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
+    reset_exposure_ = node_.advertiseService("manual_reset_exposure", &UsbCamNode::reset_exposure_call, this);
     service_auto_reset_exposure_ = node_.advertiseService("reset_exposure", &UsbCamNode::service_auto_reset_exposure, this);
 
     if (!serial_number_.empty())
@@ -387,8 +393,7 @@ public:
   {
     if (enable_auto_reset_exposure_)
     {
-      std::thread t1(&UsbCamNode::resetExposureSettings, this);
-      t1.detach();
+      resetExposureSettings();
     }
   }
 
@@ -400,10 +405,8 @@ public:
       if (cam_.is_capturing() && !cam_.is_changing_config()) {
         if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
       }
-      ros::spinOnce();
       heartbeat_.update();
       loop_rate.sleep();
-
     }
     return true;
   }
@@ -414,6 +417,9 @@ public:
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "usb_cam");
+  // Will need more threads if we add more callbacks
+  ros::AsyncSpinner spinner{ 2 };
+  spinner.start();
   usb_cam::UsbCamNode a;
   a.spin();
   return EXIT_SUCCESS;
