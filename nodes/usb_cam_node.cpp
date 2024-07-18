@@ -63,7 +63,7 @@ const int WAIT_CHANGING_AUTO_EXPOSURE_SEC = 2;
 const double AUTO_RESET_EXPOSURE_PERIOD = 60.0;
 
 //! \brief Timer period in seconds between calls to reset camera exposure setting
-const double ONE_SHOT_RESET_EXPOSURE_WAIT = 5.0;
+const double ONE_SHOT_RESET_EXPOSURE_WAIT = 1.0;
 
 class UsbCamNode
 {
@@ -89,11 +89,12 @@ public:
   int image_width_, image_height_, framerate_, bits_per_pixel_, exposure_, brightness_, contrast_, saturation_,
       sharpness_, focus_, white_balance_, gain_, power_line_frequency_, gamma_, backlight_compensation_;
   bool autofocus_, autoexposure_, auto_white_balance_;
+  bool init_cam_reset_;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_;
 
   UsbCam cam_;
 
-  ros::ServiceServer service_start_, service_stop_, service_auto_reset_exposure_;
+  ros::ServiceServer service_start_, service_stop_, service_auto_reset_exposure_, reset_exposure_;
 
   bool service_start_cap(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
@@ -101,6 +102,22 @@ public:
     return true;
   }
 
+  bool reset_exposure_call(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
+  {
+    ros::Rate srv_rate(5);
+    bool timeout = 20.0;
+    float start_time = ros::Time::now().toSec();
+    while (node_.ok() && (ros::Time::now().toSec() - start_time < timeout))
+    {
+      if (init_cam_reset_)
+      {
+        break;
+      }
+      srv_rate.sleep();
+    }
+    resetExposureSettings();
+    return true;
+  }
 
   bool service_stop_cap( std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res )
   {
@@ -160,9 +177,12 @@ public:
     node_.param("camera_info_url", camera_info_url_, std::string(""));
     cinfo_.reset(new camera_info_manager::CameraInfoManager(node_, camera_name_, camera_info_url_));
 
+    init_cam_reset_ = false;
+
     // create Services
     service_start_ = node_.advertiseService("start_capture", &UsbCamNode::service_start_cap, this);
     service_stop_ = node_.advertiseService("stop_capture", &UsbCamNode::service_stop_cap, this);
+    reset_exposure_ = node_.advertiseService("manual_reset_exposure", &UsbCamNode::reset_exposure_call, this);
     service_auto_reset_exposure_ = node_.advertiseService("reset_exposure", &UsbCamNode::service_auto_reset_exposure, this);
 
     if (!serial_number_.empty())
@@ -362,17 +382,25 @@ public:
 
   void resetExposureSettings()
   {
-    cam_.is_changing_config(true);
+    // Set auto exposure to on
     cam_.set_v4l_parameter(
       "auto_exposure",
       AUTO_EXPOSURE_APERTURE_PRIORITY_MODE
     );
+
     std::this_thread::sleep_for(
       std::chrono::seconds{ WAIT_CHANGING_AUTO_EXPOSURE_SEC }
     );
+
+    // Set exposure time to off
     cam_.set_v4l_parameter("auto_exposure", AUTO_EXPOSURE_MANUAL_MODE);
+
+    std::this_thread::sleep_for(
+      std::chrono::seconds{ WAIT_CHANGING_AUTO_EXPOSURE_SEC }
+    );
+
+    // Set the manual exposure level
     cam_.set_v4l_parameter("exposure_time_absolute", exposure_);
-    cam_.is_changing_config(false);
   }
 
   void checkAutoResetExposure(const ros::TimerEvent&)
@@ -381,6 +409,7 @@ public:
     {
       resetExposureSettings();
     }
+    init_cam_reset_ = true;
   }
 
   bool spin()
@@ -391,10 +420,8 @@ public:
       if (cam_.is_capturing() && !cam_.is_changing_config()) {
         if (!take_and_send_image()) ROS_WARN("USB camera did not respond in time.");
       }
-      ros::spinOnce();
       heartbeat_.update();
       loop_rate.sleep();
-
     }
     return true;
   }
@@ -405,6 +432,9 @@ public:
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "usb_cam");
+  // Will need more threads if we add more callbacks
+  ros::AsyncSpinner spinner{ 2 };
+  spinner.start();
   usb_cam::UsbCamNode a;
   a.spin();
   return EXIT_SUCCESS;

@@ -1209,6 +1209,7 @@ void UsbCam::set_v4l_parameter(const std::string& param, int value)
 */
 void UsbCam::set_v4l_parameter(const std::string& param, const std::string& value)
 {
+  is_changing_config(true);
   // build the command
   std::stringstream ss;
   ss << "v4l2-ctl --device=" << camera_dev_ << " -c " << param << "=" << value << " 2>&1";
@@ -1231,6 +1232,7 @@ void UsbCam::set_v4l_parameter(const std::string& param, const std::string& valu
   }
   else
     ROS_WARN("usb_cam_node could not run '%s'", cmd.c_str());
+  is_changing_config(false);
 }
 
 UsbCam::io_method UsbCam::io_method_from_string(const std::string& str)
