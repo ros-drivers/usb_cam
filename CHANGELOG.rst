@@ -23,8 +23,8 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
-Forthcoming
------------
+1.0.2 (2024-07-18)
+------------------
 * Merge pull request `#65 <https://github.com/MisoRobotics/usb_cam/issues/65>`_ from MisoRobotics/user/hjoe72/feature/block-manual-reset
   F3-5443: Block manual cycle after init cycle
 * Block manual cycle after init cycle
