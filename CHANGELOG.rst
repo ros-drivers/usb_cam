@@ -23,6 +23,26 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+1.0.2 (2024-07-18)
+------------------
+* Merge pull request `#65 <https://github.com/MisoRobotics/usb_cam/issues/65>`_ from MisoRobotics/user/hjoe72/feature/block-manual-reset
+  F3-5443: Block manual cycle after init cycle
+* Block manual cycle after init cycle
+  Block manual camera cycling until the initial cycle
+  is completed.
+* Merge pull request `#64 <https://github.com/MisoRobotics/usb_cam/issues/64>`_ from MisoRobotics/user/hjoe72/feature/srv-reset-cam
+  F3-5443: Add service for resetting the camera exposure
+* Add service for resetting the camera exposure
+  Add service for resetting camera exposure.
+* Merge pull request `#62 <https://github.com/MisoRobotics/usb_cam/issues/62>`_ from MisoRobotics/user/hjoe72/fix/add-wait-before-set-exp
+  F3-5443: Add pause before setting the exposure level
+* Add pause before setting the exposure level
+  Add pause before setting the exposure level during
+  the initial manual exposure cycle.
+* Merge pull request `#61 <https://github.com/MisoRobotics/usb_cam/issues/61>`_ from MisoRobotics/master
+  Backmerge 1.0.1 into develop for flippy-3.0.5-noetic
+* Contributors: Hendry Joe, Zach Zweig Vinegar
+
 1.0.1 (2024-07-03)
 ------------------
 * Merge pull request `#57 <https://github.com/MisoRobotics/usb_cam/issues/57>`_ from MisoRobotics/user/hjoe72/fix/usb-cam-param
