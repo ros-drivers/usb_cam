@@ -194,8 +194,7 @@ public:
       auto it = map_dev_serial.cbegin();
       for (; it != map_dev_serial.cend(); ++it)
       {
-        std::size_t found_pos = serial_number_.find(it->second);
-        if (found_pos != std::string::npos)
+        if (serial_number_ == it->second)
         {
           found = true;
           video_device_name_ = it->first;
