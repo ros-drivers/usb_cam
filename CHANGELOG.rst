@@ -23,6 +23,14 @@ Changelog for package usb_cam
 * fix bug for byte count in a pixel (3 bytes not 24 bytes) (`#40 <https://github.com/ros-drivers/usb_cam/issues/40>`_ )
 * Contributors: Daniel Seifert, Eric Zavesky, Kei Okada, Ludovico Russo, Russell Toris, honeytrap15
 
+Forthcoming
+-----------
+* Merge pull request `#68 <https://github.com/MisoRobotics/usb_cam/issues/68>`_ from MisoRobotics/user/hjoe72/fix/usb-cam-sn
+  F3-8491: Fix USB camera SN matching
+* Fix USB camera SN matching
+  Fix USB cameras SN matching.
+* Contributors: Hendry Joe, Zach Zweig Vinegar
+
 1.0.2 (2024-07-18)
 ------------------
 * Merge pull request `#65 <https://github.com/MisoRobotics/usb_cam/issues/65>`_ from MisoRobotics/user/hjoe72/feature/block-manual-reset
