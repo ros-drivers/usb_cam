@@ -17,15 +17,11 @@
   <build_depend>ros_environment</build_depend>
   
   <buildtool_depend>pkg-config</buildtool_depend>
-  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake_auto</buildtool_depend>
-  <buildtool_depend condition="$ROS_VERSION == 2">rosidl_default_generators</buildtool_depend>
-
-  <build_depend condition="$ROS_VERSION == 1">roscpp</build_depend>
-
-  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
-  <depend condition="$ROS_VERSION == 2">rclcpp_components</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
 
   <depend>cv_bridge</depend>
   <depend>std_msgs</depend>
@@ -40,16 +36,15 @@
   <!-- Only required for MJPEG to RGB converison -->
   <depend>ffmpeg</depend>
 
-  <test_depend condition="$ROS_VERSION == 2">ament_cmake_gtest</test_depend>
-  <test_depend condition="$ROS_VERSION == 2">ament_lint_auto</test_depend>
-  <test_depend condition="$ROS_VERSION == 2">ament_lint_common</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
-  <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
 
-  <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
-    <build_type condition="$ROS_VERSION == 1">ament_cmake</build_type>
-    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

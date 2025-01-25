@@ -26,7 +26,7 @@ jobs:
       - name: Generate actions matrix
         id: set-matrix
         run: |
-          ACTIVE_ROS_DISTROS=(noetic)
+          ACTIVE_ROS_DISTROS=()
           DOCKER_DISTRO_MATRIX=()
           RAW_DOCKER_JSON=$(curl -s "https://hub.docker.com/v2/repositories/rostooling/setup-ros-docker/tags?page_size=1000")
           while read distro; do
@@ -79,18 +79,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ros_ws/src
-      - name: Build and Test ROS 1
-        uses: ros-tooling/action-ros-ci@master
-        if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) }}
-        continue-on-error: true
-        with:
-          package-name: usb_cam
-          target-ros1-distro: ${{ matrix.ros_distro }}
-          vcs-repo-file-url: ""
       - name: Build and Test ROS 2
         id: build_and_test_step
         uses: ros-tooling/action-ros-ci@master
-        if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) == false }}
         with:
           package-name: usb_cam
           target-ros2-distro: ${{ matrix.ros_distro }}
