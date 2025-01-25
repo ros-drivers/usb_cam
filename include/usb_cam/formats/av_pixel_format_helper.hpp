@@ -743,12 +743,6 @@ const std::unordered_map<std::string, AVPixelFormat> STR_2_AVPIXFMT = {
                                                                       ///< 16-bit samples,
                                                                       ///< big-endian
 
-
-  {stringify(AV_PIX_FMT_XVMC), AV_PIX_FMT_XVMC},                      ///< XVideo Motion
-                                                                      ///< Acceleration via common
-                                                                      ///< packet passing
-
-
   {stringify(AV_PIX_FMT_YUV440P10LE), AV_PIX_FMT_YUV440P10LE},        ///< planar YUV 4:4:0,20bpp,
                                                                       ///< (1 Cr & Cb sample per
                                                                       ///< 1x2 Y samples),
