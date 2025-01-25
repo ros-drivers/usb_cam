@@ -164,7 +164,6 @@ public:
       free(m_avoptions);
     }
     if (m_avcodec_context) {
-      avcodec_close(m_avcodec_context);
       avcodec_free_context(&m_avcodec_context);
     }
     if (m_avframe_device) {
