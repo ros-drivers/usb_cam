@@ -154,7 +154,25 @@ Unfortunately `rviz2` and `show_image.py` do not support visualizing the compres
 ros2 run image_transport republish compressed raw --ros-args --remap in/compressed:=image_raw/compressed --remap out:=image_raw/uncompressed
 ```
 
-## Address and leak sanitizing
+## Testing
+
+To run the basic unit tests for this repository:
+
+```shell
+colcon build --packages-select usb_cam
+colcon test --pacakges-select usb_cam
+```
+
+### Integration tests
+
+To run integration tests for this repository:
+
+```shell
+colcon build --packages-select usb_cam --cmake-args -DINTEGRATION_TESTS=1
+colcon test --pacakges-select usb_cam
+```
+
+### Address and leak sanitizing
 
 Incorporated into the `CMakelists.txt` file to assist with memory leak and address sanitizing
 is a flag to add these compile commands to the targets.

@@ -38,6 +38,11 @@
 TEST(test_usb_cam_lib, test_usb_cam_class) {
   usb_cam::UsbCam test_usb_cam;
 
+  usb_cam::parameters_t parameters;
+  test_usb_cam.configure(parameters, usb_cam::utils::IO_METHOD_MMAP);
+
+  test_usb_cam.start();
+
   auto supported_fmts = test_usb_cam.get_supported_formats();
 
   // TODO(flynneva): iterate over availble formats with test_usb_cam obj
@@ -45,15 +50,7 @@ TEST(test_usb_cam_lib, test_usb_cam_class) {
     std::cerr << "format: " << fmt.format.type << std::endl;
   }
 
-  // TODO(flynneva): rework these tests in another MR
-  {
-    // test_usb_cam.configure(
-    //   "/dev/video0",
-    //   usb_cam::utils::IO_METHOD_MMAP,
-    //   "yuyv2rgb", 640, 480, 30);
-    // test_usb_cam.start();
-    // TODO(flynneva): uncomment once /dev/video0 can be simulated in CI
-    // EXPECT_TRUE(test_usb_cam.is_capturing());
-    // test_usb_cam.shutdown();
-  }
+  // TODO(flynneva): uncomment once /dev/video0 can be simulated in CI
+  EXPECT_TRUE(test_usb_cam.is_capturing());
+  test_usb_cam.shutdown();
 }

@@ -3,12 +3,15 @@ name: Build and Test
 on:
   push:
     branches:
-      - 'ros2'
+      - 'main'
   pull_request:
     branches:
-      - 'ros2/*'
-      - 'ros2'
+      - 'main/*'
+      - 'main'
   workflow_dispatch:
+
+env:
+  ROS_WORKSPACE_PATH: workspace/src
 
 jobs:
   get_ros_distros:
@@ -26,7 +29,7 @@ jobs:
       - name: Generate actions matrix
         id: set-matrix
         run: |
-          ACTIVE_ROS_DISTROS=(noetic)
+          ACTIVE_ROS_DISTROS=()
           DOCKER_DISTRO_MATRIX=()
           RAW_DOCKER_JSON=$(curl -s "https://hub.docker.com/v2/repositories/rostooling/setup-ros-docker/tags?page_size=1000")
           while read distro; do
@@ -73,44 +76,49 @@ jobs:
     container:
       image: rostooling/setup-ros-docker:${{ matrix.docker_image }}
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install policykit-1 libgtk2.0-common screen uml-utilities libc6-dev libicu-dev gcc python3 python3-pip
+          mkdir renode_portable
+          wget https://builds.renode.io/renode-latest.linux-portable.tar.gz
+          tar xf  renode-latest.linux-portable.tar.gz -C renode_portable --strip-components=1
       - name: Setup Directories
-        run: mkdir -p ros_ws/src
+        run: mkdir -p $ROS_WORKSPACE_PATH
       - name: checkout
         uses: actions/checkout@v4
         with:
-          path: ros_ws/src
-      - name: Build and Test ROS 1
-        uses: ros-tooling/action-ros-ci@master
-        if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) }}
-        continue-on-error: true
-        with:
-          package-name: usb_cam
-          target-ros1-distro: ${{ matrix.ros_distro }}
-          vcs-repo-file-url: ""
-      - name: Build and Test ROS 2
-        id: build_and_test_step
-        uses: ros-tooling/action-ros-ci@master
-        if: ${{ contains('["melodic", "noetic"]', matrix.ros_distro) == false }}
-        with:
-          package-name: usb_cam
-          target-ros2-distro: ${{ matrix.ros_distro }}
-          vcs-repo-file-url: ""
-          colcon-defaults: |
-            {
-              "build": {
-                "mixin": ["coverage-gcc"]
-              }
-            }
-          # If possible, pin the repository in the workflow to a specific commit to avoid
-          # changes in colcon-mixin-repository from breaking your tests.
-          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
-      - uses: actions/upload-artifact@v1
+          path: $ROS_WORKSPACE_PATH/usb_cam
+      - name: build
+        shell: bash
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          cd $ROS_WORKSPACE_PATH
+          colcon build --packages-select usb_cam
+      - name: unit tests
+        shell: bash
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          cd $ROS_WORKSPACE_PATH
+          colcon test --packages-select usb_cam
+      # Compile again, this time enabling integration tests
+      - name: Build integration tests
+        shell: bash
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          cd $ROS_WORKSPACE_PATH
+          colcon build --packages-select usb_cam --cmake-args -DSANITIZE=1 -DINTEGRATION_TESTS=1
+      - name: Run integration tests
+        shell: bash
+        run: |
+            renode_portable/renode --disable-gui --version
+      - uses: actions/upload-artifact@v4
         with:
           name: colcon-logs-${{ matrix.ros_distro }}
           path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/log
         if: always()
         continue-on-error: true
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v4
         with:
           name: lcov-logs-${{ matrix.ros_distro }}
           path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/lcov

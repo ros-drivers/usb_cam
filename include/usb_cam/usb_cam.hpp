@@ -104,32 +104,27 @@ typedef struct
 
 typedef struct
 {
-  std::string camera_name;  // can be anything
-  std::string device_name;  // usually /dev/video0 or something similiar
-  std::string frame_id;
-  std::string io_method_name;
-  std::string camera_info_url;
-  // these parameters all have to be a combination supported by the device
-  // Use
-  // v4l2-ctl --device=0 --list-formats-ext
-  // to discover them,
-  // or guvcview
-  std::string pixel_format_name;
-  std::string av_device_format;
-  int image_width;
-  int image_height;
-  int framerate;
-  int brightness;
-  int contrast;
-  int saturation;
-  int sharpness;
-  int gain;
-  int white_balance;
-  int exposure;
-  int focus;
-  bool auto_white_balance;
-  bool autoexposure;
-  bool autofocus;
+  std::string camera_name = "usb_cam";  // can be anything
+  std::string device_name = "/dev/video0";  // usually /dev/video0 or something similiar
+  std::string frame_id = "camera";
+  std::string io_method_name = "mmap";
+  std::string camera_info_url = "package://usb_cam/config/camera_info.yaml";
+  std::string pixel_format_name = "yuyv2rgb";
+  std::string av_device_format = "YUV422P";
+  int image_width = 600;
+  int image_height = 400;
+  int framerate = 30.0;
+  int brightness = -1;
+  int contrast = -1;
+  int saturation = -1;
+  int sharpness = -1;
+  int gain = -1;
+  int white_balance = -1;
+  int exposure = -1;
+  int focus = -1;
+  bool auto_white_balance = true;
+  bool autoexposure = true;
+  bool autofocus = false;
 } parameters_t;
 
 typedef struct
