@@ -36,6 +36,9 @@
   <!-- Only required for MJPEG to RGB converison -->
   <depend>ffmpeg</depend>
 
+  <!-- Only required for the launch file -->
+  <exec_depend>python3-pydantic</exec_depend>
+
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
