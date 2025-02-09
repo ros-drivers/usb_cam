@@ -70,9 +70,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        cxx_compiler:
+          - g++-12
+          - g++-14
+          - clang-14
+          - clang-16
+          - clang-18
         ros_distro: ${{ fromJson(needs.get_ros_distros.outputs.series) }}
         include:
-          ${{ fromJson(needs.get_ros_distros.outputs.matrix) }}
+          - ${{ fromJson(needs.get_ros_distros.outputs.matrix) }}
+          - cxx_compiler: g++-12
+            cc_compiler: gcc-12
+          - cxx_compiler: g++-14
+            cc_compiler: gcc-14
+          - cxx_compiler: clang-14
+            cc_compiler: clang-14
+          - cxx_compiler: clang-16
+            cc_compiler: clang-16
+          - cxx_compiler: clang-18
+            cc_compiler: clang-18
+        exclude:
+          - { ros_distro: humble, cxx_compiler: g++-14 }
+          - { ros_distro: humble, cxx_compiler: clang-16 }
+          - { ros_distro: humble, cxx_compiler: clang-18 }
+
     container:
       image: rostooling/setup-ros-docker:${{ matrix.docker_image }}
     steps:
@@ -80,6 +101,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get -y install policykit-1 libgtk2.0-common screen uml-utilities libc6-dev libicu-dev gcc python3 python3-pip
+          sudo apt-get -y install ${{ matrix.cc_compiler }} ${{ matrix.cxx_compiler }}
           mkdir renode_portable
           wget https://builds.renode.io/renode-latest.linux-portable.tar.gz
           tar xf  renode-latest.linux-portable.tar.gz -C renode_portable --strip-components=1
@@ -96,15 +118,15 @@ jobs:
           package-name: usb_cam
           target-ros2-distro: ${{ matrix.ros_distro }}
           vcs-repo-file-url: ""
-          colcon-defaults: |
-            {
-              "build": {
-                "mixin": ["coverage-gcc"]
-              }
-            }
-          # If possible, pin the repository in the workflow to a specific commit to avoid
-          # changes in colcon-mixin-repository from breaking your tests.
-          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/1ddb69bedfd1f04c2f000e95452f7c24a4d6176b/index.yaml
+          extra-cmake-args: -DCMAKE_C_COMPILER=${{ matrix.cc_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} #  -DLLVM_ENABLE_RUNTIMES=compiler-rt
+          # TODO(flynneva): re-enable once code coverage works with differet compilers
+          # colcon-defaults: |
+          #   {
+          #     "build": {
+          #       "mixin": ["coverage-gcc"]
+          #     }
+          #   }
+          # colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/b8436aa16c0bdbc01081b12caa253cbf16e0fb82/index.yaml
       # Compile again, this time enabling integration tests
       - name: Build integration tests
         shell: bash
@@ -118,13 +140,14 @@ jobs:
             renode_portable/renode --disable-gui --version
       - uses: actions/upload-artifact@v4
         with:
-          name: colcon-logs-${{ matrix.ros_distro }}
+          name: colcon-logs-${{ matrix.ros_distro }}-${{ matrix.cxx_compiler }}
           path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/log
         if: always()
         continue-on-error: true
-      - uses: actions/upload-artifact@v4
-        with:
-          name: lcov-logs-${{ matrix.ros_distro }}
-          path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/lcov
-        if: always()
-        continue-on-error: true
+      # TODO(flynneva): re-enable once code coverage works with differet compilers
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: lcov-logs-${{ matrix.ros_distro }}-${{ matrix.cxx_compiler }}
+      #     path: ${{ steps.build_and_test_step.outputs.ros-workspace-directory-name }}/lcov
+      #   if: always()
+      #   continue-on-error: true

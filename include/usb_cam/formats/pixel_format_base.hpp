@@ -50,11 +50,11 @@ namespace formats
 /// arguments for future pixel format(s) that are added.
 typedef struct
 {
-  std::string name = "";
-  int width = 640;
-  int height = 480;
-  size_t pixels = 640 * 480;
-  std::string av_device_format_str = "AV_PIX_FMT_YUV422P";
+  std::string name;
+  int width;
+  int height;
+  size_t pixels;
+  std::string av_device_format_str;
 } format_arguments_t;
 
 
@@ -73,6 +73,8 @@ public:
     m_bit_depth(bit_depth),
     m_requires_conversion(requires_conversion)
   {}
+
+  virtual ~pixel_format_base() {}
 
   /// @brief Name of pixel format. Used in the parameters file to select this format
   /// @return
