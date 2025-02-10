@@ -65,6 +65,9 @@ rclcpp_components_register_node(${PROJECT_NAME}_node
   EXECUTABLE ${PROJECT_NAME}_node_exe
 )
 
+# To fix `DSO missing from command line` error with clang
+target_link_libraries(${PROJECT_NAME}_node_exe stdc++)
+
 if(SANITIZE)
   target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address -fsanitize=leak)
   target_link_libraries(${PROJECT_NAME} -fsanitize=address -fsanitize=leak)
@@ -81,11 +84,11 @@ if(BUILD_TESTING)
   ament_add_gtest(test_usb_cam_utils
     test/test_usb_cam_utils.cpp)
   target_link_libraries(test_usb_cam_utils
-    ${PROJECT_NAME})
+    ${PROJECT_NAME} m stdc++)
   ament_add_gtest(test_pixel_formats
     test/test_pixel_formats.cpp)
   target_link_libraries(test_pixel_formats
-    ${PROJECT_NAME})
+    ${PROJECT_NAME} m stdc++)
   if(INTEGRATION_TESTS)
     ament_add_gtest(test_usb_cam_lib
       test/test_usb_cam_lib.cpp)

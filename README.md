@@ -84,8 +84,8 @@ ros2 launch usb_cam camera.launch.py
 To launch multiple nodes at once, simply remap the namespace of each one:
 
 ```shell
-ros2 run usb_cam usb_cam_node_exe --remap __ns:=/usb_cam_0 --params-file /path/to/usb_cam/config/params_0.yaml
-ros2 run usb_cam usb_cam_node_exe --remap __ns:=/usb_cam_1 --params-file /path/to/usb_cam/config/params_1.yaml
+ros2 run usb_cam usb_cam_node_exe --ros-args --remap __ns:=/usb_cam_0 --params-file /path/to/usb_cam/config/params_0.yaml
+ros2 run usb_cam usb_cam_node_exe --ros-args --remap __ns:=/usb_cam_1 --params-file /path/to/usb_cam/config/params_1.yaml
 ```
 
 ## Supported formats
