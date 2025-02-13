@@ -40,7 +40,7 @@ namespace usb_cam
 namespace constants
 {
 
-const std::string DIVIDER(100, '-');
+const std::string DIVIDER(50, '-');
 
 /// @brief image encodings duplicated from
 /// https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp

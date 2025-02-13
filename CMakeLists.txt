@@ -54,6 +54,13 @@ target_link_libraries(${PROJECT_NAME}
 
 ament_export_libraries(${PROJECT_NAME})
 
+## Pure C++ CLI for using the usb_cam library
+add_executable(${PROJECT_NAME}_cli src/cli.cpp)
+target_link_libraries(${PROJECT_NAME}_cli
+  ${PROJECT_NAME}
+  stdc++
+)
+
 ## Declare a ROS 2 composible node as a library
 ament_auto_add_library(${PROJECT_NAME}_node SHARED
   src/usb_cam_node.cpp
@@ -110,6 +117,11 @@ install(TARGETS
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib
+)
+
+install(
+  TARGETS ${PROJECT_NAME}_cli
+  DESTINATION bin
 )
 
 ament_auto_package(
