@@ -32,6 +32,23 @@ if(EXISTS ${swscale})
   message(STATUS "Found libswscale: ${swscale}")
 endif()
 
+## Pure C++ V4L base library
+add_library(v4l_lib
+    src/v4l/device/base.cpp
+    src/v4l/device.cpp
+    src/v4l/device/capability.cpp
+    src/v4l/device/video/input.cpp
+    src/v4l/device/video/output.cpp
+    src/v4l/device/audio/input.cpp
+    src/v4l/device/audio/output.cpp
+)
+target_include_directories(v4l_lib PUBLIC "include")
+
+## Pure C++ CLI for using the usb_cam library
+add_executable(v4l_cli src/v4l/cli.cpp)
+target_include_directories(v4l_cli PUBLIC "include")
+target_link_libraries(v4l_cli v4l_lib)
+
 ## Build the USB camera library
 ## Do not use ament_auto here so as to not link to rclcpp
 add_library(${PROJECT_NAME} SHARED
@@ -107,6 +124,11 @@ install(TARGETS
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib
+)
+
+install(
+  TARGETS v4l_cli
+  DESTINATION bin
 )
 
 ament_auto_package(
