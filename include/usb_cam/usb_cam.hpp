@@ -238,6 +238,11 @@ public:
     return m_image.height;
   }
 
+  inline size_t get_frame_rate()
+  {
+    return m_framerate;
+  }
+
   inline size_t get_image_size_in_bytes()
   {
     return m_image.size_in_bytes;
@@ -399,6 +404,50 @@ public:
     }
 
     return m_image.pixel_format;
+  }
+
+  inline size_t set_frame_rate(const parameters_t & parameters)
+  {
+    std::shared_ptr<pixel_format_base> found_driver_format = nullptr;
+
+    formats::format_arguments_t args({
+        parameters.pixel_format_name,
+        parameters.image_width,
+        parameters.image_height,
+        m_image.number_of_pixels,
+        parameters.av_device_format,
+      });
+    // First check if given format is supported by this driver
+    for (auto driver_fmt : driver_supported_formats(args)) {
+      if (driver_fmt->name() == args.name) {
+        found_driver_format = driver_fmt;
+      }
+    }
+
+    if (found_driver_format == nullptr) {
+      // List the supported formats of this driver for the user before throwing
+      std::cerr << "This driver supports the following formats:" << std::endl;
+      for (auto driver_fmt : driver_supported_formats(args)) {
+        std::cerr << "\t" << driver_fmt->name() << std::endl;
+      }
+      throw std::invalid_argument(
+              "Specified format `" + args.name + "` is unsupported by this ROS driver"
+      );
+    }
+
+    for (auto fmt : this->supported_formats()) {
+      if (fmt.v4l2_fmt.width == static_cast<size_t>(parameters.image_width) &&
+        fmt.v4l2_fmt.height == static_cast<size_t>(parameters.image_height) &&
+        fmt.v4l2_fmt.pixel_format == found_driver_format->v4l2()) {
+        return fmt.v4l2_fmt.discrete.denominator / fmt.v4l2_fmt.discrete.numerator;
+      }
+    }
+
+    throw std::invalid_argument(
+      "Specified resolution `" + std::to_string(parameters.image_width) +
+      "x" + std::to_string(parameters.image_height) +
+      "` is unsupported by `" + parameters.device_name + "`"
+    );
   }
 
 private:

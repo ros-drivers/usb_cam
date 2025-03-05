@@ -524,7 +524,7 @@ void UsbCam::configure(
   m_image.pixel_format = set_pixel_format(parameters);
   m_image.set_bytes_per_line();
   m_image.set_size_in_bytes();
-  m_framerate = parameters.framerate;
+  m_framerate = set_frame_rate(parameters);
 
   init_device();
 }
