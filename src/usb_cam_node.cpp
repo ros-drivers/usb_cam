@@ -77,6 +77,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("saturation", -1);  // 0-255, -1 "leave alone"
   this->declare_parameter("sharpness", -1);   // 0-255, -1 "leave alone"
   this->declare_parameter("gain", -1);        // 0-100?, -1 "leave alone"
+  this->declare_parameter("analogue_gain", -1); // 0-480?, -1 "leave alone"
   this->declare_parameter("auto_white_balance", true);
   this->declare_parameter("white_balance", 4000);
   this->declare_parameter("autoexposure", true);
@@ -230,7 +231,7 @@ void UsbCamNode::get_params()
     {
       "camera_name", "camera_info_url", "frame_id", "framerate", "image_height", "image_width",
       "io_method", "pixel_format", "av_device_format", "video_device", "brightness", "contrast",
-      "saturation", "sharpness", "gain", "auto_white_balance", "white_balance", "autoexposure",
+      "saturation", "sharpness", "gain", "analogue_gain", "auto_white_balance", "white_balance", "autoexposure",
       "exposure", "autofocus", "focus"
     }
   );
@@ -273,6 +274,8 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       m_parameters.sharpness = parameter.as_int();
     } else if (parameter.get_name() == "gain") {
       m_parameters.gain = parameter.as_int();
+    } else if (parameter.get_name() == "analogue_gain") {
+      m_parameters.analogue_gain = parameter.as_int();
     } else if (parameter.get_name() == "auto_white_balance") {
       m_parameters.auto_white_balance = parameter.as_bool();
     } else if (parameter.get_name() == "white_balance") {
@@ -321,6 +324,11 @@ void UsbCamNode::set_v4l2_params()
     m_camera->set_v4l_parameter("gain", m_parameters.gain);
   }
 
+  if (m_parameters.analogue_gain >= 0) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'analogue_gain' to %d", m_parameters.analogue_gain);
+    m_camera->set_v4l_parameter("analogue_gain", m_parameters.analogue_gain);
+  }
+
   // check auto white balance
   if (m_parameters.auto_white_balance) {
     m_camera->set_v4l_parameter("white_balance_temperature_auto", 1);
@@ -338,7 +346,7 @@ void UsbCamNode::set_v4l2_params()
     // turn down exposure control (from max of 3)
     m_camera->set_v4l_parameter("exposure_auto", 1);
     // change the exposure level
-    m_camera->set_v4l_parameter("exposure_absolute", m_parameters.exposure);
+    m_camera->set_v4l_parameter("exposure", m_parameters.exposure);
   } else {
     RCLCPP_INFO(this->get_logger(), "Setting 'exposure_auto' to %d", 3);
     m_camera->set_v4l_parameter("exposure_auto", 3);
