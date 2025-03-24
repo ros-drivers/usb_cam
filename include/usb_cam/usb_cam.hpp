@@ -119,6 +119,7 @@ typedef struct parameters_t
   int saturation;
   int sharpness;
   int gain;
+  int analogue_gain;
   int white_balance;
   int exposure;
   int focus;
@@ -143,6 +144,7 @@ typedef struct parameters_t
     saturation(-1),
     sharpness(-1),
     gain(-1),
+    analogue_gain(-1),
     white_balance(-1),
     exposure(-1),
     focus(-1),
