@@ -120,7 +120,7 @@ target_link_libraries(usb_cam_node
 
 # Installation scenario
 # Executables and libraries
-install(TARGETS ${PROJECT_NAME}_node ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME}_node v4l_driver ${PROJECT_NAME}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
