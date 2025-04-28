@@ -7,3 +7,5 @@
 # documentation
 docs/xml
 site/
+build/
+.vscode/

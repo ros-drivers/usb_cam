@@ -126,6 +126,7 @@ typedef struct parameters_t
   bool auto_white_balance;
   bool autoexposure;
   bool autofocus;
+  bool publish_compressed_topics;
 
   parameters_t()
 // *INDENT-OFF*
@@ -150,7 +151,8 @@ typedef struct parameters_t
     focus(-1),
     auto_white_balance(true),
     autoexposure(true),
-    autofocus(false)
+    autofocus(false),
+    publish_compressed_topics(false)
   {
   }
 // *INDENT-ON*

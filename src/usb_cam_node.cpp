@@ -44,11 +44,10 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   m_camera(new usb_cam::UsbCam()),
   m_image_msg(new sensor_msgs::msg::Image()),
   m_compressed_img_msg(nullptr),
-  m_image_publisher(std::make_shared<image_transport::CameraPublisher>(
-      image_transport::create_camera_publisher(this, BASE_TOPIC_NAME,
-      rclcpp::QoS {100}.get_rmw_qos_profile()))),
+  m_image_transport_publisher(nullptr),
+  m_image_publisher(nullptr),
   m_compressed_image_publisher(nullptr),
-  m_compressed_cam_info_publisher(nullptr),
+  m_cam_info_publisher(nullptr),
   m_parameters(),
   m_camera_info_msg(new sensor_msgs::msg::CameraInfo()),
   m_service_capture(
@@ -84,6 +83,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("exposure", 100);
   this->declare_parameter("autofocus", false);
   this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
+  this->declare_parameter("publish_compressed_topics", false);
 
   get_params();
   init();
@@ -179,13 +179,22 @@ void UsbCamNode::init()
 
   // if pixel format is equal to 'mjpeg', i.e. raw mjpeg stream, initialize compressed image message
   // and publisher
+  if (m_parameters.publish_compressed_topics) {
+    m_image_transport_publisher = std::make_shared<image_transport::CameraPublisher>(
+      image_transport::create_camera_publisher(this, BASE_TOPIC_NAME, rclcpp::QoS {100}.get_rmw_qos_profile()));
+  }
+  else {
+    m_image_publisher = create_publisher<sensor_msgs::msg::Image>(BASE_TOPIC_NAME, rclcpp::QoS(100));
+    m_cam_info_publisher = create_publisher<sensor_msgs::msg::CameraInfo>("camera_info", rclcpp::QoS(100));
+  }
+
   if (m_parameters.pixel_format_name == "mjpeg") {
     m_compressed_img_msg.reset(new sensor_msgs::msg::CompressedImage());
     m_compressed_img_msg->header.frame_id = m_parameters.frame_id;
     m_compressed_image_publisher =
       this->create_publisher<sensor_msgs::msg::CompressedImage>(
       std::string(BASE_TOPIC_NAME) + "/compressed", rclcpp::QoS(100));
-    m_compressed_cam_info_publisher =
+      m_cam_info_publisher =
       this->create_publisher<sensor_msgs::msg::CameraInfo>(
       "camera_info", rclcpp::QoS(100));
   }
@@ -232,7 +241,7 @@ void UsbCamNode::get_params()
       "camera_name", "camera_info_url", "frame_id", "framerate", "image_height", "image_width",
       "io_method", "pixel_format", "av_device_format", "video_device", "brightness", "contrast",
       "saturation", "sharpness", "gain", "analogue_gain", "auto_white_balance", "white_balance", "autoexposure",
-      "exposure", "autofocus", "focus"
+      "exposure", "autofocus", "focus", "publish_compressed_topics"
     }
   );
 
@@ -288,6 +297,8 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       m_parameters.autofocus = parameter.as_bool();
     } else if (parameter.get_name() == "focus") {
       m_parameters.focus = parameter.as_int();
+    } else if (parameter.get_name() == "publish_compressed_topics") {
+      m_parameters.publish_compressed_topics = parameter.as_bool();
     } else {
       RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name().c_str());
     }
@@ -392,7 +403,14 @@ bool UsbCamNode::take_and_send_image()
 
   *m_camera_info_msg = m_camera_info->getCameraInfo();
   m_camera_info_msg->header = m_image_msg->header;
-  m_image_publisher->publish(*m_image_msg, *m_camera_info_msg);
+
+  if (m_image_transport_publisher.get()) {
+    m_image_transport_publisher->publish(*m_image_msg, *m_camera_info_msg);
+  }
+  else {
+    m_image_publisher->publish(*m_image_msg);
+    m_cam_info_publisher->publish(*m_camera_info_msg);
+  }
   return true;
 }
 
@@ -415,7 +433,7 @@ bool UsbCamNode::take_and_send_image_mjpeg()
   m_camera_info_msg->header = m_compressed_img_msg->header;
 
   m_compressed_image_publisher->publish(*m_compressed_img_msg);
-  m_compressed_cam_info_publisher->publish(*m_camera_info_msg);
+  m_cam_info_publisher->publish(*m_camera_info_msg);
   return true;
 }
 
