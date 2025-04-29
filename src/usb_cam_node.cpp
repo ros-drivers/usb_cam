@@ -456,7 +456,7 @@ void UsbCamNode::update()
     // If the camera exposure longer higher than the framerate period
     // then that caps the framerate.
     // auto t0 = now();
-    bool isSuccessful = (m_parameters.pixel_format_name == "mjpeg") ?
+    bool isSuccessful = (m_parameters.publish_compressed_topics) ?
       take_and_send_image_mjpeg() :
       take_and_send_image();
     if (!isSuccessful) {

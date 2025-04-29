@@ -67,6 +67,7 @@ rclcpp_components_register_node(${PROJECT_NAME}_node
 
 # To fix `DSO missing from command line` error with clang
 target_link_libraries(${PROJECT_NAME}_node_exe stdc++)
+target_compile_options(${PROJECT_NAME}_node PUBLIC -O3)
 
 if(SANITIZE)
   target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address -fsanitize=leak)

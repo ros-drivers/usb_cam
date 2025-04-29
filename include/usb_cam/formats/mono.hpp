@@ -97,15 +97,47 @@ public:
   void convert(const char * & src, char * & dest, const int & bytes_used) override
   {
     (void)bytes_used;  // not used by this conversion method
-    int i, j;
-    for (i = 0, j = 0; i < (m_number_of_pixels << 1); i += 2, j += 1) {
-      // first byte is low byte, second byte is high byte; smash together and convert to 8-bit
-      dest[j] = (unsigned char)(((src[i + 0] >> 2) & 0x3F) | ((src[i + 1] << 6) & 0xC0));
+    auto src_ = reinterpret_cast<const uint64_t *>(src);
+    auto dest_ = reinterpret_cast<uint32_t *>(dest);
+    for (int i = 0; i < m_number_of_pixels / 4; i++) {
+      dest_[i] = (uint32_t)((src_[i] >> 2)  & 0x000000FF) |
+                 (uint32_t)((src_[i] >> 10) & 0x0000FF00) |
+                 (uint32_t)((src_[i] >> 18) & 0x00FF0000) |
+                 (uint32_t)((src_[i] >> 26) & 0xFF000000);
     }
   }
 
 private:
   int m_number_of_pixels;
+};
+
+
+class Y102MONO16 : public pixel_format_base
+{
+public:
+  explicit Y102MONO16(const format_arguments_t & args = format_arguments_t())
+  : pixel_format_base(
+      "y102mono16",
+      V4L2_PIX_FMT_Y10,
+      usb_cam::constants::MONO16,
+      1,
+      16,
+      true), 
+    m_number_of_pixels(args.pixels)
+  {}
+
+  void convert(const char * & src, char * & dest, const int & bytes_used) override
+  {
+    auto src_ = reinterpret_cast<const uint64_t *>(src);
+    auto dest_ = reinterpret_cast<uint64_t *>(dest);
+    (void)bytes_used;  // not used by this conversion method
+    for (int i = 0; i < m_number_of_pixels / 4; i++) {
+      dest_[i] = src_[i] << 6;
+    }
+  }
+
+  private:
+    int m_number_of_pixels;
 };
 
 }  // namespace formats
