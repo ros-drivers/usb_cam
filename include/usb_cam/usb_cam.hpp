@@ -346,10 +346,7 @@ public:
     std::shared_ptr<pixel_format_base> found_driver_format = nullptr;
 
     // First check if given format is supported by this driver
-    auto driver_fmts = driver_supported_formats(args);
-    std::cerr << "Supported formats by the library:" << std::endl;
-    for (auto driver_fmt : driver_fmts) {
-      std::cerr << "\t" << driver_fmt->name() << std::endl;
+    for (auto driver_fmt : driver_supported_formats(args)) {
       if (driver_fmt->name() == args.name) {
         found_driver_format = driver_fmt;
       }
@@ -379,7 +376,6 @@ public:
                 << "pixel_format = " << fmt.format.pixelformat << " "
                 << fmt.v4l2_fmt.width << " x " << fmt.v4l2_fmt.height << " ("
                 << fmt.v4l2_fmt.discrete.denominator / fmt.v4l2_fmt.discrete.numerator << " Hz)"
-
                 << std::endl;
 
       if (fmt.v4l2_fmt.pixel_format == found_driver_format->v4l2()) {

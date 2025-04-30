@@ -482,7 +482,7 @@ void UsbCam::close_device()
   if (m_fd == -1) {return;}
 
   if (-1 == close(m_fd)) {
-    throw strerror(errno);
+    throw std::runtime_error(strerror(errno));
   }
 
   m_fd = -1;
@@ -493,17 +493,17 @@ void UsbCam::open_device()
   struct stat st;
 
   if (-1 == stat(m_device_name.c_str(), &st)) {
-    throw strerror(errno);
+    throw std::runtime_error(strerror(errno));
   }
 
   if (!S_ISCHR(st.st_mode)) {
-    throw strerror(errno);
+    throw std::runtime_error(strerror(errno));
   }
 
   m_fd = open(m_device_name.c_str(), O_RDWR /* required */ | O_NONBLOCK, 0);
 
   if (-1 == m_fd) {
-    throw strerror(errno);
+    throw std::runtime_error(strerror(errno));
   }
 }
 

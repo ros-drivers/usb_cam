@@ -179,24 +179,24 @@ void UsbCamNode::init()
 
   // if pixel format is equal to 'mjpeg', i.e. raw mjpeg stream, initialize compressed image message
   // and publisher
+  auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data))
+            .best_effort()
+            .durability(rclcpp::DurabilityPolicy::Volatile)
+            .keep_last(1);
   if (m_parameters.publish_compressed_topics) {
     m_image_transport_publisher = std::make_shared<image_transport::CameraPublisher>(
-      image_transport::create_camera_publisher(this, BASE_TOPIC_NAME, rclcpp::QoS {100}.get_rmw_qos_profile()));
-  }
-  else {
-    m_image_publisher = create_publisher<sensor_msgs::msg::Image>(BASE_TOPIC_NAME, rclcpp::QoS(100));
-    m_cam_info_publisher = create_publisher<sensor_msgs::msg::CameraInfo>("camera_info", rclcpp::QoS(100));
+      image_transport::create_camera_publisher(this, BASE_TOPIC_NAME, rclcpp::QoS {1}.get_rmw_qos_profile()));
+  } else {
+    m_image_publisher = create_publisher<sensor_msgs::msg::Image>(BASE_TOPIC_NAME, qos);
+    m_cam_info_publisher = create_publisher<sensor_msgs::msg::CameraInfo>("camera_info", qos);
   }
 
   if (m_parameters.pixel_format_name == "mjpeg") {
     m_compressed_img_msg.reset(new sensor_msgs::msg::CompressedImage());
     m_compressed_img_msg->header.frame_id = m_parameters.frame_id;
     m_compressed_image_publisher =
-      this->create_publisher<sensor_msgs::msg::CompressedImage>(
-      std::string(BASE_TOPIC_NAME) + "/compressed", rclcpp::QoS(100));
-      m_cam_info_publisher =
-      this->create_publisher<sensor_msgs::msg::CameraInfo>(
-      "camera_info", rclcpp::QoS(100));
+      this->create_publisher<sensor_msgs::msg::CompressedImage>(std::string(BASE_TOPIC_NAME) + "/compressed", qos);
+    m_cam_info_publisher = this->create_publisher<sensor_msgs::msg::CameraInfo>("camera_info", qos);
   }
 
   m_image_msg->header.frame_id = m_parameters.frame_id;
@@ -406,8 +406,7 @@ bool UsbCamNode::take_and_send_image()
 
   if (m_image_transport_publisher.get()) {
     m_image_transport_publisher->publish(*m_image_msg, *m_camera_info_msg);
-  }
-  else {
+  } else {
     m_image_publisher->publish(*m_image_msg);
     m_cam_info_publisher->publish(*m_camera_info_msg);
   }
