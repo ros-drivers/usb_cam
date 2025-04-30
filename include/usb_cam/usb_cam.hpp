@@ -71,6 +71,7 @@ using usb_cam::formats::UYVY2RGB;
 using usb_cam::formats::MONO8;
 using usb_cam::formats::MONO16;
 using usb_cam::formats::Y102MONO8;
+using usb_cam::formats::Y102MONO16;
 using usb_cam::formats::RAW_MJPEG;
 using usb_cam::formats::MJPEG2RGB;
 using usb_cam::formats::M4202RGB;
@@ -89,6 +90,7 @@ std::vector<std::shared_ptr<pixel_format_base>> driver_supported_formats(
     std::make_shared<MONO8>(args),
     std::make_shared<MONO16>(args),
     std::make_shared<Y102MONO8>(args),
+    std::make_shared<Y102MONO16>(args),
     std::make_shared<RAW_MJPEG>(args),
     std::make_shared<MJPEG2RGB>(args),
     std::make_shared<M4202RGB>(args),
@@ -126,6 +128,7 @@ typedef struct parameters_t
   bool auto_white_balance;
   bool autoexposure;
   bool autofocus;
+  bool publish_compressed_topics;
 
   parameters_t()
 // *INDENT-OFF*
@@ -150,7 +153,8 @@ typedef struct parameters_t
     focus(-1),
     auto_white_balance(true),
     autoexposure(true),
-    autofocus(false)
+    autofocus(false),
+    publish_compressed_topics(false)
   {
   }
 // *INDENT-ON*
@@ -359,13 +363,20 @@ public:
       );
     }
 
+    std::cout << "Selected format of the library: " << found_driver_format->name() 
+              << ", pixel_format: " << found_driver_format->v4l2() << " " 
+              << found_driver_format->v4l2_str() 
+              << ", requires conversion = " << std::boolalpha << found_driver_format->requires_conversion() 
+              << std::endl;
+
     std::cout << "This device supports the following formats:" << std::endl;
     for (auto fmt : this->supported_formats()) {
       // Always list the devices supported formats for the user
-      std::cout << "\t" << fmt.format.description << " ";
-      std::cout << fmt.v4l2_fmt.width << " x " << fmt.v4l2_fmt.height << " (";
-      std::cout << fmt.v4l2_fmt.discrete.denominator / fmt.v4l2_fmt.discrete.numerator << " Hz)";
-      std::cout << std::endl;
+      std::cout << "\t" << fmt.format.description << " "
+                << "pixel_format = " << fmt.format.pixelformat << " "
+                << fmt.v4l2_fmt.width << " x " << fmt.v4l2_fmt.height << " ("
+                << fmt.v4l2_fmt.discrete.denominator / fmt.v4l2_fmt.discrete.numerator << " Hz)"
+                << std::endl;
 
       if (fmt.v4l2_fmt.pixel_format == found_driver_format->v4l2()) {
         result = true;

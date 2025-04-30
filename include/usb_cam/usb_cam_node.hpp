@@ -81,9 +81,10 @@ public:
 
   sensor_msgs::msg::Image::UniquePtr m_image_msg;
   sensor_msgs::msg::CompressedImage::UniquePtr m_compressed_img_msg;
-  std::shared_ptr<image_transport::CameraPublisher> m_image_publisher;
+  std::shared_ptr<image_transport::CameraPublisher> m_image_transport_publisher;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr m_image_publisher;
   rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr m_compressed_image_publisher;
-  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr m_compressed_cam_info_publisher;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr m_cam_info_publisher;
 
   parameters_t m_parameters;
 
