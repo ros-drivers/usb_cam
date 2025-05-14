@@ -72,6 +72,7 @@ using usb_cam::formats::MONO8;
 using usb_cam::formats::MONO16;
 using usb_cam::formats::Y102MONO8;
 using usb_cam::formats::Y102MONO16;
+using usb_cam::formats::Y10P2MONO8;
 using usb_cam::formats::RAW_MJPEG;
 using usb_cam::formats::MJPEG2RGB;
 using usb_cam::formats::M4202RGB;
@@ -91,6 +92,7 @@ std::vector<std::shared_ptr<pixel_format_base>> driver_supported_formats(
     std::make_shared<MONO16>(args),
     std::make_shared<Y102MONO8>(args),
     std::make_shared<Y102MONO16>(args),
+    std::make_shared<Y10P2MONO8>(args),
     std::make_shared<RAW_MJPEG>(args),
     std::make_shared<MJPEG2RGB>(args),
     std::make_shared<M4202RGB>(args),

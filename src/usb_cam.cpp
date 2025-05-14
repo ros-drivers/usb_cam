@@ -527,6 +527,9 @@ void UsbCam::configure(
   m_framerate = parameters.framerate;
 
   init_device();
+
+  // Only now bytes_per_line is known for v4l2. Set it to pixel_format for decoding
+  m_image.pixel_format->set_v4l2_bytes_per_line(m_image.v4l2_fmt.fmt.pix.bytesperline);
 }
 
 void UsbCam::start()

@@ -140,6 +140,50 @@ public:
     int m_number_of_pixels;
 };
 
+class Y10P2MONO8 : public pixel_format_base
+{
+public:
+  explicit Y10P2MONO8(const format_arguments_t & args = format_arguments_t())
+  : pixel_format_base(
+      "y10p2mono8",
+      V4L2_PIX_FMT_Y10P,
+      usb_cam::constants::MONO8,
+      1,
+      8,
+      true), 
+    width(args.width),
+    height(args.height)
+  {}
+
+  void set_v4l2_bytes_per_line(uint32_t v4l2_bytes_per_line) override 
+  { 
+    line_padding = v4l2_bytes_per_line - width * 5 / 4;
+    if (line_padding < 0)
+      throw std::runtime_error("line_padding cannot be negative. pixel format is corrupted.");
+  }
+
+  void convert(const char * & src, char * & dest, const int & bytes_used) override
+  {
+    (void)bytes_used;  // not used by this conversion method
+    auto p_src = src;
+    auto p_dest = dest;
+    for (int i = 0; i < height; i++) {
+      for (int j = 0; j < width / 4; j++) {
+        *reinterpret_cast<uint32_t*>(p_dest) = *reinterpret_cast<const uint32_t*>(p_src);
+        p_src += 5;
+        p_dest += 4;
+      }
+
+      p_src += line_padding;
+    }
+  }
+
+  private:
+    int width;
+    int height;
+    int line_padding;
+};
+
 }  // namespace formats
 }  // namespace usb_cam
 

@@ -109,6 +109,8 @@ public:
   /// @return
   inline bool requires_conversion() {return m_requires_conversion;}
 
+  virtual void set_v4l2_bytes_per_line(uint32_t v4l2_bytes_per_line) { (void) v4l2_bytes_per_line; }
+
   /// @brief Conversion method. Meant to be overridden if pixel format requires it.
   virtual void convert(const char * & src, char * & dest, const int & bytes_used)
   {
