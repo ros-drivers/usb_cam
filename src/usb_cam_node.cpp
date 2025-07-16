@@ -42,15 +42,15 @@ namespace usb_cam
 UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
 : Node("usb_cam", node_options),
   m_camera(new usb_cam::UsbCam()),
-  m_image_msg(new sensor_msgs::msg::Image()),
+  m_image_msg(std::make_unique<sensor_msgs::msg::Image>()),
   m_compressed_img_msg(nullptr),
-  m_image_publisher(std::make_shared<image_transport::CameraPublisher>(
-      image_transport::create_camera_publisher(this, BASE_TOPIC_NAME,
-      rclcpp::QoS {100}.get_rmw_qos_profile()))),
+  m_image_publisher(image_transport::create_publisher(this, BASE_TOPIC_NAME, rclcpp::QoS{100}.get_rmw_qos_profile())),
+  m_camera_info_publisher(this->create_publisher<sensor_msgs::msg::CameraInfo>(
+      "camera_info", rclcpp::QoS{100})),
   m_compressed_image_publisher(nullptr),
   m_compressed_cam_info_publisher(nullptr),
   m_parameters(),
-  m_camera_info_msg(new sensor_msgs::msg::CameraInfo()),
+  m_camera_info_msg(std::make_shared<sensor_msgs::msg::CameraInfo>()),
   m_service_capture(
     this->create_service<std_srvs::srv::SetBool>(
       "set_capture",
@@ -179,7 +179,7 @@ void UsbCamNode::init()
   // if pixel format is equal to 'mjpeg', i.e. raw mjpeg stream, initialize compressed image message
   // and publisher
   if (m_parameters.pixel_format_name == "mjpeg") {
-    m_compressed_img_msg.reset(new sensor_msgs::msg::CompressedImage());
+    m_compressed_img_msg = std::make_unique<sensor_msgs::msg::CompressedImage>();
     m_compressed_img_msg->header.frame_id = m_parameters.frame_id;
     m_compressed_image_publisher =
       this->create_publisher<sensor_msgs::msg::CompressedImage>(
@@ -384,7 +384,11 @@ bool UsbCamNode::take_and_send_image()
 
   *m_camera_info_msg = m_camera_info->getCameraInfo();
   m_camera_info_msg->header = m_image_msg->header;
-  m_image_publisher->publish(*m_image_msg, *m_camera_info_msg);
+  
+  // 发布图像和相机信息 (image_transport::Publisher 不支持 std::move)
+  m_image_publisher.publish(*m_image_msg);
+  m_camera_info_publisher->publish(*m_camera_info_msg);
+  
   return true;
 }
 
@@ -406,8 +410,10 @@ bool UsbCamNode::take_and_send_image_mjpeg()
   *m_camera_info_msg = m_camera_info->getCameraInfo();
   m_camera_info_msg->header = m_compressed_img_msg->header;
 
+  // 发布压缩图像和相机信息
   m_compressed_image_publisher->publish(*m_compressed_img_msg);
   m_compressed_cam_info_publisher->publish(*m_camera_info_msg);
+  
   return true;
 }
 

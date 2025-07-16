@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(usb_cam)
+project(v4l2_camera)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -62,11 +62,11 @@ target_link_libraries(${PROJECT_NAME}_node
 ## Use node to generate an executable
 rclcpp_components_register_node(${PROJECT_NAME}_node
   PLUGIN "usb_cam::UsbCamNode"
-  EXECUTABLE ${PROJECT_NAME}_node_exe
+  EXECUTABLE v4l2_cam_node
 )
 
 # To fix `DSO missing from command line` error with clang
-target_link_libraries(${PROJECT_NAME}_node_exe stdc++)
+target_link_libraries(v4l2_cam_node stdc++)
 
 if(SANITIZE)
   target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address -fsanitize=leak)

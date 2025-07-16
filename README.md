@@ -1,13 +1,30 @@
-# usb_cam [![ROS 2 CI](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/ros-drivers/usb_cam/actions/workflows/build_test.yml)
+# v4l2_camera [![ROS 2 CI](https://github.com/your-username/v4l2_camera/actions/workflows/build_test.yml/badge.svg)](https://github.com/your-username/v4l2_camera/actions/workflows/build_test.yml)
 
-## A ROS 2 Driver for V4L USB Cameras
-This package is based off of V4L devices specifically instead of just UVC.
+## Enhanced ROS 2 Driver for V4L2 Cameras
 
-For ros1 documentation, see [the ROS wiki](http://ros.org/wiki/usb_cam).
+This package is an enhanced fork of the original `usb_cam` package, specifically optimized for V4L2 devices with additional features including:
+
+- **Multi-camera support with intra-process communication**
+- **Enhanced memory management with std::move optimization** 
+- **Improved parameter handling and validation**
+- **Better error handling and logging**
+- **Modern C++17 features and best practices**
+
+### Key Features
+
+- 🎥 **Multi-camera intra-process communication**: Run multiple cameras in a single process container for improved performance
+- 🚀 **Zero-copy message passing**: Optimized memory usage with move semantics
+- ⚙️ **Enhanced V4L2 control**: Full access to camera parameters like exposure, white balance, focus
+- 📊 **Real-time timestamps**: Accurate frame timing using kernel timestamps
+- 🔧 **Flexible configuration**: YAML-based parameter files for easy setup
+
+### Original Credits
+
+This project is based on the excellent work of the [ros-drivers/usb_cam](https://github.com/ros-drivers/usb_cam) project. We extend our gratitude to all the original contributors.
 
 ## Supported ROS 2 Distros and Platforms
 
-All Officially supported Linux Distros and corresponding ROS 2 releases are supported. Please create an issue if you experience any problems on these platforms.
+All officially supported Linux distributions and corresponding ROS 2 releases are supported.
 
 Windows: TBD/Untested/Unproven
 MacOS: TBD/Untested/Unproven
@@ -16,15 +33,37 @@ For either MacOS or Windows - if you would like to try and get it working please
 
 ## Quickstart
 
-Assuming you have a supported ROS 2 distro installed, run the following command to install the binary release:
+### Installation from Source (Recommended)
+
+Since this is an enhanced fork, it's recommended to build from source:
 
 ```shell
-sudo apt-get install ros-<ros2-distro>-usb-cam
+# Clone the repository
+cd ~/ros2_ws/src
+git clone https://github.com/your-username/v4l2_camera.git
+
+# Install dependencies
+cd ~/ros2_ws
+rosdep install --from-paths src --ignore-src -r -y
+
+# Build the package
+colcon build --packages-select v4l2_camera
+
+# Source the workspace
+source install/setup.bash
 ```
 
-As of today this package should be available for binary installation on all active ROS 2 distros.
+### Usage Examples
 
-If for some reason you cannot install the binaries, follow the directions below to compile from source.
+#### Single Camera
+```shell
+ros2 launch v4l2_camera camera.launch.py
+```
+
+#### Multi-camera with Intra-process Communication
+```shell
+ros2 launch v4l2_camera multi_camera_intra_process.launch.py
+```
 
 ## Building from Source
 

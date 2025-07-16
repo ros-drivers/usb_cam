@@ -1,17 +1,27 @@
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>usb_cam</name>
-  <version>0.8.1</version>
-  <description>A ROS Driver for V4L USB Cameras</description>
+<?x  <name>v4l2_camera</name>
+  <version>1.0.0</version>
+  <description>A ROS 2 V4L2 Camera Driver - Enhanced fork from usb_cam with multi-camera support and intra-process communication</description>
 
-  <maintainer email="evanflynn.msu@gmail.com">Evan Flynn</maintainer>
+  <maintainer email="your-email@example.com">Your Name</maintainer>
 
   <license>BSD</license>
 
-  <url type="website">http://wiki.ros.org/usb_cam</url>
-  <url type="bugtracker">https://github.com/ros-drivers/usb_cam/issues</url>
-  <url type="repository">https://github.com/ros-drivers/usb_cam</url>
+  <url type="website">https://github.com/your-username/v4l2_camera</url>
+  <url type="bugtracker">https://github.com/your-username/v4l2_camera/issues</url>
+  <url type="repository">https://github.com/your-username/v4l2_camera</url>"1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>v4l2_camera</name>
+  <version>1.0.0</version>
+  <description>A ROS 2 V4L2 Camera Driver - Fork from usb_cam with Enhanced Features</description>
+
+  <maintainer email="your-email@example.com">Your Name</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">https://github.com/your-username/v4l2_camera</url>
+  <url type="bugtracker">https://github.com/your-username/v4l2_camera/issues</url>
+  <url type="repository">https://github.com/your-username/v4l2_camera</url>
 
   <!-- Required so ROS build farms properly set ROS_VERSION -->
   <build_depend>ros_environment</build_depend>

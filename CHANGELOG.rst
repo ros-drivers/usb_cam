@@ -1,13 +1,26 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package usb_cam
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package v4l2_camera
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.8.1 (2024-05-01)
+1.0.0 (2025-07-16)
 ------------------
-* Merge pull request `#330 <https://github.com/ros-drivers/usb_cam/issues/330>`_ from ros-drivers/fix-rolling-builds
-  Update comment in CI from Jammy to Noble
-* Fix linter error in uyvy file
-  - Update comment in CI from Jammy to Noble
+* **BREAKING**: Forked from usb_cam package for enhanced V4L2 camera support
+* **NEW**: Multi-camera intra-process communication support
+* **NEW**: Enhanced memory management with std::move optimization
+* **NEW**: Improved V4L2 parameter handling and validation
+* **NEW**: Modern C++17 features and best practices
+* **NEW**: Zero-copy message passing for better performance
+* **NEW**: Enhanced error handling and logging
+* **NEW**: Comprehensive multi-camera launch files
+* **IMPROVED**: Real-time timestamp accuracy using kernel timestamps
+* **IMPROVED**: Better V4L2 control interface for camera parameters
+* **DOCS**: Updated documentation with multi-camera examples
+* **DOCS**: Enhanced README with feature descriptions and usage examples
+
+Based on usb_cam 0.8.1
+----------------------
+Original package maintained by ros-drivers organization.
+See original changelog for historical changes before fork.
 * Merge pull request `#324 <https://github.com/ros-drivers/usb_cam/issues/324>`_ from clalancette/clalancette/const-avcodec
   Switch to a const AVCodec *.
 * Switch to a const AVCodec *.

@@ -39,7 +39,7 @@ import sys
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path)
 
-from camera_config import CameraConfig, USB_CAM_DIR  # noqa: E402
+from camera_config import CameraConfig, V4L2_CAM_DIR  # noqa: E402
 
 from launch import LaunchDescription  # noqa: E402
 from launch.actions import GroupAction  # noqa: E402
@@ -50,7 +50,7 @@ CAMERAS = []
 CAMERAS.append(
     CameraConfig(
         name='camera1',
-        param_path=Path(USB_CAM_DIR, 'config', 'params_1.yaml')
+        param_path=Path(V4L2_CAM_DIR, 'config', 'params_1.yaml')
     )
     # Add more Camera's here and they will automatically be launched below
 )
@@ -59,13 +59,13 @@ CAMERAS.append(
 def generate_launch_description():
     ld = LaunchDescription()
 
-    parser = argparse.ArgumentParser(description='usb_cam demo')
+    parser = argparse.ArgumentParser(description='v4l2_camera demo')
     parser.add_argument('-n', '--node-name', dest='node_name', type=str,
-                        help='name for device', default='usb_cam')
+                        help='name for device', default='v4l2_cam')
 
     camera_nodes = [
         Node(
-            package='usb_cam', executable='usb_cam_node_exe', output='screen',
+            package='v4l2_camera', executable='v4l2_cam_node', output='screen',
             name=camera.name,
             namespace=camera.namespace,
             parameters=[camera.param_path],

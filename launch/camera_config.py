@@ -1,4 +1,4 @@
-# Copyright 2023 usb_cam Authors
+# Copyright 2023 v4l2_camera Authors (Enhanced from usb_cam)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -10,7 +10,21 @@
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
 #
-#    * Neither the name of the usb_cam Authors nor the names of its
+#    * Neither the name of the v4l2_camera Authors nor the names of its
+#      contributors may be used to endorse or promote products derived from
+#      this software without specific prior written permission.3 v4l2_camera Authors
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#
+#    * Neither the name of the v4l2_camera Authors nor the names of its
 #      contributors may be used to endorse or promote products derived from
 #      this software without specific prior written permission.
 #
@@ -33,12 +47,12 @@ from typing import List, Optional
 from ament_index_python.packages import get_package_share_directory
 from pydantic import BaseModel, root_validator, validator
 
-USB_CAM_DIR = get_package_share_directory('usb_cam')
+V4L2_CAM_DIR = get_package_share_directory('v4l2_camera')
 
 
 class CameraConfig(BaseModel):
     name: str = 'camera1'
-    param_path: Path = Path(USB_CAM_DIR, 'config', 'params_1.yaml')
+    param_path: Path = Path(V4L2_CAM_DIR, 'config', 'params_1.yaml')
     remappings: Optional[List]
     namespace: Optional[str]
 
