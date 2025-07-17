@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(v4l2_camera)
+project(v4l2_cam)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -19,6 +19,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(avcodec REQUIRED libavcodec)
 pkg_check_modules(avutil REQUIRED libavutil)
 pkg_check_modules(swscale REQUIRED libswscale)
+
+# Add yaml-cpp
+find_package(yaml-cpp REQUIRED)
 
 if(EXISTS ${avcodec})
   message(STATUS "Found libavcodec: ${avcodec}")
@@ -47,7 +50,8 @@ target_link_libraries(${PROJECT_NAME}
   ${avcodec_LIBRARIES}
   ${avutil_LIBRARIES}
   ${swscale_LIBRARIES}
-  ${OpenCV_LIBRARIES})
+  ${OpenCV_LIBRARIES}
+  yaml-cpp)
 
 ament_export_libraries(${PROJECT_NAME})
 
@@ -60,13 +64,11 @@ target_link_libraries(${PROJECT_NAME}_node
   ${PROJECT_NAME})
 
 ## Use node to generate an executable
-rclcpp_components_register_node(${PROJECT_NAME}_node
-  PLUGIN "usb_cam::UsbCamNode"
-  EXECUTABLE v4l2_cam_node
-)
+rclcpp_components_register_nodes(${PROJECT_NAME}_node "Cyberbus::V4l2CamComponent")
+set(node_plugins "${node_plugins}Cyberbus::V4l2CamComponent;$<TARGET_FILE:${PROJECT_NAME}_node>\n")
 
 # To fix `DSO missing from command line` error with clang
-target_link_libraries(v4l2_cam_node stdc++)
+target_link_libraries(${PROJECT_NAME}_node stdc++)
 
 if(SANITIZE)
   target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address -fsanitize=leak)

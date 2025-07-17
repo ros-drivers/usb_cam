@@ -10,7 +10,7 @@
       image_height: 480
       camera_name: "test_camera2"
       # reusing same camera intrinsics only for demo, should really be unique for camera2"
-      camera_info_url: "package://usb_cam/config/camera_info.yaml"
+      camera_info_url: "package://v4l2_cam/config/camera_info.yaml"
       brightness: -1
       contrast: -1
       saturation: -1

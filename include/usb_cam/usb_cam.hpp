@@ -132,7 +132,7 @@ typedef struct parameters_t
     device_name("/dev/video0"),
     frame_id("camera"),
     io_method_name("mmap"),
-    camera_info_url("package://usb_cam/config/camera_info.yaml"),
+    camera_info_url("package://v4l2_cam/config/camera_info.yaml"),
     pixel_format_name("yuyv2rgb"),
     av_device_format("YUV422P"),
     image_width(600),

@@ -1,0 +1,23 @@
+/**:
+    ros__parameters:
+      video_device: "/dev/video11"
+      framerate: 30.0
+      io_method: "mmap"
+      frame_id: "surround3_camera"
+      pixel_format: "uyvy"  # 使用设备支持的UYVY格式
+      av_device_format: "UYVY"
+      image_width: 1920
+      image_height: 1500
+      camera_name: "surround3_camera"
+      camera_info_url: "file://$(find v4l2_cam)/config/camera_info.yaml"
+      brightness: -1
+      contrast: -1
+      saturation: -1
+      sharpness: -1
+      gain: -1
+      auto_white_balance: true
+      white_balance: 4000
+      autoexposure: true
+      exposure: 100
+      autofocus: false
+      focus: -1

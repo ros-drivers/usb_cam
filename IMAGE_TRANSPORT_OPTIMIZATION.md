@@ -110,7 +110,7 @@ m_image_publisher->publish(*m_image_msg, *m_camera_info_msg);
 ```cpp
 // 在 multi_camera_intra_process.launch.py 中
 ComposableNode(
-    package='v4l2_camera',
+    package='v4l2_cam',
     plugin='usb_cam::UsbCamNode',
     extra_arguments=[{'use_intra_process_comms': True}]
 )

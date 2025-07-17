@@ -31,22 +31,23 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <yaml-cpp/yaml.h>
 #include "usb_cam/usb_cam_node.hpp"
 #include "usb_cam/utils.hpp"
 
 const char BASE_TOPIC_NAME[] = "image_raw";
 
-namespace usb_cam
+namespace Cyberbus
 {
 
-UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
+V4l2CamComponent::V4l2CamComponent(const rclcpp::NodeOptions & node_options)
 : Node("usb_cam", node_options),
   m_camera(new usb_cam::UsbCam()),
   m_image_msg(std::make_unique<sensor_msgs::msg::Image>()),
   m_compressed_img_msg(nullptr),
-  m_image_publisher(image_transport::create_publisher(this, BASE_TOPIC_NAME, rclcpp::QoS{100}.get_rmw_qos_profile())),
+  m_image_publisher(image_transport::create_publisher(this, BASE_TOPIC_NAME, rclcpp::QoS{1}.get_rmw_qos_profile())),
   m_camera_info_publisher(this->create_publisher<sensor_msgs::msg::CameraInfo>(
-      "camera_info", rclcpp::QoS{100})),
+      "camera_info", rclcpp::QoS{1})),
   m_compressed_image_publisher(nullptr),
   m_compressed_cam_info_publisher(nullptr),
   m_parameters(),
@@ -55,44 +56,33 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
     this->create_service<std_srvs::srv::SetBool>(
       "set_capture",
       std::bind(
-        &UsbCamNode::service_capture,
+        &V4l2CamComponent::service_capture,
         this,
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3)))
 {
-  // declare params
-  this->declare_parameter("camera_name", "default_cam");
-  this->declare_parameter("camera_info_url", "");
-  this->declare_parameter("framerate", 30.0);
-  this->declare_parameter("frame_id", "default_cam");
-  this->declare_parameter("image_height", 480);
-  this->declare_parameter("image_width", 640);
-  this->declare_parameter("io_method", "mmap");
-  this->declare_parameter("pixel_format", "yuyv");
-  this->declare_parameter("av_device_format", "YUV422P");
-  this->declare_parameter("video_device", "/dev/video0");
-  this->declare_parameter("brightness", 50);  // 0-255, -1 "leave alone"
-  this->declare_parameter("contrast", -1);    // 0-255, -1 "leave alone"
-  this->declare_parameter("saturation", -1);  // 0-255, -1 "leave alone"
-  this->declare_parameter("sharpness", -1);   // 0-255, -1 "leave alone"
-  this->declare_parameter("gain", -1);        // 0-100?, -1 "leave alone"
-  this->declare_parameter("auto_white_balance", true);
-  this->declare_parameter("white_balance", 4000);
-  this->declare_parameter("autoexposure", true);
-  this->declare_parameter("exposure", 100);
-  this->declare_parameter("autofocus", false);
-  this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
-
-  get_params();
+  // Try to get config file path from parameter, if provided
+  this->declare_parameter("config_file_path", "");
+  std::string config_file_path = this->get_parameter("config_file_path").as_string();
+  
+  if (!config_file_path.empty()) {
+    RCLCPP_INFO(this->get_logger(), "Loading configuration from YAML file: %s", config_file_path.c_str());
+    load_params_from_yaml(config_file_path);
+  } else {
+    // Fallback to ROS parameter declaration
+    declare_ros_parameters();
+    get_params();
+  }
+  
   init();
   m_parameters_callback_handle = add_on_set_parameters_callback(
     std::bind(
-      &UsbCamNode::parameters_callback, this,
+      &V4l2CamComponent::parameters_callback, this,
       std::placeholders::_1));
 }
 
-UsbCamNode::~UsbCamNode()
+V4l2CamComponent::~V4l2CamComponent()
 {
   RCLCPP_WARN(this->get_logger(), "Shutting down");
   m_image_msg.reset();
@@ -106,7 +96,7 @@ UsbCamNode::~UsbCamNode()
   delete (m_camera);
 }
 
-void UsbCamNode::service_capture(
+void V4l2CamComponent::service_capture(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
   std::shared_ptr<std_srvs::srv::SetBool::Response> response)
@@ -137,7 +127,7 @@ std::string resolve_device_path(const std::string & path)
   return path;
 }
 
-void UsbCamNode::init()
+void V4l2CamComponent::init()
 {
   while (m_parameters.frame_id == "") {
     RCLCPP_WARN_ONCE(
@@ -196,7 +186,7 @@ void UsbCamNode::init()
     m_parameters.image_width, m_parameters.image_height, m_parameters.io_method_name.c_str(),
     m_parameters.pixel_format_name.c_str(), m_parameters.framerate);
   // set the IO method
-  io_method_t io_method =
+  usb_cam::utils::io_method_t io_method =
     usb_cam::utils::io_method_from_string(m_parameters.io_method_name);
   if (io_method == usb_cam::utils::IO_METHOD_UNKNOWN) {
     RCLCPP_ERROR_ONCE(
@@ -219,11 +209,11 @@ void UsbCamNode::init()
   const int period_ms = 1000.0 / m_parameters.framerate;
   m_timer = this->create_wall_timer(
     std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
-    std::bind(&UsbCamNode::update, this));
+    std::bind(&V4l2CamComponent::update, this));
   RCLCPP_INFO_STREAM(this->get_logger(), "Timer triggering every " << period_ms << " ms");
 }
 
-void UsbCamNode::get_params()
+void V4l2CamComponent::get_params()
 {
   auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
   auto parameters = parameters_client->get_parameters(
@@ -238,7 +228,7 @@ void UsbCamNode::get_params()
   assign_params(parameters);
 }
 
-void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters)
+void V4l2CamComponent::assign_params(const std::vector<rclcpp::Parameter> & parameters)
 {
   for (auto & parameter : parameters) {
     if (parameter.get_name() == "camera_name") {
@@ -293,7 +283,7 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
 
 /// @brief Send current parameters to V4L2 device
 /// TODO(flynneva): should this actuaully be part of UsbCam class?
-void UsbCamNode::set_v4l2_params()
+void V4l2CamComponent::set_v4l2_params()
 {
   // set camera parameters
   if (m_parameters.brightness >= 0) {
@@ -359,7 +349,7 @@ void UsbCamNode::set_v4l2_params()
   }
 }
 
-bool UsbCamNode::take_and_send_image()
+bool V4l2CamComponent::take_and_send_image()
 {
   // Only resize if required
   if (sizeof(m_image_msg->data) != m_camera->get_image_size_in_bytes()) {
@@ -392,7 +382,7 @@ bool UsbCamNode::take_and_send_image()
   return true;
 }
 
-bool UsbCamNode::take_and_send_image_mjpeg()
+bool V4l2CamComponent::take_and_send_image_mjpeg()
 {
   // Only resize if required
   if (sizeof(m_compressed_img_msg->data) != m_camera->get_image_size_in_bytes()) {
@@ -417,7 +407,7 @@ bool UsbCamNode::take_and_send_image_mjpeg()
   return true;
 }
 
-rcl_interfaces::msg::SetParametersResult UsbCamNode::parameters_callback(
+rcl_interfaces::msg::SetParametersResult V4l2CamComponent::parameters_callback(
   const std::vector<rclcpp::Parameter> & parameters)
 {
   RCLCPP_DEBUG(this->get_logger(), "Setting parameters for %s", m_parameters.camera_name.c_str());
@@ -430,7 +420,7 @@ rcl_interfaces::msg::SetParametersResult UsbCamNode::parameters_callback(
   return result;
 }
 
-void UsbCamNode::update()
+void V4l2CamComponent::update()
 {
   if (m_camera->is_capturing()) {
     // If the camera exposure longer higher than the framerate period
@@ -444,8 +434,137 @@ void UsbCamNode::update()
     }
   }
 }
-}  // namespace usb_cam
+
+void V4l2CamComponent::declare_ros_parameters()
+{
+  // declare params
+  this->declare_parameter("camera_name", "default_cam");
+  this->declare_parameter("camera_info_url", "");
+  this->declare_parameter("framerate", 30.0);
+  this->declare_parameter("frame_id", "default_cam");
+  this->declare_parameter("image_height", 480);
+  this->declare_parameter("image_width", 640);
+  this->declare_parameter("io_method", "mmap");
+  this->declare_parameter("pixel_format", "yuyv");
+  this->declare_parameter("av_device_format", "YUV422P");
+  this->declare_parameter("video_device", "/dev/video0");
+  this->declare_parameter("brightness", 50);  // 0-255, -1 "leave alone"
+  this->declare_parameter("contrast", -1);    // 0-255, -1 "leave alone"
+  this->declare_parameter("saturation", -1);  // 0-255, -1 "leave alone"
+  this->declare_parameter("sharpness", -1);   // 0-255, -1 "leave alone"
+  this->declare_parameter("gain", -1);        // 0-100?, -1 "leave alone"
+  this->declare_parameter("auto_white_balance", true);
+  this->declare_parameter("white_balance", 4000);
+  this->declare_parameter("autoexposure", true);
+  this->declare_parameter("exposure", 100);
+  this->declare_parameter("autofocus", false);
+  this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
+}
+
+void V4l2CamComponent::load_params_from_yaml(const std::string & config_file_path)
+{
+  try {
+    YAML::Node config = YAML::LoadFile(config_file_path);
+    YAML::Node params_node;
+    
+    // ROS 2 parameter files have a specific structure: /**:/ros__parameters:
+    if (config["/**"] && config["/**"]["ros__parameters"]) {
+      params_node = config["/**"]["ros__parameters"];
+    } else if (config["ros__parameters"]) {
+      // Alternative structure
+      params_node = config["ros__parameters"];
+    } else {
+      // Direct parameters
+      params_node = config;
+    }
+    
+    // Load parameters directly into m_parameters structure
+    if (params_node["camera_name"]) {
+      m_parameters.camera_name = params_node["camera_name"].as<std::string>();
+    }
+    if (params_node["video_device"]) {
+      m_parameters.device_name = params_node["video_device"].as<std::string>();
+    }
+    if (params_node["frame_id"]) {
+      m_parameters.frame_id = params_node["frame_id"].as<std::string>();
+    }
+    if (params_node["io_method"]) {
+      m_parameters.io_method_name = params_node["io_method"].as<std::string>();
+    }
+    if (params_node["camera_info_url"]) {
+      m_parameters.camera_info_url = params_node["camera_info_url"].as<std::string>();
+    }
+    if (params_node["pixel_format"]) {
+      m_parameters.pixel_format_name = params_node["pixel_format"].as<std::string>();
+    }
+    if (params_node["av_device_format"]) {
+      m_parameters.av_device_format = params_node["av_device_format"].as<std::string>();
+    }
+    if (params_node["image_width"]) {
+      m_parameters.image_width = params_node["image_width"].as<int>();
+    }
+    if (params_node["image_height"]) {
+      m_parameters.image_height = params_node["image_height"].as<int>();
+    }
+    if (params_node["framerate"]) {
+      m_parameters.framerate = params_node["framerate"].as<double>();
+    }
+    if (params_node["brightness"]) {
+      m_parameters.brightness = params_node["brightness"].as<int>();
+    }
+    if (params_node["contrast"]) {
+      m_parameters.contrast = params_node["contrast"].as<int>();
+    }
+    if (params_node["saturation"]) {
+      m_parameters.saturation = params_node["saturation"].as<int>();
+    }
+    if (params_node["sharpness"]) {
+      m_parameters.sharpness = params_node["sharpness"].as<int>();
+    }
+    if (params_node["gain"]) {
+      m_parameters.gain = params_node["gain"].as<int>();
+    }
+    if (params_node["white_balance"]) {
+      m_parameters.white_balance = params_node["white_balance"].as<int>();
+    }
+    if (params_node["exposure"]) {
+      m_parameters.exposure = params_node["exposure"].as<int>();
+    }
+    if (params_node["focus"]) {
+      m_parameters.focus = params_node["focus"].as<int>();
+    }
+    if (params_node["auto_white_balance"]) {
+      m_parameters.auto_white_balance = params_node["auto_white_balance"].as<bool>();
+    }
+    if (params_node["autoexposure"]) {
+      m_parameters.autoexposure = params_node["autoexposure"].as<bool>();
+    }
+    if (params_node["autofocus"]) {
+      m_parameters.autofocus = params_node["autofocus"].as<bool>();
+    }
+    
+    RCLCPP_INFO(this->get_logger(), "Successfully loaded parameters from YAML file:");
+    RCLCPP_INFO(this->get_logger(), "  camera_name: %s", m_parameters.camera_name.c_str());
+    RCLCPP_INFO(this->get_logger(), "  video_device: %s", m_parameters.device_name.c_str());
+    RCLCPP_INFO(this->get_logger(), "  frame_id: %s", m_parameters.frame_id.c_str());
+    RCLCPP_INFO(this->get_logger(), "  framerate: %.1f", m_parameters.framerate);
+    RCLCPP_INFO(this->get_logger(), "  image_size: %dx%d", m_parameters.image_width, m_parameters.image_height);
+    RCLCPP_INFO(this->get_logger(), "  pixel_format: %s", m_parameters.pixel_format_name.c_str());
+    
+  } catch (const YAML::Exception & e) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to load YAML file %s: %s", config_file_path.c_str(), e.what());
+    RCLCPP_ERROR(this->get_logger(), "Using default parameters");
+    // Initialize with default parameters if YAML loading fails
+    m_parameters = usb_cam::parameters_t();
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(this->get_logger(), "Error loading config file %s: %s", config_file_path.c_str(), e.what());
+    RCLCPP_ERROR(this->get_logger(), "Using default parameters");
+    m_parameters = usb_cam::parameters_t();
+  }
+}
+
+}  // namespace Cyberbus
 
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(usb_cam::UsbCamNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(Cyberbus::V4l2CamComponent)

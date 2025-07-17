@@ -59,13 +59,13 @@ CAMERAS.append(
 def generate_launch_description():
     ld = LaunchDescription()
 
-    parser = argparse.ArgumentParser(description='v4l2_camera demo')
+    parser = argparse.ArgumentParser(description='v4l2_cam demo')
     parser.add_argument('-n', '--node-name', dest='node_name', type=str,
                         help='name for device', default='v4l2_cam')
 
     camera_nodes = [
         Node(
-            package='v4l2_camera', executable='v4l2_cam_node', output='screen',
+            package='v4l2_cam', executable='v4l2_cam_node', output='screen',
             name=camera.name,
             namespace=camera.namespace,
             parameters=[camera.param_path],

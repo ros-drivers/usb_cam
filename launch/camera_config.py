@@ -1,4 +1,4 @@
-# Copyright 2023 v4l2_camera Authors (Enhanced from usb_cam)
+# Copyright 2023 v4l2_cam Authors (Enhanced from usb_cam)
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -10,9 +10,9 @@
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
 #
-#    * Neither the name of the v4l2_camera Authors nor the names of its
+#    * Neither the name of the v4l2_cam Authors nor the names of its
 #      contributors may be used to endorse or promote products derived from
-#      this software without specific prior written permission.3 v4l2_camera Authors
+#      this software without specific prior written permission.3 v4l2_cam Authors
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
 #
-#    * Neither the name of the v4l2_camera Authors nor the names of its
+#    * Neither the name of the v4l2_cam Authors nor the names of its
 #      contributors may be used to endorse or promote products derived from
 #      this software without specific prior written permission.
 #
@@ -47,7 +47,7 @@ from typing import List, Optional
 from ament_index_python.packages import get_package_share_directory
 from pydantic import BaseModel, root_validator, validator
 
-V4L2_CAM_DIR = get_package_share_directory('v4l2_camera')
+V4L2_CAM_DIR = get_package_share_directory('v4l2_cam')
 
 
 class CameraConfig(BaseModel):

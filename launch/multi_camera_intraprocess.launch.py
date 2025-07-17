@@ -46,27 +46,27 @@ from launch_ros.descriptions import ComposableNode
 CAMERAS = []
 CAMERAS.append(
     CameraConfig(
-        name='camera1',
-        param_path=Path(V4L2_CAM_DIR, 'config', 'params_1.yaml'),
+        name='surround0',
+        param_path=Path(V4L2_CAM_DIR, 'config', 'surround0.yaml'),
         remappings= [
-                        ('image_raw', 'camera1/image_raw'),
-                        ('image_raw/compressed', 'camera1/image_compressed'),
-                        ('image_raw/compressedDepth', 'camera1/compressedDepth'),
-                        ('image_raw/theora', 'camera1/image_raw/theora'),
-                        ('camera_info', 'camera1/camera_info'),
+                        ('image_raw', 'surround0/image_raw'),
+                        ('image_raw/compressed', 'surround0/image_compressed'),
+                        ('image_raw/compressedDepth', 'surround0/compressedDepth'),
+                        ('image_raw/theora', 'surround0/image_raw/theora'),
+                        ('camera_info', 'surround0/camera_info'),
                     ]
     )
 )
 CAMERAS.append(
     CameraConfig(
-        name='camera2', 
-        param_path=Path(V4L2_CAM_DIR, 'config', 'params_2.yaml'),
+        name='surround1', 
+        param_path=Path(V4L2_CAM_DIR, 'config', 'surround1.yaml'),
         remappings= [
-                        ('image_raw', 'camera2/image_raw'),
-                        ('image_raw/compressed', 'camera2/image_compressed'),
-                        ('image_raw/compressedDepth', 'camera2/compressedDepth'),
-                        ('image_raw/theora', 'camera2/image_raw/theora'),
-                        ('camera_info', 'camera2/camera_info'),
+                        ('image_raw', 'surround1/image_raw'),
+                        ('image_raw/compressed', 'surround1/image_compressed'),
+                        ('image_raw/compressedDepth', 'surround1/compressedDepth'),
+                        ('image_raw/theora', 'surround1/image_raw/theora'),
+                        ('camera_info', 'surround1/camera_info'),
                     ]
     )
 )
@@ -88,12 +88,14 @@ def generate_launch_description():
             print(f"Warning: Parameter file {camera.param_path} not found, skipping camera {camera.name}")
             continue
 
+        print(f"Loading config for {camera.name} from: {camera.param_path}")
+        
         composable_node = ComposableNode(
-            package='v4l2_camera',
-            plugin='usb_cam::UsbCamNode',
+            package='v4l2_cam',
+            plugin='Cyberbus::V4l2CamComponent',
             name=camera.name,
             namespace=camera.namespace,
-            parameters=[camera.param_path],
+            parameters=[{'config_file_path': str(camera.param_path)}],
             remappings=camera.remappings if camera.remappings else [],
             extra_arguments=[{'use_intra_process_comms': True}]
         )

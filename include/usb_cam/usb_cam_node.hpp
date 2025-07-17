@@ -52,17 +52,23 @@ std::ostream & operator<<(std::ostream & ostr, const rclcpp::Time & tm)
 }
 
 
-namespace usb_cam
+namespace Cyberbus
 {
 
-class UsbCamNode : public rclcpp::Node
+class V4l2CamComponent : public rclcpp::Node
 {
 public:
-  explicit UsbCamNode(const rclcpp::NodeOptions & node_options);
-  ~UsbCamNode();
+  explicit V4l2CamComponent(const rclcpp::NodeOptions & node_options);
+  
+  // Constructor with YAML config file path
+  V4l2CamComponent(const rclcpp::NodeOptions & node_options, const std::string & config_file_path);
+  
+  ~V4l2CamComponent();
 
   void init();
   void get_params();
+  void declare_ros_parameters();
+  void load_params_from_yaml(const std::string & config_file_path);
   void assign_params(const std::vector<rclcpp::Parameter> & parameters);
   void set_v4l2_params();
   void update();
@@ -77,7 +83,7 @@ public:
     const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
     std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
-  UsbCam * m_camera;
+  usb_cam::UsbCam * m_camera;
 
   sensor_msgs::msg::Image::UniquePtr m_image_msg;
   sensor_msgs::msg::CompressedImage::UniquePtr m_compressed_img_msg;
@@ -87,7 +93,7 @@ public:
   rclcpp::Publisher<sensor_msgs::msg::CompressedImage>::SharedPtr m_compressed_image_publisher;
   rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr m_compressed_cam_info_publisher;
 
-  parameters_t m_parameters;
+  usb_cam::parameters_t m_parameters;
 
   sensor_msgs::msg::CameraInfo::SharedPtr m_camera_info_msg;
   std::shared_ptr<camera_info_manager::CameraInfoManager> m_camera_info;
@@ -97,5 +103,5 @@ public:
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr m_service_capture;
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr m_parameters_callback_handle;
 };
-}  // namespace usb_cam
+}  // namespace Cyberbus
 #endif  // USB_CAM__USB_CAM_NODE_HPP_

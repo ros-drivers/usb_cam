@@ -72,9 +72,9 @@ bool UsbCamNode::take_and_send_image()
 
 ## 项目重命名说明
 
-### 从 usb_cam 到 v4l2_camera
+### 从 usb_cam 到 v4l2_cam
 
-本项目已从原始的 `usb_cam` 重命名为 `v4l2_camera`，体现以下改进：
+本项目已从原始的 `usb_cam` 重命名为 `v4l2_cam`，体现以下改进：
 
 1. **更准确的命名**: 突出V4L2设备支持，不局限于USB相机
 2. **增强功能**: 多相机支持、进程内通信、内存优化
@@ -83,7 +83,7 @@ bool UsbCamNode::take_and_send_image()
 
 ### 主要变更
 
-- 包名: `usb_cam` → `v4l2_camera`
+- 包名: `usb_cam` → `v4l2_cam`
 - 命名空间: 保持向后兼容
 - Launch文件: 支持多相机配置
 - 参数文件: 增强的配置选项

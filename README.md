@@ -1,4 +1,4 @@
-# v4l2_camera [![ROS 2 CI](https://github.com/your-username/v4l2_camera/actions/workflows/build_test.yml/badge.svg)](https://github.com/your-username/v4l2_camera/actions/workflows/build_test.yml)
+# v4l2_cam [![ROS 2 CI](https://github.com/your-username/v4l2_cam/actions/workflows/build_test.yml/badge.svg)](https://github.com/your-username/v4l2_cam/actions/workflows/build_test.yml)
 
 ## Enhanced ROS 2 Driver for V4L2 Cameras
 
@@ -40,14 +40,14 @@ Since this is an enhanced fork, it's recommended to build from source:
 ```shell
 # Clone the repository
 cd ~/ros2_ws/src
-git clone https://github.com/your-username/v4l2_camera.git
+git clone https://github.com/your-username/v4l2_cam.git
 
 # Install dependencies
 cd ~/ros2_ws
 rosdep install --from-paths src --ignore-src -r -y
 
 # Build the package
-colcon build --packages-select v4l2_camera
+colcon build --packages-select v4l2_cam
 
 # Source the workspace
 source install/setup.bash
@@ -57,12 +57,12 @@ source install/setup.bash
 
 #### Single Camera
 ```shell
-ros2 launch v4l2_camera camera.launch.py
+ros2 launch v4l2_cam camera.launch.py
 ```
 
 #### Multi-camera with Intra-process Communication
 ```shell
-ros2 launch v4l2_camera multi_camera_intra_process.launch.py
+ros2 launch v4l2_cam multi_camera_intra_process.launch.py
 ```
 
 ## Building from Source
@@ -183,7 +183,7 @@ of each](https://lwn.net/Articles/240667/)
 
 ## Compression
 
-Big thanks to [the `ros2_v4l2_camera` package](https://gitlab.com/boldhearts/ros2_v4l2_camera#usage-1) and their documentation on this topic.
+Big thanks to [the `ros2_v4l2_cam` package](https://gitlab.com/boldhearts/ros2_v4l2_cam#usage-1) and their documentation on this topic.
 
 The `usb_cam` should support compression by default since it uses `image_transport` to publish its images as long as the `image_transport_plugins` package is installed on your system. With the plugins installed the `usb_cam` package should publish a `compressed` topic automatically.
 
