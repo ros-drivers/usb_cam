@@ -83,6 +83,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("exposure", 100);
   this->declare_parameter("autofocus", false);
   this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
+  this->declare_parameter("power_line_frequency", 1);
 
   get_params();
   init();
@@ -231,7 +232,7 @@ void UsbCamNode::get_params()
       "camera_name", "camera_info_url", "frame_id", "framerate", "image_height", "image_width",
       "io_method", "pixel_format", "av_device_format", "video_device", "brightness", "contrast",
       "saturation", "sharpness", "gain", "auto_white_balance", "white_balance", "autoexposure",
-      "exposure", "autofocus", "focus"
+      "exposure", "autofocus", "focus", "power_line_frequency"
     }
   );
 
@@ -285,6 +286,8 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       m_parameters.autofocus = parameter.as_bool();
     } else if (parameter.get_name() == "focus") {
       m_parameters.focus = parameter.as_int();
+    } else if (parameter.get_name() == "power_line_frequency") {
+      m_parameters.power_line_frequency = parameter.as_int();
     } else {
       RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name().c_str());
     }
@@ -356,6 +359,21 @@ void UsbCamNode::set_v4l2_params()
       RCLCPP_INFO(this->get_logger(), "Setting 'focus_absolute' to %d", m_parameters.focus);
       m_camera->set_v4l_parameter("focus_absolute", m_parameters.focus);
     }
+  }
+
+
+  // set power line frequency
+  if (m_parameters.power_line_frequency == 0) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'power_line_frequency' to %d (disabled)", m_parameters.power_line_frequency);
+    m_camera->set_v4l_parameter("power_line_frequency", 0);
+  } else if (m_parameters.power_line_frequency == 1) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'power_line_frequency' to %d (50Hz)", m_parameters.power_line_frequency);
+    m_camera->set_v4l_parameter("power_line_frequency", 1);
+  } else if (m_parameters.power_line_frequency == 2) {
+    RCLCPP_INFO(this->get_logger(), "Setting 'power_line_frequency' to %d (60Hz)", m_parameters.power_line_frequency);
+    m_camera->set_v4l_parameter("power_line_frequency", 2);
+  } else {
+    RCLCPP_ERROR(this->get_logger(), "Invalid 'power_line_frequency' value: %d", m_parameters.power_line_frequency);
   }
 }
 

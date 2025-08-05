@@ -125,6 +125,7 @@ typedef struct parameters_t
   bool auto_white_balance;
   bool autoexposure;
   bool autofocus;
+  int power_line_frequency;  // 0: disabled, 1: 50Hz, 2: 60Hz
 
   parameters_t()
 // *INDENT-OFF*
@@ -148,7 +149,8 @@ typedef struct parameters_t
     focus(-1),
     auto_white_balance(true),
     autoexposure(true),
-    autofocus(false)
+    autofocus(false),
+    power_line_frequency(1)  // 0: disabled, 1: 50Hz, 2: 60Hz
   {
   }
 // *INDENT-ON*
