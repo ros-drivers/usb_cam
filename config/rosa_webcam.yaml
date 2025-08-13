@@ -6,8 +6,8 @@
       frame_id: "rosa_camera"
       pixel_format: "mjpeg2rgb"  # see usb_cam/supported_formats for list of supported formats
       av_device_format: "YUV422P"
-      image_width: 640
-      image_height: 480
+      image_width: 1280
+      image_height: 720
       camera_name: "rosa_webcam"
       camera_info_url: "package://usb_cam/config/rosa_camera_info.yaml"
       brightness: -1
