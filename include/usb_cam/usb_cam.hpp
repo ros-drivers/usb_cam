@@ -125,6 +125,8 @@ typedef struct parameters_t
   bool auto_white_balance;
   bool autoexposure;
   bool autofocus;
+  // When true, UsbCamNode will not validate the device exists in available V4L2 devices
+  bool skip_device_check;
 
   parameters_t()
 // *INDENT-OFF*
@@ -148,7 +150,8 @@ typedef struct parameters_t
     focus(-1),
     auto_white_balance(true),
     autoexposure(true),
-    autofocus(false)
+    autofocus(false),
+    skip_device_check(false)
   {
   }
 // *INDENT-ON*

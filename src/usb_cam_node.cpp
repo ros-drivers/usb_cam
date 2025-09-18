@@ -83,6 +83,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("exposure", 100);
   this->declare_parameter("autofocus", false);
   this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
+  this->declare_parameter("skip_device_check", false);  // allow bypassing V4L2 device list check
 
   get_params();
   init();
@@ -159,21 +160,25 @@ void UsbCamNode::init()
     m_camera_info->setCameraInfo(*m_camera_info_msg);
   }
 
-  // Check if given device name is an available v4l2 device
-  auto available_devices = usb_cam::utils::available_devices();
-  if (available_devices.find(m_parameters.device_name) == available_devices.end()) {
-    RCLCPP_ERROR_STREAM(
-      this->get_logger(),
-      "Device specified is not available or is not a vaild V4L2 device: `" <<
-        m_parameters.device_name << "`"
-    );
-    RCLCPP_INFO(this->get_logger(), "Available V4L2 devices are:");
-    for (const auto & device : available_devices) {
-      RCLCPP_INFO_STREAM(this->get_logger(), "    " << device.first);
-      RCLCPP_INFO_STREAM(this->get_logger(), "        " << device.second.card);
+  // Check if given device name is an available v4l2 device (unless skipped)
+  if (!m_parameters.skip_device_check) {
+    auto available_devices = usb_cam::utils::available_devices();
+    if (available_devices.find(m_parameters.device_name) == available_devices.end()) {
+      RCLCPP_ERROR_STREAM(
+        this->get_logger(),
+        "Device specified is not available or is not a vaild V4L2 device: `" <<
+          m_parameters.device_name << "`"
+      );
+      RCLCPP_INFO(this->get_logger(), "Available V4L2 devices are:");
+      for (const auto & device : available_devices) {
+        RCLCPP_INFO_STREAM(this->get_logger(), "    " << device.first);
+        RCLCPP_INFO_STREAM(this->get_logger(), "        " << device.second.card);
+      }
+      rclcpp::shutdown();
+      return;
     }
-    rclcpp::shutdown();
-    return;
+  } else {
+    RCLCPP_WARN(this->get_logger(), "Skipping V4L2 device availability check by request.");
   }
 
   // if pixel format is equal to 'mjpeg', i.e. raw mjpeg stream, initialize compressed image message
@@ -231,7 +236,7 @@ void UsbCamNode::get_params()
       "camera_name", "camera_info_url", "frame_id", "framerate", "image_height", "image_width",
       "io_method", "pixel_format", "av_device_format", "video_device", "brightness", "contrast",
       "saturation", "sharpness", "gain", "auto_white_balance", "white_balance", "autoexposure",
-      "exposure", "autofocus", "focus"
+      "exposure", "autofocus", "focus", "skip_device_check"
     }
   );
 
@@ -285,6 +290,8 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       m_parameters.autofocus = parameter.as_bool();
     } else if (parameter.get_name() == "focus") {
       m_parameters.focus = parameter.as_int();
+    } else if (parameter.get_name() == "skip_device_check") {
+      m_parameters.skip_device_check = parameter.as_bool();
     } else {
       RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name().c_str());
     }
