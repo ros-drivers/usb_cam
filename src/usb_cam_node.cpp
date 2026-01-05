@@ -217,7 +217,9 @@ void UsbCamNode::init()
   // TODO(lucasw) should this check a little faster than expected frame rate?
   // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
   const int period_ms = 1000.0 / m_parameters.framerate;
-  m_timer = this->create_timer(
+  m_timer = rclcpp::create_timer(
+    this,
+    this->get_clock(),
     std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
     std::bind(&UsbCamNode::update, this));
   RCLCPP_INFO_STREAM(this->get_logger(), "Timer triggering every " << period_ms << " ms");
