@@ -217,7 +217,9 @@ void UsbCamNode::init()
   // TODO(lucasw) should this check a little faster than expected frame rate?
   // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
   const int period_ms = 1000.0 / m_parameters.framerate;
-  m_timer = this->create_wall_timer(
+  m_timer = rclcpp::create_timer(
+    this,
+    this->get_clock(),
     std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
     std::bind(&UsbCamNode::update, this));
   RCLCPP_INFO_STREAM(this->get_logger(), "Timer triggering every " << period_ms << " ms");
@@ -231,7 +233,7 @@ void UsbCamNode::get_params()
       "camera_name", "camera_info_url", "frame_id", "framerate", "image_height", "image_width",
       "io_method", "pixel_format", "av_device_format", "video_device", "brightness", "contrast",
       "saturation", "sharpness", "gain", "auto_white_balance", "white_balance", "autoexposure",
-      "exposure", "autofocus", "focus"
+      "exposure", "autofocus", "focus", "use_sim_time"
     }
   );
 
@@ -285,6 +287,8 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       m_parameters.autofocus = parameter.as_bool();
     } else if (parameter.get_name() == "focus") {
       m_parameters.focus = parameter.as_int();
+    } else if (parameter.get_name() == "use_sim_time") {
+      m_parameters.use_sim_time = parameter.as_bool();
     } else {
       RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name().c_str());
     }
@@ -378,9 +382,13 @@ bool UsbCamNode::take_and_send_image()
   // grab the image, pass image msg buffer to fill
   m_camera->get_image(reinterpret_cast<char *>(&m_image_msg->data[0]));
 
-  auto stamp = m_camera->get_image_timestamp();
-  m_image_msg->header.stamp.sec = stamp.tv_sec;
-  m_image_msg->header.stamp.nanosec = stamp.tv_nsec;
+  if (m_parameters.use_sim_time) {
+    m_image_msg->header.stamp = this->now();
+  } else {
+    auto stamp = m_camera->get_image_timestamp();
+    m_image_msg->header.stamp.sec = stamp.tv_sec;
+    m_image_msg->header.stamp.nanosec = stamp.tv_nsec;
+  }
 
   *m_camera_info_msg = m_camera_info->getCameraInfo();
   m_camera_info_msg->header = m_image_msg->header;
@@ -399,9 +407,13 @@ bool UsbCamNode::take_and_send_image_mjpeg()
   // grab the image, pass image msg buffer to fill
   m_camera->get_image(reinterpret_cast<char *>(&m_compressed_img_msg->data[0]));
 
-  auto stamp = m_camera->get_image_timestamp();
-  m_compressed_img_msg->header.stamp.sec = stamp.tv_sec;
-  m_compressed_img_msg->header.stamp.nanosec = stamp.tv_nsec;
+  if (m_parameters.use_sim_time) {
+    m_compressed_img_msg->header.stamp = this->now();
+  } else {
+    auto stamp = m_camera->get_image_timestamp();
+    m_compressed_img_msg->header.stamp.sec = stamp.tv_sec;
+    m_compressed_img_msg->header.stamp.nanosec = stamp.tv_nsec;
+  }
 
   *m_camera_info_msg = m_camera_info->getCameraInfo();
   m_camera_info_msg->header = m_compressed_img_msg->header;
