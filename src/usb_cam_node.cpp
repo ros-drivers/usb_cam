@@ -157,7 +157,14 @@ void UsbCamNode::init()
   // load the camera info
   m_camera_info.reset(
     new camera_info_manager::CameraInfoManager(
-      this, m_parameters.camera_name, m_parameters.camera_info_url));
+// For Rolling, L-turtle, and newer
+#if RCLCPP_VERSION_GTE(30, 0, 0)
+      this->get_node_base_interface(),
+// For Kilted and older
+#else
+      this,
+#endif   
+      m_parameters.camera_name, m_parameters.camera_info_url));
   // check for default camera info
   if (!m_camera_info->isCalibrated()) {
     m_camera_info->setCameraName(m_parameters.device_name);
