@@ -41,6 +41,7 @@
 
 extern "C" {
 #define __STDC_CONSTANT_MACROS  // Required for libavutil
+#include <libavcodec/avcodec.h>
 #include "libavutil/imgutils.h"
 #include "libavformat/avformat.h"
 #include "libavutil/error.h"
@@ -49,7 +50,6 @@ extern "C" {
 #include "libswscale/swscale.h"
 }
 
-#include "usb_cam/usb_cam.hpp"
 #include "usb_cam/formats/pixel_format_base.hpp"
 #include "usb_cam/formats/utils.hpp"
 #include "usb_cam/formats/av_pixel_format_helper.hpp"

@@ -30,11 +30,6 @@
 #ifndef USB_CAM__USB_CAM_HPP_
 #define USB_CAM__USB_CAM_HPP_
 
-extern "C" {
-#include <libavcodec/avcodec.h>
-#include <linux/videodev2.h>
-}
-
 #include <chrono>
 #include <memory>
 #include <algorithm>
@@ -298,26 +293,6 @@ public:
     return m_number_of_buffers;
   }
 
-  inline AVCodec * get_avcodec()
-  {
-    return m_avcodec;
-  }
-
-  inline AVDictionary * get_avoptions()
-  {
-    return m_avoptions;
-  }
-
-  inline AVCodecContext * get_avcodec_context()
-  {
-    return m_avcodec_context;
-  }
-
-  inline AVFrame * get_avframe()
-  {
-    return m_avframe;
-  }
-
   inline bool is_capturing()
   {
     return m_is_capturing;
@@ -473,11 +448,6 @@ private:
   unsigned int m_number_of_buffers;
   std::shared_ptr<usb_cam::utils::buffer[]> m_buffers;
   image_t m_image;
-
-  AVFrame * m_avframe;
-  AVCodec * m_avcodec;
-  AVDictionary * m_avoptions;
-  AVCodecContext * m_avcodec_context;
 
   bool m_is_capturing;
   int m_framerate;
