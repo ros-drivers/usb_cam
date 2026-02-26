@@ -416,7 +416,8 @@ public:
     for (auto fmt : this->supported_formats()) {
       if (fmt.v4l2_fmt.width == static_cast<size_t>(parameters.image_width) &&
         fmt.v4l2_fmt.height == static_cast<size_t>(parameters.image_height) &&
-        fmt.v4l2_fmt.pixel_format == found_driver_format->v4l2()) {
+        fmt.v4l2_fmt.pixel_format == found_driver_format->v4l2())
+      {
         return fmt.v4l2_fmt.discrete.denominator / fmt.v4l2_fmt.discrete.numerator;
       }
     }

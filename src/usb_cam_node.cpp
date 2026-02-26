@@ -224,7 +224,8 @@ void UsbCamNode::init()
   if (static_cast<size_t>(m_parameters.framerate) > frame_rate) {
     RCLCPP_WARN_STREAM(
       this->get_logger(),
-      "Desired framerate " << m_parameters.framerate << " is higher than the camera's capability " <<
+      "Desired framerate " << m_parameters.framerate <<
+        " is higher than the camera's capability " <<
         frame_rate << " fps");
     m_parameters.framerate = frame_rate;
   }
