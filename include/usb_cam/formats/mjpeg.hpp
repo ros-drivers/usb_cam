@@ -36,19 +36,19 @@
 /// https://www.ffmpeg.org/doxygen/4.0/decode__video_8c_source.html
 ///
 
-#include <iostream>
-
 
 extern "C" {
 #define __STDC_CONSTANT_MACROS  // Required for libavutil
 #include <libavcodec/avcodec.h>
-#include "libavutil/imgutils.h"
-#include "libavformat/avformat.h"
-#include "libavutil/error.h"
-#include "libavutil/log.h"
-#include "linux/videodev2.h"
-#include "libswscale/swscale.h"
+#include <libavutil/imgutils.h>
+#include <libavformat/avformat.h>
+#include <libavutil/error.h>
+#include <libavutil/log.h>
+#include <linux/videodev2.h>
+#include <libswscale/swscale.h>
 }
+
+#include <iostream>
 
 #include "usb_cam/formats/pixel_format_base.hpp"
 #include "usb_cam/formats/utils.hpp"
