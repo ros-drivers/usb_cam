@@ -33,6 +33,7 @@
 #include <filesystem>
 #include "usb_cam/usb_cam_node.hpp"
 #include "usb_cam/utils.hpp"
+#include <rclcpp/version.h>
 
 const char BASE_TOPIC_NAME[] = "image_raw";
 
@@ -45,8 +46,15 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   m_image_msg(new sensor_msgs::msg::Image()),
   m_compressed_img_msg(nullptr),
   m_image_publisher(std::make_shared<image_transport::CameraPublisher>(
-      image_transport::create_camera_publisher(this, BASE_TOPIC_NAME,
-      rclcpp::QoS {100}.get_rmw_qos_profile()))),
+      image_transport::create_camera_publisher(
+// For Rolling, L-turtle, and newer
+#if RCLCPP_VERSION_GTE(30, 0, 0)
+        this->get_node_base_interface(), BASE_TOPIC_NAME, rclcpp::QoS(100)
+// For Kilted and older
+#else
+        this, BASE_TOPIC_NAME, rclcpp::QoS(100).get_rmw_qos_profile()
+#endif
+      ))),
   m_compressed_image_publisher(nullptr),
   m_compressed_cam_info_publisher(nullptr),
   m_parameters(),
@@ -151,7 +159,16 @@ void UsbCamNode::init()
   // load the camera info
   m_camera_info.reset(
     new camera_info_manager::CameraInfoManager(
-      this, m_parameters.camera_name, m_parameters.camera_info_url));
+// For Rolling, L-turtle, and newer
+#if RCLCPP_VERSION_GTE(30, 0, 0)
+      this->get_node_base_interface(),
+      this->get_node_services_interface(),
+      this->get_node_logging_interface(),
+// For Kilted and older
+#else
+      this,
+#endif
+       m_parameters.camera_name, m_parameters.camera_info_url));
   // check for default camera info
   if (!m_camera_info->isCalibrated()) {
     m_camera_info->setCameraName(m_parameters.device_name);
