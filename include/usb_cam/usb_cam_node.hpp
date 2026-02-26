@@ -66,6 +66,7 @@ public:
   void assign_params(const std::vector<rclcpp::Parameter> & parameters);
   void set_v4l2_params();
   void update();
+  void publish();
   bool take_and_send_image();
   bool take_and_send_image_mjpeg();
 
@@ -91,6 +92,7 @@ public:
   std::shared_ptr<camera_info_manager::CameraInfoManager> m_camera_info;
 
   rclcpp::TimerBase::SharedPtr m_timer;
+  rclcpp::TimerBase::SharedPtr m_publish_timer;
 
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr m_service_capture;
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr m_parameters_callback_handle;
