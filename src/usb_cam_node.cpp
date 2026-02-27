@@ -46,7 +46,18 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   m_compressed_img_msg(nullptr),
   m_image_publisher(std::make_shared<image_transport::CameraPublisher>(
       image_transport::create_camera_publisher(this, BASE_TOPIC_NAME,
-      rclcpp::QoS {100}.get_rmw_qos_profile()))),
+      rmw_qos_profile_t{
+        RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+        5,
+        RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+        RMW_QOS_POLICY_DURABILITY_VOLATILE,
+        {0,0}, // deadline sec, nanosec
+        {0,0}, // lifespan sec, nanosec
+        RMW_QOS_POLICY_LIVELINESS_AUTOMATIC,
+        {0,0}, // lease duration
+        false // avoid_ros_namespace_conventions
+      }
+    ))),
   m_compressed_image_publisher(nullptr),
   m_compressed_cam_info_publisher(nullptr),
   m_parameters(),
@@ -189,10 +200,42 @@ void UsbCamNode::init()
     m_compressed_img_msg->header.frame_id = m_parameters.frame_id;
     m_compressed_image_publisher =
       this->create_publisher<sensor_msgs::msg::CompressedImage>(
-      std::string(BASE_TOPIC_NAME) + "/compressed", rclcpp::QoS(100));
+      std::string(BASE_TOPIC_NAME) + "/compressed",
+      rclcpp::QoS(
+        rclcpp::QoSInitialization::from_rmw(
+          rmw_qos_profile_t{
+            RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+            5,
+            RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+            RMW_QOS_POLICY_DURABILITY_VOLATILE,
+            {0,0}, // deadline sec, nanosec
+            {0,0}, // lifespan sec, nanosec
+            RMW_QOS_POLICY_LIVELINESS_AUTOMATIC,
+            {0,0}, // lease duration
+            false // avoid_ros_namespace_conventions
+          }
+        )
+      )
+    );
     m_compressed_cam_info_publisher =
       this->create_publisher<sensor_msgs::msg::CameraInfo>(
-      "camera_info", rclcpp::QoS(100));
+      "camera_info",
+      rclcpp::QoS(
+        rclcpp::QoSInitialization::from_rmw(
+          rmw_qos_profile_t{
+            RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+            5,
+            RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT,
+            RMW_QOS_POLICY_DURABILITY_VOLATILE,
+            {0,0}, // deadline sec, nanosec
+            {0,0}, // lifespan sec, nanosec
+            RMW_QOS_POLICY_LIVELINESS_AUTOMATIC,
+            {0,0}, // lease duration
+            false // avoid_ros_namespace_conventions
+          }
+        )
+      )
+    );
   }
 
   m_image_msg->header.frame_id = m_parameters.frame_id;
