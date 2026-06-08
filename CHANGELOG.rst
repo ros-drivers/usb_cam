@@ -139,7 +139,7 @@ Changelog for package usb_cam
 * fix code style
 * dont change brightness with default config
 * use v4l2  for "brightness", "contrast", "saturation", "sharpness", "gain", "auto_white_balance",
-  "white_balance", "autoexposure", "exposure", "autofocus", "focus"
+  "white_balance", "auto_exposure", "exposure", "autofocus", "focus"
 * Contributors: Evan Flynn, john
 
 0.5.0 (2023-01-14)
@@ -445,7 +445,7 @@ Changelog for package usb_cam
 
 0.1.8 (2014-08-21)
 ------------------
-* autoexposure and exposure settings now exposed via ROS parameters
+* auto_exposure and exposure settings now exposed via ROS parameters
 * added ability to call v4l-utils as well as correctly set autofocus
 * cleanup of output
 * Merge pull request #15 from mistoll/develop

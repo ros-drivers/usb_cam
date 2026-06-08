@@ -125,10 +125,10 @@ typedef struct
   int sharpness;
   int gain;
   int white_balance;
-  int exposure;
+  int exposure_time_absolute;
   int focus;
   bool auto_white_balance;
-  bool autoexposure;
+  int auto_exposure;
   bool autofocus;
 } parameters_t;
 

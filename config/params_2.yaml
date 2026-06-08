@@ -11,14 +11,14 @@
       camera_name: "test_camera2"
       # reusing same camera intrinsics only for demo, should really be unique for camera2"
       camera_info_url: "package://usb_cam/config/camera_info.yaml"
-      brightness: -1
+      brightness: -100
       contrast: -1
       saturation: -1
       sharpness: -1
       gain: -1
       auto_white_balance: true
       white_balance: 4000
-      autoexposure: true
-      exposure: 100
+      auto_exposure: 1
+      exposure_time_absolute: 100
       autofocus: false
       focus: -1

@@ -53,9 +53,10 @@ public:
   // parameters
   std::string m_video_device_name, m_io_method_str, m_pixel_format_str, m_camera_name,
     m_camera_info_url;
-  int m_image_width, m_image_height, m_framerate, m_exposure, m_brightness, m_contrast,
+  int m_image_width, m_image_height, m_framerate, m_exposure_time_absolute, m_brightness, m_contrast,
     m_saturation, m_sharpness, m_focus, m_white_balance, m_gain;
-  bool m_auto_focus, m_auto_exposure, m_auto_white_balance;
+  bool m_auto_focus, m_auto_white_balance;
+  int m_auto_exposure;
   boost::shared_ptr<camera_info_manager::CameraInfoManager> m_camera_info;
 
   UsbCam m_camera;
@@ -89,7 +90,7 @@ public:
 
     // grab the parameters
     m_node.param("video_device", m_video_device_name, std::string("/dev/video0"));
-    m_node.param("brightness", m_brightness, -1);  // 0-255, -1 "leave alone"
+    m_node.param("brightness", m_brightness, -100);  // -64,64, -100 "leave alone"
     m_node.param("contrast", m_contrast, -1);  // 0-255, -1 "leave alone"
     m_node.param("saturation", m_saturation, -1);  // 0-255, -1 "leave alone"
     m_node.param("sharpness", m_sharpness, -1);  // 0-255, -1 "leave alone"
@@ -103,9 +104,9 @@ public:
     // enable/disable autofocus
     m_node.param("autofocus", m_auto_focus, false);
     m_node.param("focus", m_focus, -1);  // 0-255, -1 "leave alone"
-    // enable/disable autoexposure
-    m_node.param("autoexposure", m_auto_exposure, true);
-    m_node.param("exposure", m_exposure, 100);
+    // enable/disable auto_exposure
+    m_node.param("auto_exposure", m_auto_exposure, 0);
+    m_node.param("exposure_time_absolute", m_exposure_time_absolute, 100);
     m_node.param("gain", m_gain, -1);  // 0-100?, -1 "leave alone"
     // enable/disable auto white balance temperature
     m_node.param("auto_white_balance", m_auto_white_balance, true);
@@ -211,7 +212,7 @@ public:
   void set_v4l2_params()
   {
     // set camera parameters
-    if (m_brightness >= 0) {
+    if (m_brightness >= -64 && m_brightness <= 64) {
       m_camera.set_v4l_parameter("brightness", m_brightness);
     }
 
@@ -239,14 +240,10 @@ public:
       m_camera.set_v4l_parameter("white_balance_temperature", m_white_balance);
     }
 
-    // check auto exposure
-    if (!m_auto_exposure) {
-      // turn down exposure control (from max of 3)
-      m_camera.set_v4l_parameter("m_exposureauto", 1);
-      // change the exposure level
-      m_camera.set_v4l_parameter("m_exposureabsolute", m_exposure);
-    }
-
+    
+    m_camera.set_v4l_parameter("auto_exposure", m_auto_exposure);
+    m_camera.set_v4l_parameter("exposure_time_absolute", m_exposure_time_absolute);
+    
     // check auto focus
     if (m_auto_focus) {
       m_camera.set_auto_focus(1);

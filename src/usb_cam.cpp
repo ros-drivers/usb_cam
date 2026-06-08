@@ -721,7 +721,10 @@ bool UsbCam::set_v4l_parameter(const std::string & param, const std::string & va
     pclose(stream);
     // any output should be an error
     if (output.length() > 0) {
-      std::cout << output.c_str() << std::endl;
+      // suppress noise for controls the camera hardware doesn't support
+      if (output.find("unknown control") == std::string::npos) {
+        std::cout << output.c_str() << std::endl;
+      }
       retcode = 1;
     }
   } else {
