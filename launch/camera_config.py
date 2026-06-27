@@ -31,7 +31,10 @@ from pathlib import Path
 from typing import List, Optional
 
 from ament_index_python.packages import get_package_share_directory
-from pydantic import BaseModel, root_validator, validator
+try:
+    from pydantic.v1 import BaseModel, root_validator, validator
+except ImportError:
+    from pydantic import BaseModel, root_validator, validator
 
 USB_CAM_DIR = get_package_share_directory('usb_cam')
 
