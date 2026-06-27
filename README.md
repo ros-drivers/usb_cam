@@ -37,14 +37,41 @@ git clone https://github.com/ros-drivers/usb_cam.git
 
 Or click on the green "Download zip" button on the repo's github webpage.
 
-Once downloaded and ensuring you have sourced your ROS 2 underlay, go ahead and install the dependencies:
+### 1. Source ROS 2 Underlay
+
+Source your ROS 2 installation to set up your environment (replace `jazzy` with your installed ROS 2 version if different):
+
+```shell
+source /opt/ros/jazzy/setup.bash
+```
+
+### 2. Install Dependencies
+
+You can install the dependencies automatically using `rosdep`. If you don't have `rosdep` installed, install and initialize it first:
+
+```shell
+# Install rosdep if missing
+sudo apt-get update
+sudo apt-get install python3-rosdep
+sudo rosdep init
+rosdep update
+```
+
+Then, install the package dependencies from the root of your workspace:
 
 ```shell
 cd /path/to/colcon_ws
-rosdep install --from-paths src --ignore-src -y
+rosdep install --from-paths src --ignore-src -y --rosdistro ${ROS_DISTRO}
 ```
 
-From there you should have all the necessary dependencies installed to compile the `usb_cam` package:
+*(Optional) If you prefer to install the dependencies manually without rosdep:*
+```shell
+sudo apt-get install ros-${ROS_DISTRO}-camera-info-manager v4l-utils python3-pydantic
+```
+
+### 3. Build the Package
+
+After the dependencies are successfully installed, build the workspace:
 
 ```shell
 cd /path/to/colcon_ws
