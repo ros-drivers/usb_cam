@@ -171,7 +171,7 @@ void UsbCamNode::init()
 
   // if pixel format is equal to 'mjpeg', i.e. raw mjpeg stream, initialize compressed image message
   // and publisher
-  if (m_parameters.pixel_format_name == "mjpeg") {
+  if (m_parameters.pixel_format_name == "raw_mjpeg") {
     m_compressed_img_msg.reset(new sensor_msgs::msg::CompressedImage());
     m_compressed_img_msg->header.frame_id = m_parameters.frame_id;
     m_compressed_image_publisher =
@@ -383,24 +383,71 @@ bool UsbCamNode::take_and_send_image()
 
 bool UsbCamNode::take_and_send_image_mjpeg()
 {
-  // Only resize if required
-  if (sizeof(m_compressed_img_msg->data) != m_camera->get_image_size_in_bytes()) {
-    m_compressed_img_msg->format = "jpeg";
-    m_compressed_img_msg->data.resize(m_camera->get_image_size_in_bytes());
+  m_compressed_img_msg->format = "jpeg";
+
+  // Allocate enough space for one V4L2 MJPEG frame.
+  const auto buffer_size =
+    m_camera->get_image_buffer_size();
+
+  if (buffer_size == 0) {
+    RCLCPP_ERROR(
+      this->get_logger(),
+      "Invalid MJPEG V4L2 buffer size");
+    return false;
   }
 
-  // grab the image, pass image msg buffer to fill
-  m_camera->get_image(reinterpret_cast<char *>(&m_compressed_img_msg->data[0]));
+  m_compressed_img_msg->data.resize(buffer_size);
+
+  // Camera MJPEG bytes are copied directly here.
+  m_camera->get_image(
+    reinterpret_cast<char *>(
+      m_compressed_img_msg->data.data()));
+
+  const auto bytes_used =
+    m_camera->get_image_bytes_used();
+    RCLCPP_INFO_THROTTLE(
+      this->get_logger(),
+      *this->get_clock(),
+      2000,
+      "MJPEG: buffer_size=%zu, bytes_used=%zu",
+      buffer_size,
+      bytes_used);
+
+  if (bytes_used == 0 ||
+      bytes_used > buffer_size)
+  {
+    RCLCPP_ERROR(
+      this->get_logger(),
+      "Invalid MJPEG frame size: bytes_used=%zu, buffer_size=%zu",
+      bytes_used,
+      buffer_size);
+
+    return false;
+  }
+
+  // Publish only the actual JPEG bytes.
+  m_compressed_img_msg->data.resize(bytes_used);
 
   auto stamp = m_camera->get_image_timestamp();
-  m_compressed_img_msg->header.stamp.sec = stamp.tv_sec;
-  m_compressed_img_msg->header.stamp.nanosec = stamp.tv_nsec;
 
-  *m_camera_info_msg = m_camera_info->getCameraInfo();
-  m_camera_info_msg->header = m_compressed_img_msg->header;
+  m_compressed_img_msg->header.stamp.sec =
+    stamp.tv_sec;
 
-  m_compressed_image_publisher->publish(*m_compressed_img_msg);
-  m_compressed_cam_info_publisher->publish(*m_camera_info_msg);
+  m_compressed_img_msg->header.stamp.nanosec =
+    stamp.tv_nsec;
+
+  *m_camera_info_msg =
+    m_camera_info->getCameraInfo();
+
+  m_camera_info_msg->header =
+    m_compressed_img_msg->header;
+
+  m_compressed_image_publisher->publish(
+    *m_compressed_img_msg);
+
+  m_compressed_cam_info_publisher->publish(
+    *m_camera_info_msg);
+
   return true;
 }
 
@@ -423,7 +470,7 @@ void UsbCamNode::update()
     // If the camera exposure longer higher than the framerate period
     // then that caps the framerate.
     // auto t0 = now();
-    bool isSuccessful = (m_parameters.pixel_format_name == "mjpeg") ?
+    bool isSuccessful = (m_parameters.pixel_format_name == "raw_mjpeg") ?
       take_and_send_image_mjpeg() :
       take_and_send_image();
     if (!isSuccessful) {

@@ -82,10 +82,10 @@ void UsbCam::process_image(const char * src, char * & dest, const int & bytes_us
   // TODO(flynneva): could we skip the copy here somehow?
   // If no conversion required, just copy the image from V4L2 buffer
   if (m_image.pixel_format->requires_conversion() == false) {
-    memcpy(dest, src, m_image.size_in_bytes);
+    memcpy(dest, src, bytes_used);
   } else {
     m_image.pixel_format->convert(src, dest, bytes_used);
-  }
+  } 
 }
 
 void UsbCam::read_frame()
@@ -135,6 +135,7 @@ void UsbCam::read_frame()
       m_image.stamp = usb_cam::utils::calc_img_timestamp(buf.timestamp, m_epoch_time_shift_us);
 
       assert(buf.index < m_number_of_buffers);
+      m_image.bytes_used = buf.bytesused;
       process_image(m_buffers[buf.index].start, m_image.data, buf.bytesused);
 
       /// Requeue buffer so it can be reused
@@ -562,7 +563,10 @@ void UsbCam::get_image(char * destination)
   }
   // Set the destination pointer to be filled
   m_image.data = destination;
-  // grab the image
+
+  // Reset before acquiring a new frame.
+  m_image.bytes_used = 0;
+
   grab_image();
 }
 
