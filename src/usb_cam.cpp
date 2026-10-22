@@ -74,17 +74,23 @@ UsbCam::~UsbCam()
 /// V4L2 Image into another type. Look up possible V4L2 pixe formats in the
 /// `linux/videodev2.h` header file.
 /// @param src a pointer to a V4L2 source image
-/// @param dest a pointer to where the source image should be copied (if required)
 /// @param bytes_used number of bytes used by the src buffer
-void UsbCam::process_image(const char * src, char * & dest, const int & bytes_used)
+void image_t::process_image(const char * src, const int & bytes_used)
 {
-  // TODO(flynneva): could we skip the copy here somehow?
-  // If no conversion required, just copy the image from V4L2 buffer
-  if (m_image.pixel_format->requires_conversion() == false) {
-    memcpy(dest, src, m_image.size_in_bytes);
-  } else {
-    m_image.pixel_format->convert(src, dest, bytes_used);
+  data_size = 0;
+  size_t output_size = size_in_bytes;
+  if (pixel_format->name() == "raw_mjpeg") {
+    if (bytes_used < 0 || static_cast<size_t>(bytes_used) > size_in_bytes) {
+      throw std::invalid_argument("MJPEG payload exceeds the image buffer");
+    }
+    output_size = static_cast<size_t>(bytes_used);
   }
+  if (pixel_format->requires_conversion() == false) {
+    memcpy(data, src, output_size);
+  } else {
+    pixel_format->convert(src, data, bytes_used);
+  }
+  data_size = output_size;
 }
 
 void UsbCam::read_frame()
@@ -104,7 +110,7 @@ void UsbCam::read_frame()
             throw std::runtime_error("Unable to read frame");
         }
       }
-      return process_image(m_buffers[0].start, m_image.data, len);
+      return m_image.process_image(m_buffers[0].start, len);
     case io_method_t::IO_METHOD_MMAP:
       CLEAR(buf);
       buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -134,7 +140,7 @@ void UsbCam::read_frame()
       m_image.stamp = usb_cam::utils::calc_img_timestamp(buf.timestamp, m_epoch_time_shift_us);
 
       assert(buf.index < m_number_of_buffers);
-      process_image(m_buffers[buf.index].start, m_image.data, buf.bytesused);
+      m_image.process_image(m_buffers[buf.index].start, buf.bytesused);
 
       /// Requeue buffer so it can be reused
       if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &buf)) {
@@ -168,7 +174,7 @@ void UsbCam::read_frame()
       }
 
       assert(i < m_number_of_buffers);
-      process_image(reinterpret_cast<const char *>(buf.m.userptr), m_image.data, buf.bytesused);
+      m_image.process_image(reinterpret_cast<const char *>(buf.m.userptr), buf.bytesused);
       if (-1 == usb_cam::utils::xioctl(m_fd, static_cast<int>(VIDIOC_QBUF), &buf)) {
         throw std::runtime_error("Unable to exchange buffer with driver");
       }
@@ -440,6 +446,14 @@ void UsbCam::init_device()
     throw strerror(errno);
   }
 
+  // Compressed frame capacity comes from V4L2, not decoded pixel geometry.
+  if (m_image.pixel_format->name() == "raw_mjpeg") {
+    if (m_image.v4l2_fmt.fmt.pix.sizeimage == 0) {
+      throw std::runtime_error("V4L2 reported an empty MJPEG buffer");
+    }
+    m_image.size_in_bytes = m_image.v4l2_fmt.fmt.pix.sizeimage;
+  }
+
   struct v4l2_streamparm stream_params;
   memset(&stream_params, 0, sizeof(stream_params));
   stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -548,6 +562,7 @@ char * UsbCam::get_image()
     return nullptr;
   }
   // grab the image
+  m_image.data_size = 0;
   grab_image();
   return m_image.data;
 }
@@ -561,6 +576,7 @@ void UsbCam::get_image(char * destination)
   }
   // Set the destination pointer to be filled
   m_image.data = destination;
+  m_image.data_size = 0;
   // grab the image
   grab_image();
 }

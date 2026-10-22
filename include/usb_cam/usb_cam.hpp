@@ -163,6 +163,7 @@ typedef struct image_t
   size_t size_in_bytes;
   v4l2_format v4l2_fmt;
   struct timespec stamp;
+  size_t data_size = 0;
 
   size_t set_number_of_pixels()
   {
@@ -179,6 +180,8 @@ typedef struct image_t
     size_in_bytes = height * bytes_per_line;
     return size_in_bytes;
   }
+
+  void process_image(const char * src, const int & bytes_used);
 
   /// @brief make it a shorter API call to get the pixel format
   unsigned int get_format_fourcc()
@@ -244,6 +247,12 @@ public:
   inline size_t get_image_size_in_bytes()
   {
     return m_image.size_in_bytes;
+  }
+
+  /// @brief Valid bytes written by the most recent capture, excluding buffer padding.
+  inline size_t get_image_data_size()
+  {
+    return m_image.data_size;
   }
 
   inline size_t get_image_size_in_pixels()
@@ -437,7 +446,6 @@ private:
   void open_device();
   void grab_image();
   void read_frame();
-  void process_image(const char * src, char * & dest, const int & bytes_used);
 
   void uninit_device();
   void close_device();

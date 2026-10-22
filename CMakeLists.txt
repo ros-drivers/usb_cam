@@ -89,6 +89,10 @@ if(BUILD_TESTING)
     test/test_pixel_formats.cpp)
   target_link_libraries(test_pixel_formats
     ${PROJECT_NAME} m stdc++)
+  ament_add_gtest(test_image_payload
+    test/test_image_payload.cpp)
+  target_link_libraries(test_image_payload
+    ${PROJECT_NAME} m stdc++)
   if(INTEGRATION_TESTS)
     ament_add_gtest(test_usb_cam_lib
       test/test_usb_cam_lib.cpp)
