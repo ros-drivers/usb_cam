@@ -163,7 +163,7 @@ void UsbCam::read_frame()
         if (buf.m.userptr == reinterpret_cast<uint64_t>(m_buffers[i].start) && \
           buf.length == m_buffers[i].length)
         {
-          return;
+          break;
         }
       }
 
